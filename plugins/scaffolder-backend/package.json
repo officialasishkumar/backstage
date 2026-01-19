@@ -93,6 +93,7 @@
     "nunjucks": "^3.2.3",
     "p-queue": "^6.6.2",
     "prom-client": "^15.0.0",
+    "safe-stable-stringify": "^2.5.0",
     "triple-beam": "^1.4.1",
     "uuid": "^11.0.0",
     "winston": "^3.2.1",
