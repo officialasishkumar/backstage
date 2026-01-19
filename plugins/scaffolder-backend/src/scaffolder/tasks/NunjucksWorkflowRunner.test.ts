@@ -2294,7 +2294,7 @@ describe('NunjucksWorkflowRunner', () => {
       expect(fakeActionHandler).toHaveBeenCalledTimes(1);
     });
 
-    it('should emit log when skipping a recovered step', async () => {
+    it('should emit recovery log when resuming from saved state', async () => {
       const task = createMockTaskWithSpec({
         steps: [
           {
@@ -2319,10 +2319,12 @@ describe('NunjucksWorkflowRunner', () => {
 
       await runner.execute(task);
 
-      // Should log that step was skipped
+      // Should log that task was recovered
       expect(emitLogMock).toHaveBeenCalledWith(
-        expect.stringContaining('Skipping'),
-        expect.objectContaining({ stepId: 'step1', status: 'skipped' }),
+        expect.stringContaining('Task recovered'),
+      );
+      expect(emitLogMock).toHaveBeenCalledWith(
+        expect.stringContaining('1 step(s) already completed'),
       );
     });
   });
