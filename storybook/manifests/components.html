@@ -582,7 +582,7 @@
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.5s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.8s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -2764,7 +2764,7 @@ variant?: T | Partial&lt;Record&lt;Breakpoint, T&gt;&gt;</code></pre>
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { ButtonLink, Flex } from "@backstage/ui";
+                <pre><code>import { BUIProvider, ButtonLink, Flex } from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";
 import { RiArrowRightSLine, RiCloudLine } from "@remixicon/react";</code></pre>
               </div>
@@ -3432,6 +3432,7 @@ className?: string</code></pre>
                   <span class="ex-name">Imports</span>
                 </div>
                 <pre><code>import {
+    BUIProvider,
     Button,
     Card,
     CardBody,
@@ -6505,7 +6506,7 @@ style?: CSSProperties</code></pre>
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { Container, FullPage, PluginHeader, Text } from "@backstage/ui";
+                <pre><code>import { BUIProvider, Container, FullPage, PluginHeader, Text } from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";</code></pre>
               </div>
           
@@ -6645,7 +6646,17 @@ title?: string</code></pre>
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { Button, ButtonIcon, Container, Header, Menu, MenuItem, MenuTrigger, Text } from "@backstage/ui";
+                <pre><code>import {
+    BUIProvider,
+    Button,
+    ButtonIcon,
+    Container,
+    Header,
+    Menu,
+    MenuItem,
+    MenuTrigger,
+    Text,
+} from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";
 import { RiMore2Line } from "@remixicon/react";</code></pre>
               </div>
@@ -6760,52 +6771,54 @@ import { RiMore2Line } from "@remixicon/react";</code></pre>
               
               
               <pre><code>const WithTabsMatchingStrategies = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/mentorship/events&#39;]}&gt;
-    &lt;Header
-        title=&quot;Route Matching Demo&quot;
-        tabs={[
-          {
-            id: &#39;home&#39;,
-            label: &#39;Home&#39;,
-            href: &#39;/home&#39;,
-          },
-          {
-            id: &#39;mentorship&#39;,
-            label: &#39;Mentorship&#39;,
-            href: &#39;/mentorship&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-          {
-            id: &#39;catalog&#39;,
-            label: &#39;Catalog&#39;,
-            href: &#39;/catalog&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-          {
-            id: &#39;settings&#39;,
-            label: &#39;Settings&#39;,
-            href: &#39;/settings&#39;,
-          },
-        ]} /&gt;
-    &lt;Container&gt;
-        &lt;Text&gt;
-            &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
-                    &lt;/Text&gt;
-        &lt;br /&gt;
-        &lt;Text&gt;Notice how the &quot;Mentorship&quot; tab is active even though we&#39;re on a
-                      nested route. This is because it uses{&#39; &#39;}
-            &lt;code&gt;matchStrategy=&quot;prefix&quot;&lt;/code&gt;.
-                    &lt;/Text&gt;
-        &lt;br /&gt;
-        &lt;Text&gt;• &lt;strong&gt;Home&lt;/strong&gt;: exact matching (default) - not active
-                    &lt;/Text&gt;
-        &lt;Text&gt;• &lt;strong&gt;Mentorship&lt;/strong&gt;: prefix matching - IS active (URL starts
-                      with /mentorship)
-                    &lt;/Text&gt;
-        &lt;Text&gt;• &lt;strong&gt;Catalog&lt;/strong&gt;: prefix matching - not active
-                    &lt;/Text&gt;
-        &lt;Text&gt;• &lt;strong&gt;Settings&lt;/strong&gt;: exact matching (default) - not active
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;Header
+            title=&quot;Route Matching Demo&quot;
+            tabs={[
+              {
+                id: &#39;home&#39;,
+                label: &#39;Home&#39;,
+                href: &#39;/home&#39;,
+              },
+              {
+                id: &#39;mentorship&#39;,
+                label: &#39;Mentorship&#39;,
+                href: &#39;/mentorship&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+              {
+                id: &#39;catalog&#39;,
+                label: &#39;Catalog&#39;,
+                href: &#39;/catalog&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+              {
+                id: &#39;settings&#39;,
+                label: &#39;Settings&#39;,
+                href: &#39;/settings&#39;,
+              },
+            ]} /&gt;
+        &lt;Container&gt;
+            &lt;Text&gt;
+                &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
+                          &lt;/Text&gt;
+            &lt;br /&gt;
+            &lt;Text&gt;Notice how the &quot;Mentorship&quot; tab is active even though we&#39;re on a
+                            nested route. This is because it uses{&#39; &#39;}
+                &lt;code&gt;matchStrategy=&quot;prefix&quot;&lt;/code&gt;.
+                          &lt;/Text&gt;
+            &lt;br /&gt;
+            &lt;Text&gt;• &lt;strong&gt;Home&lt;/strong&gt;: exact matching (default) - not active
+                          &lt;/Text&gt;
+            &lt;Text&gt;• &lt;strong&gt;Mentorship&lt;/strong&gt;: prefix matching - IS active (URL
+                            starts with /mentorship)
+                          &lt;/Text&gt;
+            &lt;Text&gt;• &lt;strong&gt;Catalog&lt;/strong&gt;: prefix matching - not active
+                          &lt;/Text&gt;
+            &lt;Text&gt;• &lt;strong&gt;Settings&lt;/strong&gt;: exact matching (default) - not active
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
             <div class="note ok">
@@ -6816,35 +6829,37 @@ import { RiMore2Line } from "@remixicon/react";</code></pre>
               
               
               <pre><code>const WithTabsExactMatching = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/mentorship/events&#39;]}&gt;
-    &lt;Header
-        title=&quot;Exact Matching Demo&quot;
-        tabs={[
-          {
-            id: &#39;mentorship&#39;,
-            label: &#39;Mentorship&#39;,
-            href: &#39;/mentorship&#39;,
-          },
-          {
-            id: &#39;events&#39;,
-            label: &#39;Events&#39;,
-            href: &#39;/mentorship/events&#39;,
-          },
-          {
-            id: &#39;mentors&#39;,
-            label: &#39;Mentors&#39;,
-            href: &#39;/mentorship/mentors&#39;,
-          },
-        ]} /&gt;
-    &lt;Container&gt;
-        &lt;Text&gt;
-            &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
-                    &lt;/Text&gt;
-        &lt;br /&gt;
-        &lt;Text&gt;With default exact matching, only the &quot;Events&quot; tab is active because
-                      it exactly matches the current URL. The &quot;Mentorship&quot; tab is not active
-                      even though the URL is under /mentorship.
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;Header
+            title=&quot;Exact Matching Demo&quot;
+            tabs={[
+              {
+                id: &#39;mentorship&#39;,
+                label: &#39;Mentorship&#39;,
+                href: &#39;/mentorship&#39;,
+              },
+              {
+                id: &#39;events&#39;,
+                label: &#39;Events&#39;,
+                href: &#39;/mentorship/events&#39;,
+              },
+              {
+                id: &#39;mentors&#39;,
+                label: &#39;Mentors&#39;,
+                href: &#39;/mentorship/mentors&#39;,
+              },
+            ]} /&gt;
+        &lt;Container&gt;
+            &lt;Text&gt;
+                &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
+                          &lt;/Text&gt;
+            &lt;br /&gt;
+            &lt;Text&gt;With default exact matching, only the &quot;Events&quot; tab is active because
+                            it exactly matches the current URL. The &quot;Mentorship&quot; tab is not
+                            active even though the URL is under /mentorship.
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
             <div class="note ok">
@@ -6855,52 +6870,55 @@ import { RiMore2Line } from "@remixicon/react";</code></pre>
               
               
               <pre><code>const WithTabsPrefixMatchingDeep = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/catalog/users/john/details&#39;]}&gt;
-    &lt;Header
-        title=&quot;Deep Nesting Demo&quot;
-        tabs={[
-          {
-            id: &#39;catalog&#39;,
-            label: &#39;Catalog&#39;,
-            href: &#39;/catalog&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-          {
-            id: &#39;users&#39;,
-            label: &#39;Users&#39;,
-            href: &#39;/catalog/users&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-          {
-            id: &#39;components&#39;,
-            label: &#39;Components&#39;,
-            href: &#39;/catalog/components&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-        ]} /&gt;
-    &lt;Container&gt;
-        &lt;Text as=&quot;p&quot;&gt;
-            &lt;strong&gt;Current URL:&lt;/strong&gt;/catalog/users/john/details
-                    &lt;/Text&gt;
-        &lt;br /&gt;
-        &lt;Text as=&quot;p&quot;&gt;Active tab is &lt;strong&gt;Users&lt;/strong&gt;because:
-                    &lt;/Text&gt;
-        &lt;ul&gt;
-            &lt;li&gt;
-                &lt;strong&gt;Catalog&lt;/strong&gt;: Matches since URL starts with /catalog
-                          &lt;/li&gt;
-            &lt;li&gt;
-                &lt;strong&gt;Users&lt;/strong&gt;: Is active since URL starts with
-                            /catalog/users, and is more specific (has more url segments) than
-                            &quot;Catalog&quot;
-                          &lt;/li&gt;
-            &lt;li&gt;
-                &lt;strong&gt;Components&lt;/strong&gt;: not active (URL doesn&#39;t start with
-                            /catalog/components)
-                          &lt;/li&gt;
-        &lt;/ul&gt;
-        &lt;Text as=&quot;p&quot;&gt;This demonstrates how prefix matching works with deeply nested routes.
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;Header
+            title=&quot;Deep Nesting Demo&quot;
+            tabs={[
+              {
+                id: &#39;catalog&#39;,
+                label: &#39;Catalog&#39;,
+                href: &#39;/catalog&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+              {
+                id: &#39;users&#39;,
+                label: &#39;Users&#39;,
+                href: &#39;/catalog/users&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+              {
+                id: &#39;components&#39;,
+                label: &#39;Components&#39;,
+                href: &#39;/catalog/components&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+            ]} /&gt;
+        &lt;Container&gt;
+            &lt;Text as=&quot;p&quot;&gt;
+                &lt;strong&gt;Current URL:&lt;/strong&gt;/catalog/users/john/details
+                          &lt;/Text&gt;
+            &lt;br /&gt;
+            &lt;Text as=&quot;p&quot;&gt;Active tab is &lt;strong&gt;Users&lt;/strong&gt;because:
+                          &lt;/Text&gt;
+            &lt;ul&gt;
+                &lt;li&gt;
+                    &lt;strong&gt;Catalog&lt;/strong&gt;: Matches since URL starts with /catalog
+                                &lt;/li&gt;
+                &lt;li&gt;
+                    &lt;strong&gt;Users&lt;/strong&gt;: Is active since URL starts with
+                                  /catalog/users, and is more specific (has more url segments) than
+                                  &quot;Catalog&quot;
+                                &lt;/li&gt;
+                &lt;li&gt;
+                    &lt;strong&gt;Components&lt;/strong&gt;: not active (URL doesn&#39;t start with
+                                  /catalog/components)
+                                &lt;/li&gt;
+            &lt;/ul&gt;
+            &lt;Text as=&quot;p&quot;&gt;This demonstrates how prefix matching works with deeply nested
+                            routes.
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
         </div>
@@ -6987,7 +7005,7 @@ weight?: TextWeights | Partial&lt;Record&lt;Breakpoint, TextWeights&gt;&gt;</cod
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { Flex, Link, Text } from "@backstage/ui";
+                <pre><code>import { BUIProvider, Flex, Link, Text } from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";</code></pre>
               </div>
           
@@ -7303,6 +7321,7 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
                   <span class="ex-name">Imports</span>
                 </div>
                 <pre><code>import {
+    BUIProvider,
     Button,
     Menu,
     MenuItem,
@@ -7789,7 +7808,15 @@ import {
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { Button, Menu, MenuAutocomplete, MenuItem, MenuTrigger, SubmenuTrigger } from "@backstage/ui";
+                <pre><code>import {
+    BUIProvider,
+    Button,
+    Menu,
+    MenuAutocomplete,
+    MenuItem,
+    MenuTrigger,
+    SubmenuTrigger,
+} from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";</code></pre>
               </div>
           
@@ -8006,6 +8033,7 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
                   <span class="ex-name">Imports</span>
                 </div>
                 <pre><code>import {
+    BUIProvider,
     Button,
     Flex,
     Menu,
@@ -8295,7 +8323,7 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { Button, Flex, MenuListBox, MenuListBoxItem, MenuTrigger, Text } from "@backstage/ui";
+                <pre><code>import { BUIProvider, Button, Flex, MenuListBox, MenuListBoxItem, MenuTrigger, Text } from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";</code></pre>
               </div>
           
@@ -8728,6 +8756,7 @@ titleLink?: string</code></pre>
                   <span class="ex-name">Imports</span>
                 </div>
                 <pre><code>import {
+    BUIProvider,
     Button,
     ButtonIcon,
     Container,
@@ -8888,14 +8917,16 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
               
               
               <pre><code>const WithMockedURLCampaigns = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/campaigns&#39;]}&gt;
-    &lt;PluginHeader tabs={tabs} /&gt;
-    &lt;Container&gt;
-        &lt;Text as=&quot;p&quot;&gt;Current URL is mocked to be: &lt;strong&gt;/campaigns&lt;/strong&gt;
-        &lt;/Text&gt;
-        &lt;Text as=&quot;p&quot;&gt;Notice how the &quot;Campaigns&quot; tab is selected (highlighted) because it
-                      matches the current path.
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;PluginHeader tabs={tabs} /&gt;
+        &lt;Container&gt;
+            &lt;Text as=&quot;p&quot;&gt;Current URL is mocked to be: &lt;strong&gt;/campaigns&lt;/strong&gt;
+            &lt;/Text&gt;
+            &lt;Text as=&quot;p&quot;&gt;Notice how the &quot;Campaigns&quot; tab is selected (highlighted) because it
+                            matches the current path.
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
             <div class="note ok">
@@ -8906,14 +8937,16 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
               
               
               <pre><code>const WithMockedURLIntegrations = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/integrations&#39;]}&gt;
-    &lt;PluginHeader tabs={tabs} /&gt;
-    &lt;Container&gt;
-        &lt;Text as=&quot;p&quot;&gt;Current URL is mocked to be: &lt;strong&gt;/integrations&lt;/strong&gt;
-        &lt;/Text&gt;
-        &lt;Text as=&quot;p&quot;&gt;Notice how the &quot;Integrations&quot; tab is selected (highlighted) because it
-                      matches the current path.
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;PluginHeader tabs={tabs} /&gt;
+        &lt;Container&gt;
+            &lt;Text as=&quot;p&quot;&gt;Current URL is mocked to be: &lt;strong&gt;/integrations&lt;/strong&gt;
+            &lt;/Text&gt;
+            &lt;Text as=&quot;p&quot;&gt;Notice how the &quot;Integrations&quot; tab is selected (highlighted) because
+                            it matches the current path.
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
             <div class="note ok">
@@ -8924,17 +8957,19 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
               
               
               <pre><code>const WithMockedURLNoMatch = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/some-other-page&#39;]}&gt;
-    &lt;PluginHeader tabs={tabs} /&gt;
-    &lt;Container&gt;
-        &lt;Text as=&quot;p&quot;&gt;Current URL is mocked to be: &lt;strong&gt;/some-other-page&lt;/strong&gt;
-        &lt;/Text&gt;
-        &lt;Text as=&quot;p&quot;&gt;No tab is selected because the current path doesn&#39;t match any tab&#39;s
-                      href.
-                    &lt;/Text&gt;
-        &lt;Text as=&quot;p&quot;&gt;Tabs without href (like &quot;Overview&quot;, &quot;Checks&quot;, &quot;Tracks&quot;) fall back to
-                      React Aria&#39;s internal state.
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;PluginHeader tabs={tabs} /&gt;
+        &lt;Container&gt;
+            &lt;Text as=&quot;p&quot;&gt;Current URL is mocked to be: &lt;strong&gt;/some-other-page&lt;/strong&gt;
+            &lt;/Text&gt;
+            &lt;Text as=&quot;p&quot;&gt;No tab is selected because the current path doesn&#39;t match any tab&#39;s
+                            href.
+                          &lt;/Text&gt;
+            &lt;Text as=&quot;p&quot;&gt;Tabs without href (like &quot;Overview&quot;, &quot;Checks&quot;, &quot;Tracks&quot;) fall back to
+                            React Aria&#39;s internal state.
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
             <div class="note ok">
@@ -8945,52 +8980,54 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
               
               
               <pre><code>const WithTabsMatchingStrategies = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/mentorship/events&#39;]}&gt;
-    &lt;PluginHeader
-        title=&quot;Route Matching Demo&quot;
-        tabs={[
-          {
-            id: &#39;home&#39;,
-            label: &#39;Home&#39;,
-            href: &#39;/home&#39;,
-          },
-          {
-            id: &#39;mentorship&#39;,
-            label: &#39;Mentorship&#39;,
-            href: &#39;/mentorship&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-          {
-            id: &#39;catalog&#39;,
-            label: &#39;Catalog&#39;,
-            href: &#39;/catalog&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-          {
-            id: &#39;settings&#39;,
-            label: &#39;Settings&#39;,
-            href: &#39;/settings&#39;,
-          },
-        ]} /&gt;
-    &lt;Container&gt;
-        &lt;Text&gt;
-            &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
-                    &lt;/Text&gt;
-        &lt;br /&gt;
-        &lt;Text&gt;Notice how the &quot;Mentorship&quot; tab is active even though we&#39;re on a
-                      nested route. This is because it uses{&#39; &#39;}
-            &lt;code&gt;matchStrategy=&quot;prefix&quot;&lt;/code&gt;.
-                    &lt;/Text&gt;
-        &lt;br /&gt;
-        &lt;Text&gt;• &lt;strong&gt;Home&lt;/strong&gt;: exact matching (default) - not active
-                    &lt;/Text&gt;
-        &lt;Text&gt;• &lt;strong&gt;Mentorship&lt;/strong&gt;: prefix matching - IS active (URL starts
-                      with /mentorship)
-                    &lt;/Text&gt;
-        &lt;Text&gt;• &lt;strong&gt;Catalog&lt;/strong&gt;: prefix matching - not active
-                    &lt;/Text&gt;
-        &lt;Text&gt;• &lt;strong&gt;Settings&lt;/strong&gt;: exact matching (default) - not active
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;PluginHeader
+            title=&quot;Route Matching Demo&quot;
+            tabs={[
+              {
+                id: &#39;home&#39;,
+                label: &#39;Home&#39;,
+                href: &#39;/home&#39;,
+              },
+              {
+                id: &#39;mentorship&#39;,
+                label: &#39;Mentorship&#39;,
+                href: &#39;/mentorship&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+              {
+                id: &#39;catalog&#39;,
+                label: &#39;Catalog&#39;,
+                href: &#39;/catalog&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+              {
+                id: &#39;settings&#39;,
+                label: &#39;Settings&#39;,
+                href: &#39;/settings&#39;,
+              },
+            ]} /&gt;
+        &lt;Container&gt;
+            &lt;Text&gt;
+                &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
+                          &lt;/Text&gt;
+            &lt;br /&gt;
+            &lt;Text&gt;Notice how the &quot;Mentorship&quot; tab is active even though we&#39;re on a
+                            nested route. This is because it uses{&#39; &#39;}
+                &lt;code&gt;matchStrategy=&quot;prefix&quot;&lt;/code&gt;.
+                          &lt;/Text&gt;
+            &lt;br /&gt;
+            &lt;Text&gt;• &lt;strong&gt;Home&lt;/strong&gt;: exact matching (default) - not active
+                          &lt;/Text&gt;
+            &lt;Text&gt;• &lt;strong&gt;Mentorship&lt;/strong&gt;: prefix matching - IS active (URL
+                            starts with /mentorship)
+                          &lt;/Text&gt;
+            &lt;Text&gt;• &lt;strong&gt;Catalog&lt;/strong&gt;: prefix matching - not active
+                          &lt;/Text&gt;
+            &lt;Text&gt;• &lt;strong&gt;Settings&lt;/strong&gt;: exact matching (default) - not active
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
             <div class="note ok">
@@ -9001,35 +9038,37 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
               
               
               <pre><code>const WithTabsExactMatching = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/mentorship/events&#39;]}&gt;
-    &lt;PluginHeader
-        title=&quot;Exact Matching Demo&quot;
-        tabs={[
-          {
-            id: &#39;mentorship&#39;,
-            label: &#39;Mentorship&#39;,
-            href: &#39;/mentorship&#39;,
-          },
-          {
-            id: &#39;events&#39;,
-            label: &#39;Events&#39;,
-            href: &#39;/mentorship/events&#39;,
-          },
-          {
-            id: &#39;mentors&#39;,
-            label: &#39;Mentors&#39;,
-            href: &#39;/mentorship/mentors&#39;,
-          },
-        ]} /&gt;
-    &lt;Container&gt;
-        &lt;Text&gt;
-            &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
-                    &lt;/Text&gt;
-        &lt;br /&gt;
-        &lt;Text&gt;With default exact matching, only the &quot;Events&quot; tab is active because
-                      it exactly matches the current URL. The &quot;Mentorship&quot; tab is not active
-                      even though the URL is under /mentorship.
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;PluginHeader
+            title=&quot;Exact Matching Demo&quot;
+            tabs={[
+              {
+                id: &#39;mentorship&#39;,
+                label: &#39;Mentorship&#39;,
+                href: &#39;/mentorship&#39;,
+              },
+              {
+                id: &#39;events&#39;,
+                label: &#39;Events&#39;,
+                href: &#39;/mentorship/events&#39;,
+              },
+              {
+                id: &#39;mentors&#39;,
+                label: &#39;Mentors&#39;,
+                href: &#39;/mentorship/mentors&#39;,
+              },
+            ]} /&gt;
+        &lt;Container&gt;
+            &lt;Text&gt;
+                &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
+                          &lt;/Text&gt;
+            &lt;br /&gt;
+            &lt;Text&gt;With default exact matching, only the &quot;Events&quot; tab is active because
+                            it exactly matches the current URL. The &quot;Mentorship&quot; tab is not
+                            active even though the URL is under /mentorship.
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
             <div class="note ok">
@@ -9040,52 +9079,55 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
               
               
               <pre><code>const WithTabsPrefixMatchingDeep = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/catalog/users/john/details&#39;]}&gt;
-    &lt;PluginHeader
-        title=&quot;Deep Nesting Demo&quot;
-        tabs={[
-          {
-            id: &#39;catalog&#39;,
-            label: &#39;Catalog&#39;,
-            href: &#39;/catalog&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-          {
-            id: &#39;users&#39;,
-            label: &#39;Users&#39;,
-            href: &#39;/catalog/users&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-          {
-            id: &#39;components&#39;,
-            label: &#39;Components&#39;,
-            href: &#39;/catalog/components&#39;,
-            matchStrategy: &#39;prefix&#39;,
-          },
-        ]} /&gt;
-    &lt;Container&gt;
-        &lt;Text as=&quot;p&quot;&gt;
-            &lt;strong&gt;Current URL:&lt;/strong&gt;/catalog/users/john/details
-                    &lt;/Text&gt;
-        &lt;br /&gt;
-        &lt;Text as=&quot;p&quot;&gt;Active tab is &lt;strong&gt;Users&lt;/strong&gt;because:
-                    &lt;/Text&gt;
-        &lt;ul&gt;
-            &lt;li&gt;
-                &lt;strong&gt;Catalog&lt;/strong&gt;: Matches since URL starts with /catalog
-                          &lt;/li&gt;
-            &lt;li&gt;
-                &lt;strong&gt;Users&lt;/strong&gt;: Is active since URL starts with
-                            /catalog/users, and is more specific (has more url segments) than
-                            &quot;Catalog&quot;
-                          &lt;/li&gt;
-            &lt;li&gt;
-                &lt;strong&gt;Components&lt;/strong&gt;: not active (URL doesn&#39;t start with
-                            /catalog/components)
-                          &lt;/li&gt;
-        &lt;/ul&gt;
-        &lt;Text as=&quot;p&quot;&gt;This demonstrates how prefix matching works with deeply nested routes.
-                    &lt;/Text&gt;
-    &lt;/Container&gt;
+    &lt;BUIProvider&gt;
+        &lt;PluginHeader
+            title=&quot;Deep Nesting Demo&quot;
+            tabs={[
+              {
+                id: &#39;catalog&#39;,
+                label: &#39;Catalog&#39;,
+                href: &#39;/catalog&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+              {
+                id: &#39;users&#39;,
+                label: &#39;Users&#39;,
+                href: &#39;/catalog/users&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+              {
+                id: &#39;components&#39;,
+                label: &#39;Components&#39;,
+                href: &#39;/catalog/components&#39;,
+                matchStrategy: &#39;prefix&#39;,
+              },
+            ]} /&gt;
+        &lt;Container&gt;
+            &lt;Text as=&quot;p&quot;&gt;
+                &lt;strong&gt;Current URL:&lt;/strong&gt;/catalog/users/john/details
+                          &lt;/Text&gt;
+            &lt;br /&gt;
+            &lt;Text as=&quot;p&quot;&gt;Active tab is &lt;strong&gt;Users&lt;/strong&gt;because:
+                          &lt;/Text&gt;
+            &lt;ul&gt;
+                &lt;li&gt;
+                    &lt;strong&gt;Catalog&lt;/strong&gt;: Matches since URL starts with /catalog
+                                &lt;/li&gt;
+                &lt;li&gt;
+                    &lt;strong&gt;Users&lt;/strong&gt;: Is active since URL starts with
+                                  /catalog/users, and is more specific (has more url segments) than
+                                  &quot;Catalog&quot;
+                                &lt;/li&gt;
+                &lt;li&gt;
+                    &lt;strong&gt;Components&lt;/strong&gt;: not active (URL doesn&#39;t start with
+                                  /catalog/components)
+                                &lt;/li&gt;
+            &lt;/ul&gt;
+            &lt;Text as=&quot;p&quot;&gt;This demonstrates how prefix matching works with deeply nested
+                            routes.
+                          &lt;/Text&gt;
+        &lt;/Container&gt;
+    &lt;/BUIProvider&gt;
 &lt;/MemoryRouter&gt;;</code></pre>
             </div>
         </div>
@@ -10297,7 +10339,17 @@ startCollapsed?: boolean</code></pre>
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { Box, Button, ButtonIcon, FieldLabel, Flex, PluginHeader, SearchField, Text } from "@backstage/ui";
+                <pre><code>import {
+    Box,
+    BUIProvider,
+    Button,
+    ButtonIcon,
+    FieldLabel,
+    Flex,
+    PluginHeader,
+    SearchField,
+    Text,
+} from "@backstage/ui";
 import { Form } from "react-aria-components";
 import { MemoryRouter } from "react-router-dom";
 import { RiCactusLine, RiEBike2Line } from "@remixicon/react";</code></pre>
@@ -11540,7 +11592,7 @@ className?: string</code></pre>
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { Box, Tab, TabList, TabPanel, Tabs, Text } from "@backstage/ui";
+                <pre><code>import { Box, BUIProvider, Tab, TabList, TabPanel, Tabs, Text } from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";</code></pre>
               </div>
           
@@ -11597,28 +11649,30 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const WithMockedURLTab2 = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/tab2&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;tab1&quot; href=&quot;/tab1&quot;&gt;
-          Tab 1
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;tab2&quot; href=&quot;/tab2&quot;&gt;
-          Tab 2
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;tab3&quot; href=&quot;/tab3&quot;&gt;
-          Tab 3 With long title
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL is mocked to be: &lt;strong&gt;/tab2&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Notice how the &quot;Tab 2&quot; tab is selected (highlighted) because it
-        matches the current path.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;tab1&quot; href=&quot;/tab1&quot;&gt;
+            Tab 1
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;tab2&quot; href=&quot;/tab2&quot;&gt;
+            Tab 2
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;tab3&quot; href=&quot;/tab3&quot;&gt;
+            Tab 3 With long title
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL is mocked to be: &lt;strong&gt;/tab2&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Notice how the &quot;Tab 2&quot; tab is selected (highlighted) because it
+          matches the current path.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11631,28 +11685,30 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const WithMockedURLTab3 = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/tab3&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;tab1&quot; href=&quot;/tab1&quot;&gt;
-          Tab 1
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;tab2&quot; href=&quot;/tab2&quot;&gt;
-          Tab 2
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;tab3&quot; href=&quot;/tab3&quot;&gt;
-          Tab 3 With long title
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL is mocked to be: &lt;strong&gt;/tab3&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Notice how the &quot;Tab 3 With long title&quot; tab is selected (highlighted)
-        because it matches the current path.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;tab1&quot; href=&quot;/tab1&quot;&gt;
+            Tab 1
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;tab2&quot; href=&quot;/tab2&quot;&gt;
+            Tab 2
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;tab3&quot; href=&quot;/tab3&quot;&gt;
+            Tab 3 With long title
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL is mocked to be: &lt;strong&gt;/tab3&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Notice how the &quot;Tab 3 With long title&quot; tab is selected (highlighted)
+          because it matches the current path.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11665,32 +11721,34 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const WithMockedURLNoMatch = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/some-other-page&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;tab1&quot; href=&quot;/tab1&quot;&gt;
-          Tab 1
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;tab2&quot; href=&quot;/tab2&quot;&gt;
-          Tab 2
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;tab3&quot; href=&quot;/tab3&quot;&gt;
-          Tab 3 With long title
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL is mocked to be: &lt;strong&gt;/some-other-page&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        No tab is selected because the current path doesn&#39;t match any tab&#39;s
-        href.
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Tabs without href (like &quot;Tab 1&quot;, &quot;Tab 2&quot;, &quot;Tab 3 With long title&quot;)
-        fall back to React Aria&#39;s internal state.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;tab1&quot; href=&quot;/tab1&quot;&gt;
+            Tab 1
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;tab2&quot; href=&quot;/tab2&quot;&gt;
+            Tab 2
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;tab3&quot; href=&quot;/tab3&quot;&gt;
+            Tab 3 With long title
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL is mocked to be: &lt;strong&gt;/some-other-page&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          No tab is selected because the current path doesn&#39;t match any tab&#39;s
+          href.
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Tabs without href (like &quot;Tab 1&quot;, &quot;Tab 2&quot;, &quot;Tab 3 With long title&quot;)
+          fall back to React Aria&#39;s internal state.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11703,32 +11761,34 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const ExactMatchingDefault = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/mentorship/events&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;mentorship&quot; href=&quot;/mentorship&quot;&gt;
-          Mentorship
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;events&quot; href=&quot;/mentorship/events&quot;&gt;
-          Events
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot;&gt;
-          Catalog
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL: &lt;strong&gt;/mentorship/events&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Using default exact matching, only the &quot;Events&quot; tab is active because
-        it exactly matches the URL.
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        The &quot;Mentorship&quot; tab is NOT active even though the URL contains
-        &quot;/mentorship&quot;.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;mentorship&quot; href=&quot;/mentorship&quot;&gt;
+            Mentorship
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;events&quot; href=&quot;/mentorship/events&quot;&gt;
+            Events
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot;&gt;
+            Catalog
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL: &lt;strong&gt;/mentorship/events&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Using default exact matching, only the &quot;Events&quot; tab is active
+          because it exactly matches the URL.
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          The &quot;Mentorship&quot; tab is NOT active even though the URL contains
+          &quot;/mentorship&quot;.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11741,36 +11801,38 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const PrefixMatchingForNestedRoutes = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/mentorship/events&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;mentorship&quot; href=&quot;/mentorship&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Mentorship
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;events&quot; href=&quot;/mentorship/events&quot;&gt;
-          Events
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Catalog
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL: &lt;strong&gt;/mentorship/events&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        The &quot;Mentorship&quot; tab uses prefix matching and IS active because
-        &quot;/mentorship/events&quot; starts with &quot;/mentorship&quot;.
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        The &quot;Events&quot; tab uses exact matching and is also active because it
-        exactly matches.
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        The &quot;Catalog&quot; tab uses prefix matching but is NOT active because the
-        URL doesn&#39;t start with &quot;/catalog&quot;.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;mentorship&quot; href=&quot;/mentorship&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Mentorship
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;events&quot; href=&quot;/mentorship/events&quot;&gt;
+            Events
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Catalog
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL: &lt;strong&gt;/mentorship/events&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          The &quot;Mentorship&quot; tab uses prefix matching and IS active because
+          &quot;/mentorship/events&quot; starts with &quot;/mentorship&quot;.
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          The &quot;Events&quot; tab uses exact matching and is also active because it
+          exactly matches.
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          The &quot;Catalog&quot; tab uses prefix matching but is NOT active because the
+          URL doesn&#39;t start with &quot;/catalog&quot;.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11783,31 +11845,33 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const PrefixMatchingDeepNesting = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/catalog/users/john/details&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;home&quot; href=&quot;/home&quot;&gt;
-          Home
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Catalog
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;mentorship&quot; href=&quot;/mentorship&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Mentorship
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL: &lt;strong&gt;/catalog/users/john/details&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        The &quot;Catalog&quot; tab is active because it uses prefix matching and the
-        URL starts with &quot;/catalog&quot;.
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        This works for any level of nesting under &quot;/catalog&quot;.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;home&quot; href=&quot;/home&quot;&gt;
+            Home
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Catalog
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;mentorship&quot; href=&quot;/mentorship&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Mentorship
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL: &lt;strong&gt;/catalog/users/john/details&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          The &quot;Catalog&quot; tab is active because it uses prefix matching and the
+          URL starts with &quot;/catalog&quot;.
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          This works for any level of nesting under &quot;/catalog&quot;.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11820,47 +11884,53 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const MixedMatchingStrategies = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/dashboard/analytics/reports&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;overview&quot; href=&quot;/dashboard&quot;&gt;
-          Overview
-        &lt;/Tab&gt;
-        &lt;Tab
-          id=&quot;analytics&quot;
-          href=&quot;/dashboard/analytics&quot;
-          matchStrategy=&quot;prefix&quot;
-        &gt;
-          Analytics
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;settings&quot; href=&quot;/dashboard/settings&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Settings
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;help&quot; href=&quot;/help&quot;&gt;
-          Help
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL: &lt;strong&gt;/dashboard/analytics/reports&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Overview&quot; tab: exact matching, NOT active (doesn&#39;t exactly match
-        &quot;/dashboard&quot;)
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Analytics&quot; tab: prefix matching, IS active (URL starts with
-        &quot;/dashboard/analytics&quot;)
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Settings&quot; tab: prefix matching, NOT active (URL doesn&#39;t start with
-        &quot;/dashboard/settings&quot;)
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Help&quot; tab: exact matching, NOT active (doesn&#39;t exactly match
-        &quot;/help&quot;)
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;overview&quot; href=&quot;/dashboard&quot;&gt;
+            Overview
+          &lt;/Tab&gt;
+          &lt;Tab
+            id=&quot;analytics&quot;
+            href=&quot;/dashboard/analytics&quot;
+            matchStrategy=&quot;prefix&quot;
+          &gt;
+            Analytics
+          &lt;/Tab&gt;
+          &lt;Tab
+            id=&quot;settings&quot;
+            href=&quot;/dashboard/settings&quot;
+            matchStrategy=&quot;prefix&quot;
+          &gt;
+            Settings
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;help&quot; href=&quot;/help&quot;&gt;
+            Help
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL: &lt;strong&gt;/dashboard/analytics/reports&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Overview&quot; tab: exact matching, NOT active (doesn&#39;t exactly match
+          &quot;/dashboard&quot;)
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Analytics&quot; tab: prefix matching, IS active (URL starts with
+          &quot;/dashboard/analytics&quot;)
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Settings&quot; tab: prefix matching, NOT active (URL doesn&#39;t start
+          with &quot;/dashboard/settings&quot;)
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Help&quot; tab: exact matching, NOT active (doesn&#39;t exactly match
+          &quot;/help&quot;)
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11873,38 +11943,40 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const PrefixMatchingEdgeCases = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/foobar&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;foo&quot; href=&quot;/foo&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Foo
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;foobar&quot; href=&quot;/foobar&quot;&gt;
-          Foobar
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;foo-exact&quot; href=&quot;/foo&quot;&gt;
-          Foo (exact)
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL: &lt;strong&gt;/foobar&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Foo&quot; tab (prefix): NOT active - prevents &quot;/foo&quot; from matching
-        &quot;/foobar&quot;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Foobar&quot; tab (exact): IS active - exactly matches &quot;/foobar&quot;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Foo (exact)&quot; tab: NOT active - doesn&#39;t exactly match &quot;/foobar&quot;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        This shows that prefix matching properly requires a &quot;/&quot; separator to
-        prevent false matches.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;foo&quot; href=&quot;/foo&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Foo
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;foobar&quot; href=&quot;/foobar&quot;&gt;
+            Foobar
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;foo-exact&quot; href=&quot;/foo&quot;&gt;
+            Foo (exact)
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL: &lt;strong&gt;/foobar&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Foo&quot; tab (prefix): NOT active - prevents &quot;/foo&quot; from matching
+          &quot;/foobar&quot;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Foobar&quot; tab (exact): IS active - exactly matches &quot;/foobar&quot;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Foo (exact)&quot; tab: NOT active - doesn&#39;t exactly match &quot;/foobar&quot;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          This shows that prefix matching properly requires a &quot;/&quot; separator to
+          prevent false matches.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11917,37 +11989,39 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const PrefixMatchingWithSlash = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/foo/bar&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;foo&quot; href=&quot;/foo&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Foo
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;foobar&quot; href=&quot;/foobar&quot;&gt;
-          Foobar
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;bar&quot; href=&quot;/bar&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Bar
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL: &lt;strong&gt;/foo/bar&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Foo&quot; tab (prefix): IS active - &quot;/foo/bar&quot; starts with &quot;/foo/&quot;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Foobar&quot; tab (exact): NOT active - doesn&#39;t exactly match &quot;/foobar&quot;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Bar&quot; tab (prefix): NOT active - &quot;/foo/bar&quot; doesn&#39;t start with
-        &quot;/bar&quot;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        This demonstrates proper prefix matching with the &quot;/&quot; separator.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;foo&quot; href=&quot;/foo&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Foo
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;foobar&quot; href=&quot;/foobar&quot;&gt;
+            Foobar
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;bar&quot; href=&quot;/bar&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Bar
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL: &lt;strong&gt;/foo/bar&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Foo&quot; tab (prefix): IS active - &quot;/foo/bar&quot; starts with &quot;/foo/&quot;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Foobar&quot; tab (exact): NOT active - doesn&#39;t exactly match &quot;/foobar&quot;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Bar&quot; tab (prefix): NOT active - &quot;/foo/bar&quot; doesn&#39;t start with
+          &quot;/bar&quot;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          This demonstrates proper prefix matching with the &quot;/&quot; separator.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11960,32 +12034,34 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const RootPathMatching = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab id=&quot;home&quot; href=&quot;/&quot;&gt;
-          Home
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;home-prefix&quot; href=&quot;/&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Home (prefix)
-        &lt;/Tab&gt;
-        &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot; matchStrategy=&quot;prefix&quot;&gt;
-          Catalog
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL: &lt;strong&gt;/&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Home&quot; tab (exact): IS active - exactly matches &quot;/&quot;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;• &quot;Home (prefix)&quot; tab: IS active - &quot;/&quot; matches &quot;/&quot;&lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Catalog&quot; tab (prefix): NOT active - &quot;/&quot; doesn&#39;t start with
-        &quot;/catalog&quot;
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab id=&quot;home&quot; href=&quot;/&quot;&gt;
+            Home
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;home-prefix&quot; href=&quot;/&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Home (prefix)
+          &lt;/Tab&gt;
+          &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot; matchStrategy=&quot;prefix&quot;&gt;
+            Catalog
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL: &lt;strong&gt;/&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Home&quot; tab (exact): IS active - exactly matches &quot;/&quot;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;• &quot;Home (prefix)&quot; tab: IS active - &quot;/&quot; matches &quot;/&quot;&lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Catalog&quot; tab (prefix): NOT active - &quot;/&quot; doesn&#39;t start with
+          &quot;/catalog&quot;
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -11998,41 +12074,43 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const HrefWithQueryParams = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/cost-insights/dashboard?group=bar&#39;]}&gt;
-    &lt;Tabs&gt;
-      &lt;TabList&gt;
-        &lt;Tab
-          id=&quot;dashboard&quot;
-          href=&quot;/cost-insights/dashboard?group=foo&quot;
-          matchStrategy=&quot;prefix&quot;
-        &gt;
-          Dashboard
-        &lt;/Tab&gt;
-        &lt;Tab
-          id=&quot;alerts&quot;
-          href=&quot;/cost-insights/alerts?group=foo&quot;
-          matchStrategy=&quot;prefix&quot;
-        &gt;
-          Alerts
-        &lt;/Tab&gt;
-      &lt;/TabList&gt;
-    &lt;/Tabs&gt;
-    &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Current URL: &lt;strong&gt;/cost-insights/dashboard?group=bar&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        Tab hrefs include query params (e.g., ?group=foo) but the current URL
-        has different query params (?group=bar).
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Dashboard&quot; tab: IS active — matching ignores query params and
-        compares only the pathname.
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        • &quot;Alerts&quot; tab: NOT active — pathname /cost-insights/alerts doesn&#39;t
-        match /cost-insights/dashboard.
-      &lt;/Text&gt;
-    &lt;/Box&gt;
+    &lt;BUIProvider&gt;
+      &lt;Tabs&gt;
+        &lt;TabList&gt;
+          &lt;Tab
+            id=&quot;dashboard&quot;
+            href=&quot;/cost-insights/dashboard?group=foo&quot;
+            matchStrategy=&quot;prefix&quot;
+          &gt;
+            Dashboard
+          &lt;/Tab&gt;
+          &lt;Tab
+            id=&quot;alerts&quot;
+            href=&quot;/cost-insights/alerts?group=foo&quot;
+            matchStrategy=&quot;prefix&quot;
+          &gt;
+            Alerts
+          &lt;/Tab&gt;
+        &lt;/TabList&gt;
+      &lt;/Tabs&gt;
+      &lt;Box mt=&quot;6&quot; pl=&quot;2&quot;&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Current URL: &lt;strong&gt;/cost-insights/dashboard?group=bar&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          Tab hrefs include query params (e.g., ?group=foo) but the current
+          URL has different query params (?group=bar).
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Dashboard&quot; tab: IS active — matching ignores query params and
+          compares only the pathname.
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          • &quot;Alerts&quot; tab: NOT active — pathname /cost-insights/alerts doesn&#39;t
+          match /cost-insights/dashboard.
+        &lt;/Text&gt;
+      &lt;/Box&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -12045,55 +12123,57 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
               
               <pre><code>const AutoSelectionOfTabs = () =&gt; (
   &lt;MemoryRouter initialEntries={[&#39;/random-page&#39;]}&gt;
-    &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: &#39;24px&#39; }}&gt;
-      &lt;Text style={{ fontSize: &#39;16px&#39;, color: &#39;#666&#39; }}&gt;
-        Current URL: &lt;strong&gt;/random-page&lt;/strong&gt;
-      &lt;/Text&gt;
+    &lt;BUIProvider&gt;
+      &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: &#39;24px&#39; }}&gt;
+        &lt;Text style={{ fontSize: &#39;16px&#39;, color: &#39;#666&#39; }}&gt;
+          Current URL: &lt;strong&gt;/random-page&lt;/strong&gt;
+        &lt;/Text&gt;
 
-      {/* Without hrefs */}
-      &lt;Text&gt;
-        {&#39; &#39;}
-        &lt;strong&gt;Case 1: Without hrefs&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Tabs&gt;
-        &lt;TabList&gt;
-          &lt;Tab id=&quot;settings&quot;&gt;Settings&lt;/Tab&gt;
-          &lt;Tab id=&quot;preferences&quot;&gt;Preferences&lt;/Tab&gt;
-          &lt;Tab id=&quot;advanced&quot;&gt;Advanced&lt;/Tab&gt;
-        &lt;/TabList&gt;
-        &lt;TabPanel id=&quot;settings&quot;&gt;
-          &lt;Text&gt;Settings content - React Aria manages this selection&lt;/Text&gt;
-        &lt;/TabPanel&gt;
-        &lt;TabPanel id=&quot;preferences&quot;&gt;
-          &lt;Text&gt;Preferences content - works normally&lt;/Text&gt;
-        &lt;/TabPanel&gt;
-        &lt;TabPanel id=&quot;advanced&quot;&gt;
-          &lt;Text&gt;Advanced content - local state only&lt;/Text&gt;
-        &lt;/TabPanel&gt;
-      &lt;/Tabs&gt;
+        {/* Without hrefs */}
+        &lt;Text&gt;
+          {&#39; &#39;}
+          &lt;strong&gt;Case 1: Without hrefs&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Tabs&gt;
+          &lt;TabList&gt;
+            &lt;Tab id=&quot;settings&quot;&gt;Settings&lt;/Tab&gt;
+            &lt;Tab id=&quot;preferences&quot;&gt;Preferences&lt;/Tab&gt;
+            &lt;Tab id=&quot;advanced&quot;&gt;Advanced&lt;/Tab&gt;
+          &lt;/TabList&gt;
+          &lt;TabPanel id=&quot;settings&quot;&gt;
+            &lt;Text&gt;Settings content - React Aria manages this selection&lt;/Text&gt;
+          &lt;/TabPanel&gt;
+          &lt;TabPanel id=&quot;preferences&quot;&gt;
+            &lt;Text&gt;Preferences content - works normally&lt;/Text&gt;
+          &lt;/TabPanel&gt;
+          &lt;TabPanel id=&quot;advanced&quot;&gt;
+            &lt;Text&gt;Advanced content - local state only&lt;/Text&gt;
+          &lt;/TabPanel&gt;
+        &lt;/Tabs&gt;
 
-      {/* With hrefs */}
-      &lt;Text as=&quot;p&quot;&gt;
-        &lt;strong&gt;Case 2: With hrefs&lt;/strong&gt;
-      &lt;/Text&gt;
-      &lt;Text as=&quot;p&quot;&gt;
-        By default no selection is shown because the URL doesn&#39;t match any
-        tab&#39;s href.
-      &lt;/Text&gt;
-      &lt;Tabs&gt;
-        &lt;TabList&gt;
-          &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot;&gt;
-            Catalog
-          &lt;/Tab&gt;
-          &lt;Tab id=&quot;create&quot; href=&quot;/create&quot;&gt;
-            Create
-          &lt;/Tab&gt;
-          &lt;Tab id=&quot;docs&quot; href=&quot;/docs&quot;&gt;
-            Docs
-          &lt;/Tab&gt;
-        &lt;/TabList&gt;
-      &lt;/Tabs&gt;
-    &lt;/div&gt;
+        {/* With hrefs */}
+        &lt;Text as=&quot;p&quot;&gt;
+          &lt;strong&gt;Case 2: With hrefs&lt;/strong&gt;
+        &lt;/Text&gt;
+        &lt;Text as=&quot;p&quot;&gt;
+          By default no selection is shown because the URL doesn&#39;t match any
+          tab&#39;s href.
+        &lt;/Text&gt;
+        &lt;Tabs&gt;
+          &lt;TabList&gt;
+            &lt;Tab id=&quot;catalog&quot; href=&quot;/catalog&quot;&gt;
+              Catalog
+            &lt;/Tab&gt;
+            &lt;Tab id=&quot;create&quot; href=&quot;/create&quot;&gt;
+              Create
+            &lt;/Tab&gt;
+            &lt;Tab id=&quot;docs&quot; href=&quot;/docs&quot;&gt;
+              Docs
+            &lt;/Tab&gt;
+          &lt;/TabList&gt;
+        &lt;/Tabs&gt;
+      &lt;/div&gt;
+    &lt;/BUIProvider&gt;
   &lt;/MemoryRouter&gt;
 );</code></pre>
             </div>
@@ -12162,7 +12242,7 @@ renderEmptyState?: ReactAriaTagListProps&lt;T&gt;[&#39;renderEmptyState&#39;]</c
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import { Flex, Tag, TagGroup } from "@backstage/ui";
+                <pre><code>import { BUIProvider, Flex, Tag, TagGroup } from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";
 import { RiAccountCircleLine, RiBugLine, RiEyeLine, RiHeartLine } from "@remixicon/react";</code></pre>
               </div>
