@@ -31,7 +31,7 @@ export type AlertApi = {
 };
 
 // @public
-export const alertApiRef: ApiRef<AlertApi>;
+export const alertApiRef: ApiRef_2<AlertApi>;
 
 // @public
 export type AlertMessage = {
@@ -46,7 +46,7 @@ export type AnalyticsApi = {
 };
 
 // @public
-export const analyticsApiRef: ApiRef<AnalyticsApi>;
+export const analyticsApiRef: ApiRef_2<AnalyticsApi>;
 
 // @public
 export const AnalyticsContext: (options: {
@@ -188,8 +188,9 @@ export type ApiHolder = {
 
 // @public
 export type ApiRef<T> = {
-  id: string;
-  T: T;
+  readonly $$type: '@backstage/ApiRef';
+  readonly id: string;
+  readonly T: T;
 };
 
 // @public
@@ -212,7 +213,7 @@ export type AppLanguageApi = {
 };
 
 // @public (undocumented)
-export const appLanguageApiRef: ApiRef<AppLanguageApi>;
+export const appLanguageApiRef: ApiRef_2<AppLanguageApi>;
 
 // @public
 export interface AppNode {
@@ -285,7 +286,7 @@ export type AppThemeApi = {
 };
 
 // @public
-export const appThemeApiRef: ApiRef<AppThemeApi>;
+export const appThemeApiRef: ApiRef_2<AppThemeApi>;
 
 // @public
 export interface AppTree {
@@ -308,7 +309,7 @@ export interface AppTreeApi {
 export const appTreeApiRef: ApiRef_2<AppTreeApi>;
 
 // @public
-export const atlassianAuthApiRef: ApiRef<
+export const atlassianAuthApiRef: ApiRef_2<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
 >;
 
@@ -348,12 +349,12 @@ export type BackstageUserIdentity = {
 };
 
 // @public
-export const bitbucketAuthApiRef: ApiRef<
+export const bitbucketAuthApiRef: ApiRef_2<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
 >;
 
 // @public
-export const bitbucketServerAuthApiRef: ApiRef<
+export const bitbucketServerAuthApiRef: ApiRef_2<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
 >;
 
@@ -361,7 +362,7 @@ export const bitbucketServerAuthApiRef: ApiRef<
 export type ConfigApi = Config;
 
 // @public
-export const configApiRef: ApiRef<ConfigApi>;
+export const configApiRef: ApiRef_2<Config>;
 
 // @public (undocumented)
 export interface ConfigurableExtensionDataRef<
@@ -417,6 +418,11 @@ export function createApiFactory<Api, Impl extends Api>(
 
 // @public
 export function createApiRef<T>(config: ApiRefConfig): ApiRef<T>;
+
+// @public (undocumented)
+export function createApiRef<T>(): {
+  with(config: ApiRefConfig): ApiRef<T>;
+};
 
 // @public
 export function createExtension<
@@ -877,7 +883,7 @@ export type DiscoveryApi = {
 };
 
 // @public
-export const discoveryApiRef: ApiRef<DiscoveryApi>;
+export const discoveryApiRef: ApiRef_2<DiscoveryApi>;
 
 // @public
 export type ErrorApi = {
@@ -901,7 +907,7 @@ export type ErrorApiErrorContext = {
 };
 
 // @public
-export const errorApiRef: ApiRef<ErrorApi>;
+export const errorApiRef: ApiRef_2<ErrorApi>;
 
 // @public (undocumented)
 export const ErrorDisplay: {
@@ -1291,7 +1297,7 @@ export interface FeatureFlagsApi {
 }
 
 // @public
-export const featureFlagsApiRef: ApiRef<FeatureFlagsApi>;
+export const featureFlagsApiRef: ApiRef_2<FeatureFlagsApi>;
 
 // @public
 export type FeatureFlagsSaveOptions = {
@@ -1323,7 +1329,7 @@ export type FetchApi = {
 };
 
 // @public
-export const fetchApiRef: ApiRef<FetchApi>;
+export const fetchApiRef: ApiRef_2<FetchApi>;
 
 // @public (undocumented)
 export type FrontendFeature =
@@ -1396,12 +1402,12 @@ export type FrontendPluginInfoOptions = {
 };
 
 // @public
-export const githubAuthApiRef: ApiRef<
+export const githubAuthApiRef: ApiRef_2<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
 >;
 
 // @public
-export const gitlabAuthApiRef: ApiRef<
+export const gitlabAuthApiRef: ApiRef_2<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
@@ -1410,7 +1416,7 @@ export const gitlabAuthApiRef: ApiRef<
 >;
 
 // @public
-export const googleAuthApiRef: ApiRef<
+export const googleAuthApiRef: ApiRef_2<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
@@ -1449,10 +1455,10 @@ export type IdentityApi = {
 };
 
 // @public
-export const identityApiRef: ApiRef<IdentityApi>;
+export const identityApiRef: ApiRef_2<IdentityApi>;
 
 // @public
-export const microsoftAuthApiRef: ApiRef<
+export const microsoftAuthApiRef: ApiRef_2<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
@@ -1521,7 +1527,7 @@ export type OAuthRequestApi = {
 };
 
 // @public
-export const oauthRequestApiRef: ApiRef<OAuthRequestApi>;
+export const oauthRequestApiRef: ApiRef_2<OAuthRequestApi>;
 
 // @public
 export type OAuthRequester<TAuthResponse> = (
@@ -1538,7 +1544,7 @@ export type OAuthRequesterOptions<TOAuthResponse> = {
 export type OAuthScope = string | string[];
 
 // @public
-export const oktaAuthApiRef: ApiRef<
+export const oktaAuthApiRef: ApiRef_2<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
@@ -1547,7 +1553,7 @@ export const oktaAuthApiRef: ApiRef<
 >;
 
 // @public
-export const oneloginAuthApiRef: ApiRef<
+export const oneloginAuthApiRef: ApiRef_2<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
@@ -1561,7 +1567,7 @@ export type OpenIdConnectApi = {
 };
 
 // @public
-export const openshiftAuthApiRef: ApiRef<
+export const openshiftAuthApiRef: ApiRef_2<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
 >;
 
@@ -1996,7 +2002,7 @@ export interface StorageApi {
 }
 
 // @public
-export const storageApiRef: ApiRef<StorageApi>;
+export const storageApiRef: ApiRef_2<StorageApi>;
 
 // @public
 export type StorageValueSnapshot<TValue extends JsonValue> =
@@ -2107,7 +2113,7 @@ export type TranslationApi = {
 };
 
 // @public (undocumented)
-export const translationApiRef: ApiRef<TranslationApi>;
+export const translationApiRef: ApiRef_2<TranslationApi>;
 
 // @public (undocumented)
 export type TranslationFunction<
@@ -2297,7 +2303,7 @@ export const useTranslationRef: <TMessages extends { [key in string]: string }>(
 };
 
 // @public
-export const vmwareCloudAuthApiRef: ApiRef<
+export const vmwareCloudAuthApiRef: ApiRef_2<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &

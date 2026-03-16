@@ -17,8 +17,17 @@
 import { createApiRef } from './ApiRef';
 
 describe('ApiRef', () => {
-  it('should be created', () => {
+  it('should be created with shorthand', () => {
     const ref = createApiRef({ id: 'abc' });
+    expect(ref.$$type).toBe('@backstage/ApiRef');
+    expect(ref.id).toBe('abc');
+    expect(String(ref)).toBe('apiRef{abc}');
+    expect(() => ref.T).toThrow('tried to read ApiRef.T of apiRef{abc}');
+  });
+
+  it('should be created with chained form', () => {
+    const ref = createApiRef<{ method(): void }>().with({ id: 'abc' });
+    expect(ref.$$type).toBe('@backstage/ApiRef');
     expect(ref.id).toBe('abc');
     expect(String(ref)).toBe('apiRef{abc}');
     expect(() => ref.T).toThrow('tried to read ApiRef.T of apiRef{abc}');
@@ -43,6 +52,30 @@ describe('ApiRef', () => {
       '_',
     ]) {
       expect(() => createApiRef({ id }).id).toThrow(
+        `API id must only contain period separated lowercase alphanum tokens with dashes, got '${id}'`,
+      );
+    }
+  });
+
+  it('should reject invalid ids in chained form', () => {
+    for (const id of ['a', 'abc', 'ab-c', 'a.b.c', 'a-b.c', 'abc.a-b-c.abc3']) {
+      expect(createApiRef().with({ id }).id).toBe(id);
+    }
+
+    for (const id of [
+      '123',
+      'ab-3',
+      'ab_c',
+      '.',
+      '2ac',
+      'ab.3a',
+      '.abc',
+      'abc.',
+      'ab..s',
+      '',
+      '_',
+    ]) {
+      expect(() => createApiRef().with({ id }).id).toThrow(
         `API id must only contain period separated lowercase alphanum tokens with dashes, got '${id}'`,
       );
     }

@@ -173,6 +173,6 @@ export interface DialogApi {
  *
  * @public
  */
-export const dialogApiRef = createApiRef<DialogApi>({
+export const dialogApiRef = createApiRef<DialogApi>().with({
   id: 'core.dialog',
 });

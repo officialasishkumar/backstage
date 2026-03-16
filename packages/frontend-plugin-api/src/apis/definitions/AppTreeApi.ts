@@ -117,4 +117,6 @@ export interface AppTreeApi {
  *
  * @public
  */
-export const appTreeApiRef = createApiRef<AppTreeApi>({ id: 'core.app-tree' });
+export const appTreeApiRef = createApiRef<AppTreeApi>().with({
+  id: 'core.app-tree',
+});

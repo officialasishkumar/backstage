@@ -65,6 +65,6 @@ export interface RouteResolutionApi {
  *
  * @public
  */
-export const routeResolutionApiRef = createApiRef<RouteResolutionApi>({
+export const routeResolutionApiRef = createApiRef<RouteResolutionApi>().with({
   id: 'core.route-resolution',
 });

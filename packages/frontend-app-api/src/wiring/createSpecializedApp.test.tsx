@@ -166,10 +166,9 @@ describe('createSpecializedApp', () => {
           "factories": Map {
             "core.featureflags" => {
               "factory": {
-                "api": ApiRefImpl {
-                  "config": {
-                    "id": "core.featureflags",
-                  },
+                "api": {
+                  "$$type": "@backstage/ApiRef",
+                  "id": "core.featureflags",
                 },
                 "deps": {},
                 "factory": [Function],
@@ -178,10 +177,9 @@ describe('createSpecializedApp', () => {
             },
             "core.app-tree" => {
               "factory": {
-                "api": ApiRefImpl {
-                  "config": {
-                    "id": "core.app-tree",
-                  },
+                "api": {
+                  "$$type": "@backstage/ApiRef",
+                  "id": "core.app-tree",
                 },
                 "deps": {},
                 "factory": [Function],
@@ -190,10 +188,9 @@ describe('createSpecializedApp', () => {
             },
             "core.config" => {
               "factory": {
-                "api": ApiRefImpl {
-                  "config": {
-                    "id": "core.config",
-                  },
+                "api": {
+                  "$$type": "@backstage/ApiRef",
+                  "id": "core.config",
                 },
                 "deps": {},
                 "factory": [Function],
@@ -202,10 +199,9 @@ describe('createSpecializedApp', () => {
             },
             "core.route-resolution" => {
               "factory": {
-                "api": ApiRefImpl {
-                  "config": {
-                    "id": "core.route-resolution",
-                  },
+                "api": {
+                  "$$type": "@backstage/ApiRef",
+                  "id": "core.route-resolution",
                 },
                 "deps": {},
                 "factory": [Function],
@@ -214,10 +210,9 @@ describe('createSpecializedApp', () => {
             },
             "core.identity" => {
               "factory": {
-                "api": ApiRefImpl {
-                  "config": {
-                    "id": "core.identity",
-                  },
+                "api": {
+                  "$$type": "@backstage/ApiRef",
+                  "id": "core.identity",
                 },
                 "deps": {},
                 "factory": [Function],

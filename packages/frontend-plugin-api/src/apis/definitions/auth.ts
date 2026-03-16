@@ -16,7 +16,7 @@
 /* We want to maintain the same information as an enum, so we disable the redeclaration warning */
 /* eslint-disable @typescript-eslint/no-redeclare */
 
-import { ApiRef, createApiRef } from '../system';
+import { createApiRef } from '../system';
 import { IconComponent } from '../../icons/types';
 import { Observable } from '@backstage/types';
 
@@ -328,15 +328,13 @@ export type SessionApi = {
  * Note that the ID token payload is only guaranteed to contain the user's numerical Google ID,
  * email and expiration information. Do not rely on any other fields, as they might not be present.
  */
-export const googleAuthApiRef: ApiRef<
+export const googleAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
     BackstageIdentityApi &
     SessionApi
-> = createApiRef({
-  id: 'core.auth.google',
-});
+>().with({ id: 'core.auth.google' });
 
 /**
  * Provides authentication towards GitHub APIs.
@@ -347,11 +345,9 @@ export const googleAuthApiRef: ApiRef<
  * See {@link https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/}
  * for a full list of supported scopes.
  */
-export const githubAuthApiRef: ApiRef<
+export const githubAuthApiRef = createApiRef<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
-> = createApiRef({
-  id: 'core.auth.github',
-});
+>().with({ id: 'core.auth.github' });
 
 /**
  * Provides authentication towards Okta APIs.
@@ -362,15 +358,13 @@ export const githubAuthApiRef: ApiRef<
  * See {@link https://developer.okta.com/docs/guides/implement-oauth-for-okta/scopes/}
  * for a full list of supported scopes.
  */
-export const oktaAuthApiRef: ApiRef<
+export const oktaAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
     BackstageIdentityApi &
     SessionApi
-> = createApiRef({
-  id: 'core.auth.okta',
-});
+>().with({ id: 'core.auth.okta' });
 
 /**
  * Provides authentication towards GitLab APIs.
@@ -381,15 +375,13 @@ export const oktaAuthApiRef: ApiRef<
  * See {@link https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#limiting-scopes-of-a-personal-access-token}
  * for a full list of supported scopes.
  */
-export const gitlabAuthApiRef: ApiRef<
+export const gitlabAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
     BackstageIdentityApi &
     SessionApi
-> = createApiRef({
-  id: 'core.auth.gitlab',
-});
+>().with({ id: 'core.auth.gitlab' });
 
 /**
  * Provides authentication towards Microsoft APIs and identities.
@@ -401,30 +393,26 @@ export const gitlabAuthApiRef: ApiRef<
  * - {@link https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent}
  * - {@link https://docs.microsoft.com/en-us/graph/permissions-reference}
  */
-export const microsoftAuthApiRef: ApiRef<
+export const microsoftAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
     BackstageIdentityApi &
     SessionApi
-> = createApiRef({
-  id: 'core.auth.microsoft',
-});
+>().with({ id: 'core.auth.microsoft' });
 
 /**
  * Provides authentication towards OneLogin APIs.
  *
  * @public
  */
-export const oneloginAuthApiRef: ApiRef<
+export const oneloginAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
     BackstageIdentityApi &
     SessionApi
-> = createApiRef({
-  id: 'core.auth.onelogin',
-});
+>().with({ id: 'core.auth.onelogin' });
 
 /**
  * Provides authentication towards Bitbucket APIs.
@@ -435,11 +423,9 @@ export const oneloginAuthApiRef: ApiRef<
  * See {@link https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/}
  * for a full list of supported scopes.
  */
-export const bitbucketAuthApiRef: ApiRef<
+export const bitbucketAuthApiRef = createApiRef<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
-> = createApiRef({
-  id: 'core.auth.bitbucket',
-});
+>().with({ id: 'core.auth.bitbucket' });
 
 /**
  * Provides authentication towards Bitbucket Server APIs.
@@ -450,11 +436,9 @@ export const bitbucketAuthApiRef: ApiRef<
  * See {@link https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html#BitbucketOAuth2.0providerAPI-scopes}
  * for a full list of supported scopes.
  */
-export const bitbucketServerAuthApiRef: ApiRef<
+export const bitbucketServerAuthApiRef = createApiRef<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
-> = createApiRef({
-  id: 'core.auth.bitbucket-server',
-});
+>().with({ id: 'core.auth.bitbucket-server' });
 
 /**
  * Provides authentication towards Atlassian APIs.
@@ -465,11 +449,9 @@ export const bitbucketServerAuthApiRef: ApiRef<
  * See {@link https://developer.atlassian.com/cloud/jira/platform/scopes-for-connect-and-oauth-2-3LO-apps/}
  * for a full list of supported scopes.
  */
-export const atlassianAuthApiRef: ApiRef<
+export const atlassianAuthApiRef = createApiRef<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
-> = createApiRef({
-  id: 'core.auth.atlassian',
-});
+>().with({ id: 'core.auth.atlassian' });
 
 /**
  * Provides authentication towards VMware Cloud APIs and identities.
@@ -480,15 +462,13 @@ export const atlassianAuthApiRef: ApiRef<
  * For more info about VMware Cloud identity and access management:
  * - {@link https://docs.vmware.com/en/VMware-Cloud-services/services/Using-VMware-Cloud-Services/GUID-53D39337-D93A-4B84-BD18-DDF43C21479A.html}
  */
-export const vmwareCloudAuthApiRef: ApiRef<
+export const vmwareCloudAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
     BackstageIdentityApi &
     SessionApi
-> = createApiRef({
-  id: 'core.auth.vmware-cloud',
-});
+>().with({ id: 'core.auth.vmware-cloud' });
 
 /**
  * Provides authentication towards OpenShift APIs and identities.
@@ -501,8 +481,6 @@ export const vmwareCloudAuthApiRef: ApiRef<
  * {@link https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html-single/authentication_and_authorization/index#tokens-scoping-about_configuring-internal-oauth}
  * for available scopes.
  */
-export const openshiftAuthApiRef: ApiRef<
+export const openshiftAuthApiRef = createApiRef<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
-> = createApiRef({
-  id: 'core.auth.openshift',
-});
+>().with({ id: 'core.auth.openshift' });

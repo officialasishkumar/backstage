@@ -25,48 +25,75 @@ export type ApiRefConfig = {
   id: string;
 };
 
-class ApiRefImpl<T> implements ApiRef<T> {
-  constructor(private readonly config: ApiRefConfig) {
-    const valid = config.id
-      .split('.')
-      .flatMap(part => part.split('-'))
-      .every(part => part.match(/^[a-z][a-z0-9]*$/));
-    if (!valid) {
-      throw new Error(
-        `API id must only contain period separated lowercase alphanum tokens with dashes, got '${config.id}'`,
-      );
-    }
-  }
-
-  get id(): string {
-    return this.config.id;
-  }
-
-  // Utility for getting type of an api, using `typeof apiRef.T`
-  get T(): T {
-    throw new Error(`tried to read ApiRef.T of ${this}`);
-  }
-
-  toString() {
-    return `apiRef{${this.config.id}}`;
+function validateApiRefId(id: string): void {
+  const valid = id
+    .split('.')
+    .flatMap(part => part.split('-'))
+    .every(part => part.match(/^[a-z][a-z0-9]*$/));
+  if (!valid) {
+    throw new Error(
+      `API id must only contain period separated lowercase alphanum tokens with dashes, got '${id}'`,
+    );
   }
 }
 
+function createApiRefInternal<T>(id: string): ApiRef<T> {
+  validateApiRefId(id);
+  return Object.create(
+    { toString: () => `apiRef{${id}}` },
+    {
+      $$type: { value: '@backstage/ApiRef', enumerable: true },
+      id: { value: id, enumerable: true },
+      T: {
+        get(): T {
+          throw new Error(`tried to read ApiRef.T of apiRef{${id}}`);
+        },
+      },
+    },
+  );
+}
+
 /**
- * Creates a reference to an API. The provided `id` is a stable identifier for
- * the API implementation.
+ * Creates a reference to an API.
  *
  * @remarks
  *
- * The frontend system infers the owning plugin for an API from the `id`. The
+ * The recommended way to create an API reference is the chained form:
+ *
+ * ```ts
+ * const myApiRef = createApiRef<MyApi>().with({ id: 'plugin.my-plugin.my-api' });
+ * ```
+ *
+ * A shorthand form is also available for convenience:
+ *
+ * ```ts
+ * const myApiRef = createApiRef<MyApi>({ id: 'plugin.my-plugin.my-api' });
+ * ```
+ *
+ * The provided `id` is a stable identifier for the API implementation. The
+ * frontend system infers the owning plugin for an API from the `id`. The
  * recommended pattern is `plugin.<plugin-id>.*` (for example,
  * `plugin.catalog.entity-presentation`). This ensures that other plugins can't
  * mistakenly override your API implementation.
  *
  * @param config - The descriptor of the API to reference.
- * @returns An API reference.
+ * @returns An API reference, or a builder with a `.with()` method if called without arguments.
  * @public
  */
-export function createApiRef<T>(config: ApiRefConfig): ApiRef<T> {
-  return new ApiRefImpl<T>(config);
+export function createApiRef<T>(config: ApiRefConfig): ApiRef<T>;
+/** @public */
+export function createApiRef<T>(): {
+  with(config: ApiRefConfig): ApiRef<T>;
+};
+export function createApiRef<T>(
+  config?: ApiRefConfig,
+): ApiRef<T> | { with(config: ApiRefConfig): ApiRef<T> } {
+  if (config) {
+    return createApiRefInternal<T>(config.id);
+  }
+  return {
+    with(c: ApiRefConfig): ApiRef<T> {
+      return createApiRefInternal<T>(c.id);
+    },
+  };
 }
