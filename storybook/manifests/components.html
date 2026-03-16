@@ -576,13 +576,13 @@
 <header>
   <div class="wrap">
     <h1>Manifest Debugger</h1>
-    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/43 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">31/43 infos</a><span class="filter-pill ok" aria-disabled="true">391 stories ok</span></div>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/44 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">32/44 infos</a><span class="filter-pill ok" aria-disabled="true">400 stories ok</span></div>
   </div>
 </header>
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.7s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.6s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -9692,14 +9692,537 @@ secondaryLabel?: FieldLabelProps[&#39;secondaryLabel&#39;]</code></pre>
   no-story-error
   no-doc-error"
   role="listitem"
+  aria-label="SearchAutocomplete">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> SearchAutocomplete</h2>
+      <div class="badges">
+        <label for="c-29-backstage-ui-searchautocomplete-props" class="badge ok as-toggle">13 prop types</label>
+        <label for="c-29-backstage-ui-searchautocomplete-info" class="badge info as-toggle">1 info</label>
+        <label for="c-29-backstage-ui-searchautocomplete-stories" class="badge ok as-toggle">9 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./packages/ui/src/components/SearchAutocomplete/SearchAutocomplete.stories.tsx">backstage-ui-searchautocomplete · ./packages/ui/src/components/SearchAutocomplete/SearchAutocomplete.stories.tsx</div>
+    
+    
+    <div class="kv"><span class="chip">public:  </span></div>
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-29-backstage-ui-searchautocomplete-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-29-backstage-ui-searchautocomplete-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-29-backstage-ui-searchautocomplete-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">13 prop types</span>
+            </div>
+            <pre><code>Component: packages/ui/src/components/SearchAutocomplete/SearchAutocomplete.tsx::SearchAutocomplete</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * Accessible label for the search input.
+ */
+aria-label?: string
+
+/**
+ * ID of the element that labels the search input.
+ */
+aria-labelledby?: string
+
+/**
+ * The result items to render inside the autocomplete.
+ */
+children?: ReactNode
+
+className?: string
+
+/**
+ * Whether the results popover is open by default.
+ */
+defaultOpen?: boolean
+
+/**
+ * The current value of the search input (controlled).
+ */
+inputValue?: string
+
+/**
+ * Whether results are currently loading.
+ * When true, displays a loading indicator and announces the loading state to screen readers.
+ */
+isLoading?: boolean
+
+/**
+ * Handler called when the search input value changes.
+ */
+onInputChange?: (value: string) =&gt; void
+
+/**
+ * The placeholder text for the search input.
+ */
+placeholder?: string
+
+/**
+ * Placement of the results popover relative to the input.
+ * @defaultValue &#39;bottom start&#39;
+ */
+popoverPlacement?: AriaPopoverProps[&#39;placement&#39;]
+
+/**
+ * Width of the results popover. Accepts any CSS width value.
+ * When not set, the popover matches the input width.
+ */
+popoverWidth?: string
+
+/**
+ * The size of the search input.
+ * @defaultValue &#39;small&#39;
+ */
+size?: &#39;small&#39; | &#39;medium&#39; | Partial&lt;Record&lt;Breakpoint, &#39;small&#39; | &#39;medium&#39;&gt;&gt;
+
+style?: React.CSSProperties</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import {
+    ButtonIcon,
+    Flex,
+    PluginHeader,
+    SearchAutocomplete,
+    SearchAutocompleteItem,
+    Text,
+} from "@backstage/ui";
+import { MemoryRouter } from "react-router-dom";
+import { RiCactusLine } from "@remixicon/react";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Items</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithItems = () =&gt; {
+    const [inputValue, setInputValue] = useState(&#39;&#39;);
+
+    const filtered = fruits.filter(fruit =&gt;
+      fruit.name.toLowerCase().includes(inputValue.toLowerCase()),
+    );
+
+    return (
+        &lt;SearchAutocomplete
+            aria-label=&quot;Search fruits&quot;
+            placeholder=&quot;Search fruits...&quot;
+            style={{ maxWidth: &#39;300px&#39; }}
+            inputValue={inputValue}
+            onInputChange={setInputValue}&gt;
+            {filtered.map(fruit =&gt; (
+              &lt;SearchAutocompleteItem
+                key={fruit.id}
+                id={fruit.id}
+                textValue={fruit.name}
+              &gt;
+                {fruit.name}
+              &lt;/SearchAutocompleteItem&gt;
+            ))}
+        &lt;/SearchAutocomplete&gt;
+    );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Rich Content</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithRichContent = () =&gt; {
+    const [inputValue, setInputValue] = useState(&#39;&#39;);
+
+    const filtered = fruits.filter(fruit =&gt;
+      fruit.name.toLowerCase().includes(inputValue.toLowerCase()),
+    );
+
+    return (
+        &lt;SearchAutocomplete
+            aria-label=&quot;Search fruits&quot;
+            placeholder=&quot;Search fruits...&quot;
+            style={{ maxWidth: &#39;300px&#39; }}
+            inputValue={inputValue}
+            onInputChange={setInputValue}&gt;
+            {filtered.map(fruit =&gt; (
+              &lt;SearchAutocompleteItem
+                key={fruit.id}
+                id={fruit.id}
+                textValue={fruit.name}
+              &gt;
+                &lt;Text weight=&quot;bold&quot;&gt;{fruit.name}&lt;/Text&gt;
+                &lt;Text variant=&quot;body-small&quot; color=&quot;secondary&quot;&gt;
+                  {fruit.description}
+                &lt;/Text&gt;
+              &lt;/SearchAutocompleteItem&gt;
+            ))}
+        &lt;/SearchAutocomplete&gt;
+    );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Async Items</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithAsyncItems = () =&gt; {
+    const [inputValue, setInputValue] = useState(&#39;&#39;);
+    const [items, setItems] = useState&lt;typeof fruits&gt;([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() =&gt; {
+      if (!inputValue) {
+        setItems([]);
+        return undefined;
+      }
+
+      setIsLoading(true);
+      const timeout = setTimeout(() =&gt; {
+        setItems(
+          fruits.filter(fruit =&gt;
+            fruit.name.toLowerCase().includes(inputValue.toLowerCase()),
+          ),
+        );
+        setIsLoading(false);
+      }, 2000);
+
+      return () =&gt; clearTimeout(timeout);
+    }, [inputValue]);
+
+    return (
+        &lt;SearchAutocomplete
+            aria-label=&quot;Search fruits&quot;
+            placeholder=&quot;Search fruits...&quot;
+            style={{ maxWidth: &#39;300px&#39; }}
+            inputValue={inputValue}
+            onInputChange={setInputValue}
+            isLoading={isLoading}&gt;
+            {items.map(item =&gt; (
+              &lt;SearchAutocompleteItem
+                key={item.id}
+                id={item.id}
+                textValue={item.name}
+              &gt;
+                &lt;Text weight=&quot;bold&quot;&gt;{item.name}&lt;/Text&gt;
+                &lt;Text variant=&quot;body-small&quot; color=&quot;secondary&quot;&gt;
+                  {item.description}
+                &lt;/Text&gt;
+              &lt;/SearchAutocompleteItem&gt;
+            ))}
+        &lt;/SearchAutocomplete&gt;
+    );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Selection</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithSelection = () =&gt; {
+    const [inputValue, setInputValue] = useState(&#39;&#39;);
+    const [selected, setSelected] = useState&lt;string | null&gt;(null);
+
+    const filtered = fruits.filter(fruit =&gt;
+      fruit.name.toLowerCase().includes(inputValue.toLowerCase()),
+    );
+
+    return (
+        &lt;Flex direction=&quot;column&quot; gap=&quot;4&quot;&gt;
+            &lt;SearchAutocomplete
+                aria-label=&quot;Search fruits&quot;
+                placeholder=&quot;Search fruits...&quot;
+                style={{ maxWidth: &#39;300px&#39; }}
+                inputValue={inputValue}
+                onInputChange={setInputValue}&gt;
+                {filtered.map(fruit =&gt; (
+                  &lt;SearchAutocompleteItem
+                    key={fruit.id}
+                    id={fruit.id}
+                    textValue={fruit.name}
+                    onAction={() =&gt; {
+                      setSelected(fruit.name);
+                      setInputValue(&#39;&#39;);
+                    }}
+                  &gt;
+                    {fruit.name}
+                  &lt;/SearchAutocompleteItem&gt;
+                ))}
+            &lt;/SearchAutocomplete&gt;
+            &lt;Text&gt;Last selected: {selected ?? &#39;none&#39;}&lt;/Text&gt;
+        &lt;/Flex&gt;
+    );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Sizes</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Sizes = () =&gt; {
+    const [inputValue, setInputValue] = useState(&#39;&#39;);
+
+    const filtered = fruits.filter(fruit =&gt;
+      fruit.name.toLowerCase().includes(inputValue.toLowerCase()),
+    );
+
+    return (
+        &lt;Flex direction=&quot;row&quot; gap=&quot;4&quot; style={{ width: &#39;100%&#39;, maxWidth: &#39;600px&#39; }}&gt;
+            &lt;SearchAutocomplete
+                aria-label=&quot;Search&quot;
+                placeholder=&quot;Search...&quot;
+                size=&quot;small&quot;
+                inputValue={inputValue}
+                onInputChange={setInputValue}&gt;
+                {filtered.map(fruit =&gt; (
+                  &lt;SearchAutocompleteItem
+                    key={fruit.id}
+                    id={fruit.id}
+                    textValue={fruit.name}
+                  &gt;
+                    {fruit.name}
+                  &lt;/SearchAutocompleteItem&gt;
+                ))}
+            &lt;/SearchAutocomplete&gt;
+            &lt;SearchAutocomplete
+                aria-label=&quot;Search&quot;
+                placeholder=&quot;Search...&quot;
+                size=&quot;medium&quot;
+                inputValue={inputValue}
+                onInputChange={setInputValue}&gt;
+                {filtered.map(fruit =&gt; (
+                  &lt;SearchAutocompleteItem
+                    key={fruit.id}
+                    id={fruit.id}
+                    textValue={fruit.name}
+                  &gt;
+                    {fruit.name}
+                  &lt;/SearchAutocompleteItem&gt;
+                ))}
+            &lt;/SearchAutocomplete&gt;
+        &lt;/Flex&gt;
+    );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">In Header</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const InHeader = function Render(args) {
+  const [inputValue, setInputValue] = useState(&#39;&#39;);
+
+  const filtered = fruits.filter(fruit =&gt;
+    fruit.name.toLowerCase().includes(inputValue.toLowerCase()),
+  );
+
+  return (
+    &lt;PluginHeader
+      title=&quot;Title&quot;
+      customActions={
+        &lt;&gt;
+          &lt;ButtonIcon
+            aria-label=&quot;Cactus icon button&quot;
+            icon={&lt;RiCactusLine /&gt;}
+            size=&quot;small&quot;
+            variant=&quot;secondary&quot;
+          /&gt;
+          &lt;SearchAutocomplete
+            {...args}
+            size=&quot;small&quot;
+            inputValue={inputValue}
+            onInputChange={setInputValue}
+            popoverWidth=&quot;400px&quot;
+          &gt;
+            {filtered.map(fruit =&gt; (
+              &lt;SearchAutocompleteItem
+                key={fruit.id}
+                id={fruit.id}
+                textValue={fruit.name}
+              &gt;
+                {fruit.name}
+              &lt;/SearchAutocompleteItem&gt;
+            ))}
+          &lt;/SearchAutocomplete&gt;
+          &lt;ButtonIcon
+            aria-label=&quot;Cactus icon button&quot;
+            icon={&lt;RiCactusLine /&gt;}
+            size=&quot;small&quot;
+            variant=&quot;secondary&quot;
+          /&gt;
+        &lt;/&gt;
+      }
+    /&gt;
+  );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Popover Width</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithPopoverWidth = () =&gt; {
+    const [inputValue, setInputValue] = useState(&#39;&#39;);
+
+    const filtered = fruits.filter(fruit =&gt;
+      fruit.name.toLowerCase().includes(inputValue.toLowerCase()),
+    );
+
+    return (
+        &lt;SearchAutocomplete
+            aria-label=&quot;Search fruits&quot;
+            placeholder=&quot;Search fruits...&quot;
+            popoverWidth=&quot;500px&quot;
+            style={{ maxWidth: &#39;300px&#39; }}
+            inputValue={inputValue}
+            onInputChange={setInputValue}&gt;
+            {filtered.map(fruit =&gt; (
+              &lt;SearchAutocompleteItem
+                key={fruit.id}
+                id={fruit.id}
+                textValue={fruit.name}
+              &gt;
+                &lt;Text weight=&quot;bold&quot;&gt;{fruit.name}&lt;/Text&gt;
+                &lt;Text variant=&quot;body-small&quot; color=&quot;secondary&quot;&gt;
+                  {fruit.description}
+                &lt;/Text&gt;
+              &lt;/SearchAutocompleteItem&gt;
+            ))}
+        &lt;/SearchAutocomplete&gt;
+    );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Open By Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const OpenByDefault = () =&gt; {
+    const [inputValue, setInputValue] = useState(&#39;ap&#39;);
+
+    const filtered = fruits.filter(fruit =&gt;
+      fruit.name.toLowerCase().includes(inputValue.toLowerCase()),
+    );
+
+    return (
+        &lt;SearchAutocomplete
+            aria-label=&quot;Search fruits&quot;
+            placeholder=&quot;Search fruits...&quot;
+            defaultOpen
+            style={{ maxWidth: &#39;300px&#39; }}
+            inputValue={inputValue}
+            onInputChange={setInputValue}&gt;
+            {filtered.map(fruit =&gt; (
+              &lt;SearchAutocompleteItem
+                key={fruit.id}
+                id={fruit.id}
+                textValue={fruit.name}
+              &gt;
+                &lt;Text weight=&quot;bold&quot;&gt;{fruit.name}&lt;/Text&gt;
+                &lt;Text variant=&quot;body-small&quot; color=&quot;secondary&quot;&gt;
+                  {fruit.description}
+                &lt;/Text&gt;
+              &lt;/SearchAutocompleteItem&gt;
+            ))}
+        &lt;/SearchAutocomplete&gt;
+    );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Open With Loading</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const OpenWithLoading = () =&gt; {
+    return (
+        &lt;SearchAutocomplete
+            aria-label=&quot;Search fruits&quot;
+            placeholder=&quot;Search fruits...&quot;
+            defaultOpen
+            isLoading
+            inputValue=&quot;ap&quot;
+            style={{ maxWidth: &#39;300px&#39; }}
+            onInputChange={() =&gt; {}}&gt;
+            {fruits.slice(0, 3).map(fruit =&gt; (
+              &lt;SearchAutocompleteItem
+                key={fruit.id}
+                id={fruit.id}
+                textValue={fruit.name}
+              &gt;
+                &lt;Text weight=&quot;bold&quot;&gt;{fruit.name}&lt;/Text&gt;
+                &lt;Text variant=&quot;body-small&quot; color=&quot;secondary&quot;&gt;
+                  {fruit.description}
+                &lt;/Text&gt;
+              &lt;/SearchAutocompleteItem&gt;
+            ))}
+        &lt;/SearchAutocomplete&gt;
+    );
+};</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
   aria-label="SearchField">
   <div class="head">
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> SearchField</h2>
       <div class="badges">
-        <label for="c-29-backstage-ui-searchfield-props" class="badge ok as-toggle">8 prop types</label>
-        <label for="c-29-backstage-ui-searchfield-info" class="badge info as-toggle">1 info</label>
-        <label for="c-29-backstage-ui-searchfield-stories" class="badge ok as-toggle">21 stories</label>
+        <label for="c-30-backstage-ui-searchfield-props" class="badge ok as-toggle">8 prop types</label>
+        <label for="c-30-backstage-ui-searchfield-info" class="badge info as-toggle">1 info</label>
+        <label for="c-30-backstage-ui-searchfield-stories" class="badge ok as-toggle">21 stories</label>
         
       </div>
     </div>
@@ -9711,10 +10234,10 @@ secondaryLabel?: FieldLabelProps[&#39;secondaryLabel&#39;]</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-29-backstage-ui-searchfield-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-29-backstage-ui-searchfield-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-30-backstage-ui-searchfield-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-30-backstage-ui-searchfield-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-29-backstage-ui-searchfield-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-30-backstage-ui-searchfield-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -10136,9 +10659,9 @@ import { RiCactusLine, RiEBike2Line } from "@remixicon/react";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> Select</h2>
       <div class="badges">
-        <label for="c-30-backstage-ui-select-props" class="badge ok as-toggle">11 prop types</label>
-        <label for="c-30-backstage-ui-select-info" class="badge info as-toggle">1 info</label>
-        <label for="c-30-backstage-ui-select-stories" class="badge ok as-toggle">22 stories</label>
+        <label for="c-31-backstage-ui-select-props" class="badge ok as-toggle">11 prop types</label>
+        <label for="c-31-backstage-ui-select-info" class="badge info as-toggle">1 info</label>
+        <label for="c-31-backstage-ui-select-stories" class="badge ok as-toggle">22 stories</label>
         
       </div>
     </div>
@@ -10150,10 +10673,10 @@ import { RiCactusLine, RiEBike2Line } from "@remixicon/react";</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-30-backstage-ui-select-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-30-backstage-ui-select-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-31-backstage-ui-select-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-31-backstage-ui-select-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-30-backstage-ui-select-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-31-backstage-ui-select-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -10571,9 +11094,9 @@ import { RiCloudLine } from "@remixicon/react";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> Skeleton</h2>
       <div class="badges">
-        <label for="c-31-backstage-ui-skeleton-props" class="badge ok as-toggle">5 prop types</label>
-        <label for="c-31-backstage-ui-skeleton-info" class="badge info as-toggle">1 info</label>
-        <label for="c-31-backstage-ui-skeleton-stories" class="badge ok as-toggle">4 stories</label>
+        <label for="c-32-backstage-ui-skeleton-props" class="badge ok as-toggle">5 prop types</label>
+        <label for="c-32-backstage-ui-skeleton-info" class="badge info as-toggle">1 info</label>
+        <label for="c-32-backstage-ui-skeleton-stories" class="badge ok as-toggle">4 stories</label>
         
       </div>
     </div>
@@ -10585,10 +11108,10 @@ import { RiCloudLine } from "@remixicon/react";</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-31-backstage-ui-skeleton-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-31-backstage-ui-skeleton-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-32-backstage-ui-skeleton-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-32-backstage-ui-skeleton-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-31-backstage-ui-skeleton-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-32-backstage-ui-skeleton-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -10704,9 +11227,9 @@ width?: number | string</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> Switch</h2>
       <div class="badges">
-        <label for="c-32-backstage-ui-switch-props" class="badge ok as-toggle">2 prop types</label>
-        <label for="c-32-backstage-ui-switch-info" class="badge info as-toggle">1 info</label>
-        <label for="c-32-backstage-ui-switch-stories" class="badge ok as-toggle">2 stories</label>
+        <label for="c-33-backstage-ui-switch-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-33-backstage-ui-switch-info" class="badge info as-toggle">1 info</label>
+        <label for="c-33-backstage-ui-switch-stories" class="badge ok as-toggle">2 stories</label>
         
       </div>
     </div>
@@ -10718,10 +11241,10 @@ width?: number | string</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-32-backstage-ui-switch-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-32-backstage-ui-switch-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-33-backstage-ui-switch-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-33-backstage-ui-switch-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-32-backstage-ui-switch-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-33-backstage-ui-switch-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -10797,9 +11320,9 @@ label?: string</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> TablePagination</h2>
       <div class="badges">
-        <label for="c-33-backstage-ui-tablepagination-props" class="badge ok as-toggle">11 prop types</label>
+        <label for="c-34-backstage-ui-tablepagination-props" class="badge ok as-toggle">11 prop types</label>
         
-        <label for="c-33-backstage-ui-tablepagination-stories" class="badge ok as-toggle">8 stories</label>
+        <label for="c-34-backstage-ui-tablepagination-stories" class="badge ok as-toggle">8 stories</label>
         
       </div>
     </div>
@@ -10812,9 +11335,9 @@ label?: string</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-33-backstage-ui-tablepagination-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-34-backstage-ui-tablepagination-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-33-backstage-ui-tablepagination-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-34-backstage-ui-tablepagination-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -10972,9 +11495,9 @@ totalCount?: number</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> Tabs</h2>
       <div class="badges">
-        <label for="c-34-backstage-ui-tabs-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-35-backstage-ui-tabs-props" class="badge ok as-toggle">2 prop types</label>
         
-        <label for="c-34-backstage-ui-tabs-stories" class="badge ok as-toggle">14 stories</label>
+        <label for="c-35-backstage-ui-tabs-stories" class="badge ok as-toggle">14 stories</label>
         
       </div>
     </div>
@@ -10987,9 +11510,9 @@ totalCount?: number</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-34-backstage-ui-tabs-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-35-backstage-ui-tabs-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-34-backstage-ui-tabs-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-35-backstage-ui-tabs-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -11590,9 +12113,9 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> TagGroup</h2>
       <div class="badges">
-        <label for="c-35-backstage-ui-taggroup-props" class="badge ok as-toggle">4 prop types</label>
+        <label for="c-36-backstage-ui-taggroup-props" class="badge ok as-toggle">4 prop types</label>
         
-        <label for="c-35-backstage-ui-taggroup-stories" class="badge ok as-toggle">9 stories</label>
+        <label for="c-36-backstage-ui-taggroup-stories" class="badge ok as-toggle">9 stories</label>
         
       </div>
     </div>
@@ -11605,9 +12128,9 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-35-backstage-ui-taggroup-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-36-backstage-ui-taggroup-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-35-backstage-ui-taggroup-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-36-backstage-ui-taggroup-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -11841,9 +12364,9 @@ import { RiAccountCircleLine, RiBugLine, RiEyeLine, RiHeartLine } from "@remixic
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> Text</h2>
       <div class="badges">
-        <label for="c-36-backstage-ui-text-props" class="badge ok as-toggle">6 prop types</label>
-        <label for="c-36-backstage-ui-text-info" class="badge info as-toggle">1 info</label>
-        <label for="c-36-backstage-ui-text-stories" class="badge ok as-toggle">9 stories</label>
+        <label for="c-37-backstage-ui-text-props" class="badge ok as-toggle">6 prop types</label>
+        <label for="c-37-backstage-ui-text-info" class="badge info as-toggle">1 info</label>
+        <label for="c-37-backstage-ui-text-stories" class="badge ok as-toggle">9 stories</label>
         
       </div>
     </div>
@@ -11855,10 +12378,10 @@ import { RiAccountCircleLine, RiBugLine, RiEyeLine, RiHeartLine } from "@remixic
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-36-backstage-ui-text-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-36-backstage-ui-text-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-37-backstage-ui-text-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-37-backstage-ui-text-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-36-backstage-ui-text-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-37-backstage-ui-text-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -12099,9 +12622,9 @@ weight?: TextWeights | Partial&lt;Record&lt;Breakpoint, TextWeights&gt;&gt;</cod
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> TextField</h2>
       <div class="badges">
-        <label for="c-37-backstage-ui-textfield-props" class="badge ok as-toggle">8 prop types</label>
-        <label for="c-37-backstage-ui-textfield-info" class="badge info as-toggle">1 info</label>
-        <label for="c-37-backstage-ui-textfield-stories" class="badge ok as-toggle">13 stories</label>
+        <label for="c-38-backstage-ui-textfield-props" class="badge ok as-toggle">8 prop types</label>
+        <label for="c-38-backstage-ui-textfield-info" class="badge info as-toggle">1 info</label>
+        <label for="c-38-backstage-ui-textfield-stories" class="badge ok as-toggle">13 stories</label>
         
       </div>
     </div>
@@ -12113,10 +12636,10 @@ weight?: TextWeights | Partial&lt;Record&lt;Breakpoint, TextWeights&gt;&gt;</cod
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-37-backstage-ui-textfield-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-37-backstage-ui-textfield-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-38-backstage-ui-textfield-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-38-backstage-ui-textfield-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-37-backstage-ui-textfield-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-38-backstage-ui-textfield-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -12382,9 +12905,9 @@ import { RiEyeLine, RiSparklingLine } from "@remixicon/react";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> ToggleButton</h2>
       <div class="badges">
-        <label for="c-38-backstage-ui-togglebutton-props" class="badge ok as-toggle">5 prop types</label>
-        <label for="c-38-backstage-ui-togglebutton-info" class="badge info as-toggle">1 info</label>
-        <label for="c-38-backstage-ui-togglebutton-stories" class="badge ok as-toggle">10 stories</label>
+        <label for="c-39-backstage-ui-togglebutton-props" class="badge ok as-toggle">5 prop types</label>
+        <label for="c-39-backstage-ui-togglebutton-info" class="badge info as-toggle">1 info</label>
+        <label for="c-39-backstage-ui-togglebutton-stories" class="badge ok as-toggle">10 stories</label>
         
       </div>
     </div>
@@ -12396,10 +12919,10 @@ import { RiEyeLine, RiSparklingLine } from "@remixicon/react";</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-38-backstage-ui-togglebutton-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-38-backstage-ui-togglebutton-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-39-backstage-ui-togglebutton-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-39-backstage-ui-togglebutton-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-38-backstage-ui-togglebutton-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-39-backstage-ui-togglebutton-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -12750,9 +13273,9 @@ import { RiArrowRightSLine, RiCheckLine, RiCloudLine, RiStarFill, RiStarLine } f
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> ToggleButtonGroup</h2>
       <div class="badges">
-        <label for="c-39-backstage-ui-togglebuttongroup-props" class="badge ok as-toggle">2 prop types</label>
-        <label for="c-39-backstage-ui-togglebuttongroup-info" class="badge info as-toggle">1 info</label>
-        <label for="c-39-backstage-ui-togglebuttongroup-stories" class="badge ok as-toggle">10 stories</label>
+        <label for="c-40-backstage-ui-togglebuttongroup-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-40-backstage-ui-togglebuttongroup-info" class="badge info as-toggle">1 info</label>
+        <label for="c-40-backstage-ui-togglebuttongroup-stories" class="badge ok as-toggle">10 stories</label>
         
       </div>
     </div>
@@ -12764,10 +13287,10 @@ import { RiArrowRightSLine, RiCheckLine, RiCloudLine, RiStarFill, RiStarLine } f
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-39-backstage-ui-togglebuttongroup-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-39-backstage-ui-togglebuttongroup-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-40-backstage-ui-togglebuttongroup-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-40-backstage-ui-togglebuttongroup-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-39-backstage-ui-togglebuttongroup-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-40-backstage-ui-togglebuttongroup-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -13046,8 +13569,8 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
       <h2><span class="status-dot dot-ok"></span> TooltipTrigger</h2>
       <div class="badges">
         
-        <label for="c-40-backstage-ui-tooltip-info" class="badge info as-toggle">1 info</label>
-        <label for="c-40-backstage-ui-tooltip-stories" class="badge ok as-toggle">6 stories</label>
+        <label for="c-41-backstage-ui-tooltip-info" class="badge info as-toggle">1 info</label>
+        <label for="c-41-backstage-ui-tooltip-stories" class="badge ok as-toggle">6 stories</label>
         
       </div>
     </div>
@@ -13059,8 +13582,8 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-40-backstage-ui-tooltip-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-40-backstage-ui-tooltip-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-41-backstage-ui-tooltip-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-41-backstage-ui-tooltip-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
 
@@ -13218,9 +13741,9 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> visual</h2>
       <div class="badges">
-        <label for="c-41-backstage-ui-table-visual-props" class="badge ok as-toggle">12 prop types</label>
-        <label for="c-41-backstage-ui-table-visual-info" class="badge info as-toggle">1 info</label>
-        <label for="c-41-backstage-ui-table-visual-stories" class="badge ok as-toggle">9 stories</label>
+        <label for="c-42-backstage-ui-table-visual-props" class="badge ok as-toggle">12 prop types</label>
+        <label for="c-42-backstage-ui-table-visual-info" class="badge info as-toggle">1 info</label>
+        <label for="c-42-backstage-ui-table-visual-stories" class="badge ok as-toggle">9 stories</label>
         
       </div>
     </div>
@@ -13232,10 +13755,10 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-41-backstage-ui-table-visual-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-41-backstage-ui-table-visual-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-42-backstage-ui-table-visual-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-42-backstage-ui-table-visual-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-41-backstage-ui-table-visual-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-42-backstage-ui-table-visual-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -13683,9 +14206,9 @@ style?: React.CSSProperties</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> VisuallyHidden</h2>
       <div class="badges">
-        <label for="c-42-backstage-ui-visuallyhidden-props" class="badge ok as-toggle">1 prop type</label>
+        <label for="c-43-backstage-ui-visuallyhidden-props" class="badge ok as-toggle">1 prop type</label>
         
-        <label for="c-42-backstage-ui-visuallyhidden-stories" class="badge ok as-toggle">2 stories</label>
+        <label for="c-43-backstage-ui-visuallyhidden-stories" class="badge ok as-toggle">2 stories</label>
         
       </div>
     </div>
@@ -13698,9 +14221,9 @@ style?: React.CSSProperties</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-42-backstage-ui-visuallyhidden-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-43-backstage-ui-visuallyhidden-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-42-backstage-ui-visuallyhidden-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-43-backstage-ui-visuallyhidden-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
