@@ -64,7 +64,7 @@
     "@backstage/version-bridge": "workspace:^",
     "@material-ui/core": "^4.9.13",
     "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.61",
+    "@material-ui/lab": "4.0.0-alpha.61",
     "@react-aria/button": "^3.14.3",
     "@react-aria/toast": "^3.0.9",
     "@react-hookz/web": "^24.0.0",
