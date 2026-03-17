@@ -576,13 +576,13 @@
 <header>
   <div class="wrap">
     <h1>Manifest Debugger</h1>
-    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/46 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">32/46 infos</a><span class="filter-pill ok" aria-disabled="true">417 stories ok</span></div>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/47 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">32/47 infos</a><span class="filter-pill ok" aria-disabled="true">427 stories ok</span></div>
   </div>
 </header>
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.7s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.8s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -13600,6 +13600,527 @@ import { RiEyeLine, RiSparklingLine } from "@remixicon/react";</code></pre>
 <article
   class="card 
   no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="ToastContainer">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> ToastContainer</h2>
+      <div class="badges">
+        <label for="c-41-plugins-app-toast-props" class="badge ok as-toggle">2 prop types</label>
+        
+        <label for="c-41-plugins-app-toast-stories" class="badge ok as-toggle">10 stories</label>
+        
+      </div>
+    </div>
+    <div class="meta" title="./plugins/app/src/components/Toast/Toast.stories.tsx">plugins-app-toast · ./plugins/app/src/components/Toast/Toast.stories.tsx</div>
+    
+    <div class="hint">A ToastContainer displays one or more toast notifications in the bottom-center of the screen.</div>
+    <div class="kv"><span class="chip">remarks:  The ToastContainer component should typically be placed once at the root of your application. It manages the display and stacking of all toast notifications added to its queue. Toasts appear in the bottom-center with deep stacking when multiple are visible. Toast containers are ARIA landmark regions that can be navigated using F6 (forward) and Shift+F6 (backward) for keyboard accessibility.</span><span class="chip">internal:  </span></div>
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-41-plugins-app-toast-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  <input id="c-41-plugins-app-toast-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">2 prop types</span>
+            </div>
+            <pre><code>Component: plugins/app/src/components/Toast/ToastContainer.tsx::ToastContainer</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * Custom class name
+ */
+className?: string
+
+/**
+ * Toast queue instance
+ */
+queue: ToastQueue&lt;ToastApiMessageContent&gt;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Button, Flex, Text, ToastContainer } from "@backstage/plugin-app";
+import { MemoryRouter } from "react-router-dom";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; (
+  &lt;&gt;
+    &lt;ToastContainer queue={toastQueue} /&gt;
+    &lt;Flex gap=&quot;3&quot;&gt;
+      &lt;Button
+        onPress={() =&gt; {
+          const toast =
+            randomToasts[Math.floor(Math.random() * randomToasts.length)];
+          toastQueue.add(toast);
+        }}
+      &gt;
+        Add Random Toast
+      &lt;/Button&gt;
+      &lt;Button
+        variant=&quot;secondary&quot;
+        onPress={() =&gt; {
+          toastQueue.clear();
+        }}
+      &gt;
+        Clear All Toasts
+      &lt;/Button&gt;
+    &lt;/Flex&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Status Variants</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const StatusVariants = () =&gt; (
+  &lt;&gt;
+    &lt;ToastContainer queue={toastQueue} /&gt;
+    &lt;Flex gap=&quot;3&quot;&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Neutral message&#39;,
+            description: &#39;A simple notification without emphasis.&#39;,
+            status: &#39;neutral&#39;,
+          })
+        }
+      &gt;
+        Neutral Toast
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Informational message&#39;,
+            description: &#39;Here is some helpful information.&#39;,
+            status: &#39;info&#39;,
+          })
+        }
+      &gt;
+        Info Toast
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Success!&#39;,
+            description: &#39;Your changes have been saved.&#39;,
+            status: &#39;success&#39;,
+          })
+        }
+      &gt;
+        Success Toast
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Warning&#39;,
+            description: &#39;This action may have consequences.&#39;,
+            status: &#39;warning&#39;,
+          })
+        }
+      &gt;
+        Warning Toast
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Error&#39;,
+            description: &#39;Something went wrong.&#39;,
+            status: &#39;danger&#39;,
+          })
+        }
+      &gt;
+        Danger Toast
+      &lt;/Button&gt;
+    &lt;/Flex&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Without Description</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithoutDescription = () =&gt; (
+  &lt;&gt;
+    &lt;ToastContainer queue={toastQueue} /&gt;
+    &lt;Flex gap=&quot;3&quot;&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;File saved&#39;,
+            status: &#39;success&#39;,
+          })
+        }
+      &gt;
+        Simple Success
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Check for updates&#39;,
+            status: &#39;info&#39;,
+          })
+        }
+      &gt;
+        Simple Info
+      &lt;/Button&gt;
+    &lt;/Flex&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Neutral Status</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const NeutralStatus = () =&gt; (
+  &lt;&gt;
+    &lt;ToastContainer queue={toastQueue} /&gt;
+    &lt;Flex gap=&quot;3&quot;&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Neutral toast&#39;,
+            description: &#39;This toast has no icon and uses the primary color.&#39;,
+            status: &#39;neutral&#39;,
+          })
+        }
+      &gt;
+        Neutral
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Simple neutral message&#39;,
+            status: &#39;neutral&#39;,
+          })
+        }
+      &gt;
+        Neutral Simple
+      &lt;/Button&gt;
+    &lt;/Flex&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Links</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithLinks = () =&gt; (
+  &lt;MemoryRouter&gt;
+    &lt;ToastContainer queue={toastQueue} /&gt;
+    &lt;Flex gap=&quot;3&quot;&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Deployment complete&#39;,
+            description: &#39;Your application has been deployed.&#39;,
+            status: &#39;success&#39;,
+            links: [
+              { label: &#39;View logs&#39;, href: &#39;/logs&#39; },
+              { label: &#39;Open dashboard&#39;, href: &#39;/dashboard&#39; },
+            ],
+          })
+        }
+      &gt;
+        Toast with Links
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;Error occurred&#39;,
+            description: &#39;Something went wrong during the build.&#39;,
+            status: &#39;danger&#39;,
+            links: [{ label: &#39;View error details&#39;, href: &#39;/errors&#39; }],
+          })
+        }
+      &gt;
+        Single Link
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add({
+            title: &#39;New update available&#39;,
+            status: &#39;info&#39;,
+            links: [
+              { label: &#39;Release notes&#39;, href: &#39;/releases&#39; },
+              { label: &#39;Update now&#39;, href: &#39;/update&#39; },
+            ],
+          })
+        }
+      &gt;
+        Links without Description
+      &lt;/Button&gt;
+    &lt;/Flex&gt;
+  &lt;/MemoryRouter&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Auto Dismiss</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const AutoDismiss = () =&gt; (
+  &lt;&gt;
+    &lt;ToastContainer queue={toastQueue} /&gt;
+    &lt;Flex gap=&quot;3&quot;&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add(
+            {
+              title: &#39;Auto dismiss in 3 seconds&#39;,
+              description: &#39;This toast will disappear automatically.&#39;,
+              status: &#39;info&#39;,
+            },
+            { timeout: 3000 },
+          )
+        }
+      &gt;
+        3 Second Toast
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add(
+            {
+              title: &#39;Auto dismiss in 5 seconds&#39;,
+              description: &#39;Recommended minimum timeout for accessibility.&#39;,
+              status: &#39;success&#39;,
+            },
+            { timeout: 5000 },
+          )
+        }
+      &gt;
+        5 Second Toast
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt;
+          toastQueue.add(
+            {
+              title: &#39;Auto dismiss in 10 seconds&#39;,
+              description: &#39;Longer timeout for more content.&#39;,
+              status: &#39;warning&#39;,
+            },
+            { timeout: 10000 },
+          )
+        }
+      &gt;
+        10 Second Toast
+      &lt;/Button&gt;
+    &lt;/Flex&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Programmatic Dismiss</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const ProgrammaticDismiss = () =&gt; &lt;ProgrammaticDismissStory /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Queue Management</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const QueueManagement = () =&gt; (
+  &lt;&gt;
+    &lt;ToastContainer queue={toastQueue} /&gt;
+    &lt;Flex gap=&quot;3&quot;&gt;
+      &lt;Button
+        onPress={() =&gt; {
+          toastQueue.add({
+            title: &#39;First toast&#39;,
+            description: &#39;This is the first toast in the queue.&#39;,
+            status: &#39;info&#39;,
+          });
+          setTimeout(() =&gt; {
+            toastQueue.add({
+              title: &#39;Second toast&#39;,
+              description: &#39;This is the second toast.&#39;,
+              status: &#39;success&#39;,
+            });
+          }, 300);
+          setTimeout(() =&gt; {
+            toastQueue.add({
+              title: &#39;Third toast&#39;,
+              description: &#39;This is the third toast.&#39;,
+              status: &#39;warning&#39;,
+            });
+          }, 600);
+        }}
+      &gt;
+        Show Multiple Toasts
+      &lt;/Button&gt;
+      &lt;Button
+        onPress={() =&gt; {
+          for (let i = 1; i &lt;= 5; i++) {
+            setTimeout(() =&gt; {
+              toastQueue.add({
+                title: `Toast #${i}`,
+                description: `This is toast number ${i}.`,
+                status: [&#39;neutral&#39;, &#39;info&#39;, &#39;success&#39;, &#39;warning&#39;, &#39;danger&#39;][
+                  (i - 1) % 5
+                ] as &#39;neutral&#39; | &#39;info&#39; | &#39;success&#39; | &#39;warning&#39; | &#39;danger&#39;,
+              });
+            }, i * 200);
+          }
+        }}
+      &gt;
+        Show 5 Toasts
+      &lt;/Button&gt;
+      &lt;Button variant=&quot;secondary&quot; onPress={() =&gt; toastQueue.clear()}&gt;
+        Clear All Toasts
+      &lt;/Button&gt;
+    &lt;/Flex&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">AlertApi Integration</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const AlertApiIntegration = () =&gt; {
+  // This story demonstrates how alerts posted via the AlertApi
+  // would be displayed using the ToastDisplay component.
+  // The ToastDisplay bridges AlertApi.post() calls to the toast queue.
+
+  return (
+    &lt;&gt;
+      &lt;ToastContainer queue={toastQueue} /&gt;
+      &lt;Flex direction=&quot;column&quot; gap=&quot;4&quot;&gt;
+        &lt;Flex direction=&quot;column&quot; gap=&quot;2&quot;&gt;
+          &lt;Text variant=&quot;body-medium&quot; weight=&quot;bold&quot;&gt;
+            AlertApi Severity Mapping:
+          &lt;/Text&gt;
+          &lt;Text variant=&quot;body-small&quot;&gt;success → success (green)&lt;/Text&gt;
+          &lt;Text variant=&quot;body-small&quot;&gt;info → info (blue)&lt;/Text&gt;
+          &lt;Text variant=&quot;body-small&quot;&gt;warning → warning (orange)&lt;/Text&gt;
+          &lt;Text variant=&quot;body-small&quot;&gt;error → danger (red)&lt;/Text&gt;
+          &lt;Text variant=&quot;body-small&quot;&gt;
+            (ToastApi also supports neutral - no icon, primary color)
+          &lt;/Text&gt;
+        &lt;/Flex&gt;
+        &lt;Flex gap=&quot;3&quot;&gt;
+          &lt;Button
+            onPress={() =&gt;
+              toastQueue.add({
+                title: &#39;Workspace switched&#39;,
+                status: &#39;neutral&#39;,
+              })
+            }
+          &gt;
+            Neutral Toast
+          &lt;/Button&gt;
+          &lt;Button
+            onPress={() =&gt;
+              toastQueue.add({
+                title: &#39;Entity saved successfully&#39;,
+                status: &#39;success&#39;,
+              })
+            }
+          &gt;
+            Success Alert
+          &lt;/Button&gt;
+          &lt;Button
+            onPress={() =&gt;
+              toastQueue.add({
+                title: &#39;Catalog refresh in progress&#39;,
+                status: &#39;info&#39;,
+              })
+            }
+          &gt;
+            Info Alert
+          &lt;/Button&gt;
+          &lt;Button
+            onPress={() =&gt;
+              toastQueue.add({
+                title: &#39;Entity validation has warnings&#39;,
+                status: &#39;warning&#39;,
+              })
+            }
+          &gt;
+            Warning Alert
+          &lt;/Button&gt;
+          &lt;Button
+            onPress={() =&gt;
+              toastQueue.add({
+                title: &#39;Failed to fetch entity&#39;,
+                status: &#39;danger&#39;,
+              })
+            }
+          &gt;
+            Error Alert
+          &lt;/Button&gt;
+        &lt;/Flex&gt;
+      &lt;/Flex&gt;
+    &lt;/&gt;
+  );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Real AlertApi Test</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const RealAlertApi = () =&gt; &lt;RealAlertApiStory /&gt;;</code></pre>
+            </div>
+        </div>
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
   has-info 
   no-story-error
   no-doc-error"
@@ -13609,9 +14130,9 @@ import { RiEyeLine, RiSparklingLine } from "@remixicon/react";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> ToggleButton</h2>
       <div class="badges">
-        <label for="c-41-backstage-ui-togglebutton-props" class="badge ok as-toggle">5 prop types</label>
-        <label for="c-41-backstage-ui-togglebutton-info" class="badge info as-toggle">1 info</label>
-        <label for="c-41-backstage-ui-togglebutton-stories" class="badge ok as-toggle">10 stories</label>
+        <label for="c-42-backstage-ui-togglebutton-props" class="badge ok as-toggle">5 prop types</label>
+        <label for="c-42-backstage-ui-togglebutton-info" class="badge info as-toggle">1 info</label>
+        <label for="c-42-backstage-ui-togglebutton-stories" class="badge ok as-toggle">10 stories</label>
         
       </div>
     </div>
@@ -13623,10 +14144,10 @@ import { RiEyeLine, RiSparklingLine } from "@remixicon/react";</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-41-backstage-ui-togglebutton-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-41-backstage-ui-togglebutton-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-42-backstage-ui-togglebutton-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-42-backstage-ui-togglebutton-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-41-backstage-ui-togglebutton-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-42-backstage-ui-togglebutton-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -13977,9 +14498,9 @@ import { RiArrowRightSLine, RiCheckLine, RiCloudLine, RiStarFill, RiStarLine } f
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> ToggleButtonGroup</h2>
       <div class="badges">
-        <label for="c-42-backstage-ui-togglebuttongroup-props" class="badge ok as-toggle">2 prop types</label>
-        <label for="c-42-backstage-ui-togglebuttongroup-info" class="badge info as-toggle">1 info</label>
-        <label for="c-42-backstage-ui-togglebuttongroup-stories" class="badge ok as-toggle">10 stories</label>
+        <label for="c-43-backstage-ui-togglebuttongroup-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-43-backstage-ui-togglebuttongroup-info" class="badge info as-toggle">1 info</label>
+        <label for="c-43-backstage-ui-togglebuttongroup-stories" class="badge ok as-toggle">10 stories</label>
         
       </div>
     </div>
@@ -13991,10 +14512,10 @@ import { RiArrowRightSLine, RiCheckLine, RiCloudLine, RiStarFill, RiStarLine } f
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-42-backstage-ui-togglebuttongroup-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-42-backstage-ui-togglebuttongroup-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-43-backstage-ui-togglebuttongroup-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-43-backstage-ui-togglebuttongroup-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-42-backstage-ui-togglebuttongroup-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-43-backstage-ui-togglebuttongroup-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -14273,8 +14794,8 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
       <h2><span class="status-dot dot-ok"></span> TooltipTrigger</h2>
       <div class="badges">
         
-        <label for="c-43-backstage-ui-tooltip-info" class="badge info as-toggle">1 info</label>
-        <label for="c-43-backstage-ui-tooltip-stories" class="badge ok as-toggle">6 stories</label>
+        <label for="c-44-backstage-ui-tooltip-info" class="badge info as-toggle">1 info</label>
+        <label for="c-44-backstage-ui-tooltip-stories" class="badge ok as-toggle">6 stories</label>
         
       </div>
     </div>
@@ -14286,8 +14807,8 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-43-backstage-ui-tooltip-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-43-backstage-ui-tooltip-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-44-backstage-ui-tooltip-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-44-backstage-ui-tooltip-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
 
@@ -14445,9 +14966,9 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> visual</h2>
       <div class="badges">
-        <label for="c-44-backstage-ui-table-visual-props" class="badge ok as-toggle">13 prop types</label>
-        <label for="c-44-backstage-ui-table-visual-info" class="badge info as-toggle">1 info</label>
-        <label for="c-44-backstage-ui-table-visual-stories" class="badge ok as-toggle">9 stories</label>
+        <label for="c-45-backstage-ui-table-visual-props" class="badge ok as-toggle">13 prop types</label>
+        <label for="c-45-backstage-ui-table-visual-info" class="badge info as-toggle">1 info</label>
+        <label for="c-45-backstage-ui-table-visual-stories" class="badge ok as-toggle">9 stories</label>
         
       </div>
     </div>
@@ -14459,10 +14980,10 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-44-backstage-ui-table-visual-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-44-backstage-ui-table-visual-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-45-backstage-ui-table-visual-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-45-backstage-ui-table-visual-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-44-backstage-ui-table-visual-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-45-backstage-ui-table-visual-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -14914,9 +15435,9 @@ virtualized?: | boolean
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> VisuallyHidden</h2>
       <div class="badges">
-        <label for="c-45-backstage-ui-visuallyhidden-props" class="badge ok as-toggle">1 prop type</label>
+        <label for="c-46-backstage-ui-visuallyhidden-props" class="badge ok as-toggle">1 prop type</label>
         
-        <label for="c-45-backstage-ui-visuallyhidden-stories" class="badge ok as-toggle">2 stories</label>
+        <label for="c-46-backstage-ui-visuallyhidden-stories" class="badge ok as-toggle">2 stories</label>
         
       </div>
     </div>
@@ -14929,9 +15450,9 @@ virtualized?: | boolean
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-45-backstage-ui-visuallyhidden-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-46-backstage-ui-visuallyhidden-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-45-backstage-ui-visuallyhidden-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-46-backstage-ui-visuallyhidden-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
