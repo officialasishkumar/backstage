@@ -576,13 +576,13 @@
 <header>
   <div class="wrap">
     <h1>Manifest Debugger</h1>
-    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/44 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">32/44 infos</a><span class="filter-pill ok" aria-disabled="true">400 stories ok</span></div>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/44 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">32/44 infos</a><span class="filter-pill ok" aria-disabled="true">403 stories ok</span></div>
   </div>
 </header>
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.7s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.8s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -4127,9 +4127,9 @@ style?: React.CSSProperties</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> dev</h2>
       <div class="badges">
-        <label for="c-12-backstage-ui-table-dev-props" class="badge ok as-toggle">12 prop types</label>
+        <label for="c-12-backstage-ui-table-dev-props" class="badge ok as-toggle">13 prop types</label>
         <label for="c-12-backstage-ui-table-dev-info" class="badge info as-toggle">1 info</label>
-        <label for="c-12-backstage-ui-table-dev-stories" class="badge ok as-toggle">21 stories</label>
+        <label for="c-12-backstage-ui-table-dev-stories" class="badge ok as-toggle">24 stories</label>
         
       </div>
     </div>
@@ -4161,7 +4161,7 @@ style?: React.CSSProperties</code></pre>
           <div class="note ok">
             <div class="row">
               <span class="ex-name">Prop types <small>(react-docgen)</small></span>
-              <span class="badge ok">12 prop types</span>
+              <span class="badge ok">13 prop types</span>
             </div>
             <pre><code>Component: packages/ui/src/components/Table/components/Table.tsx::Table</code></pre>
             <pre><code>Props:</code></pre>
@@ -4187,7 +4187,11 @@ selection?: TableSelection
 
 sort?: SortState
 
-style?: React.CSSProperties</code></pre>
+style?: React.CSSProperties
+
+virtualized?: | boolean
+| { rowHeight: number }
+| { estimatedRowHeight: number }</code></pre>
           </div>
         </div>
     
@@ -5070,6 +5074,171 @@ import { Fragment } from "react";</code></pre>
             </div>
             <div class="note ok">
               <div class="row">
+                <span class="ex-name">Virtualized Table</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const VirtualizedTable = () =&gt; {
+  const largeData = Array.from({ length: 500 }, (_, i) =&gt; ({
+    id: String(i),
+    name: `Service ${i}`,
+    owner: { name: `Team ${i % 10}` },
+    type: [&#39;service&#39;, &#39;website&#39;, &#39;library&#39;][i % 3],
+    lifecycle: [&#39;production&#39;, &#39;experimental&#39;][i % 2],
+    description: `Description for service ${i}`,
+  }));
+
+  const columns: ColumnConfig&lt;(typeof largeData)[0]&gt;[] = [
+    {
+      id: &#39;name&#39;,
+      label: &#39;Name&#39;,
+      isRowHeader: true,
+      cell: item =&gt; (
+        &lt;CellText title={item.name} description={item.description} /&gt;
+      ),
+    },
+    {
+      id: &#39;owner&#39;,
+      label: &#39;Owner&#39;,
+      cell: item =&gt; &lt;CellText title={item.owner.name} /&gt;,
+    },
+    {
+      id: &#39;type&#39;,
+      label: &#39;Type&#39;,
+      cell: item =&gt; &lt;CellText title={item.type} /&gt;,
+    },
+  ];
+
+  const { tableProps } = useTable({
+    mode: &#39;complete&#39;,
+    getData: () =&gt; largeData,
+    paginationOptions: { pageSize: 50 },
+  });
+
+  return (
+    &lt;Table
+      columnConfig={columns}
+      {...tableProps}
+      virtualized
+      style={{ height: 400 }}
+    /&gt;
+  );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Virtualized With Custom Row Height</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const VirtualizedWithCustomRowHeight = () =&gt; {
+  const largeData = Array.from({ length: 500 }, (_, i) =&gt; ({
+    id: String(i),
+    name: `Service ${i}`,
+    owner: { name: `Team ${i % 10}` },
+    type: [&#39;service&#39;, &#39;website&#39;, &#39;library&#39;][i % 3],
+    lifecycle: [&#39;production&#39;, &#39;experimental&#39;][i % 2],
+    description: `Description for service ${i}`,
+  }));
+
+  const columns: ColumnConfig&lt;(typeof largeData)[0]&gt;[] = [
+    {
+      id: &#39;name&#39;,
+      label: &#39;Name&#39;,
+      isRowHeader: true,
+      cell: item =&gt; (
+        &lt;CellText title={item.name} description={item.description} /&gt;
+      ),
+    },
+    {
+      id: &#39;owner&#39;,
+      label: &#39;Owner&#39;,
+      cell: item =&gt; &lt;CellText title={item.owner.name} /&gt;,
+    },
+    {
+      id: &#39;type&#39;,
+      label: &#39;Type&#39;,
+      cell: item =&gt; &lt;CellText title={item.type} /&gt;,
+    },
+  ];
+
+  const { tableProps } = useTable({
+    mode: &#39;complete&#39;,
+    getData: () =&gt; largeData,
+    paginationOptions: { pageSize: 50 },
+  });
+
+  return (
+    &lt;Table
+      columnConfig={columns}
+      {...tableProps}
+      virtualized={{ rowHeight: 56 }}
+      style={{ height: 400 }}
+    /&gt;
+  );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Virtualized With Estimated Row Height</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const VirtualizedWithEstimatedRowHeight = () =&gt; {
+  const largeData = Array.from({ length: 500 }, (_, i) =&gt; ({
+    id: String(i),
+    name: `Service ${i}`,
+    owner: { name: `Team ${i % 10}` },
+    type: [&#39;service&#39;, &#39;website&#39;, &#39;library&#39;][i % 3],
+    lifecycle: [&#39;production&#39;, &#39;experimental&#39;][i % 2],
+    description:
+      i % 5 === 0
+        ? `This is a much longer description for service ${i} that spans multiple lines to demonstrate variable height row rendering in the virtualized table`
+        : `Description for service ${i}`,
+  }));
+
+  const columns: ColumnConfig&lt;(typeof largeData)[0]&gt;[] = [
+    {
+      id: &#39;name&#39;,
+      label: &#39;Name&#39;,
+      isRowHeader: true,
+      cell: item =&gt; (
+        &lt;CellText title={item.name} description={item.description} /&gt;
+      ),
+    },
+    {
+      id: &#39;owner&#39;,
+      label: &#39;Owner&#39;,
+      cell: item =&gt; &lt;CellText title={item.owner.name} /&gt;,
+    },
+    {
+      id: &#39;type&#39;,
+      label: &#39;Type&#39;,
+      cell: item =&gt; &lt;CellText title={item.type} /&gt;,
+    },
+  ];
+
+  const { tableProps } = useTable({
+    mode: &#39;complete&#39;,
+    getData: () =&gt; largeData,
+    paginationOptions: { pageSize: 50 },
+  });
+
+  return (
+    &lt;Table
+      columnConfig={columns}
+      {...tableProps}
+      virtualized={{ estimatedRowHeight: 48 }}
+      style={{ height: 400 }}
+    /&gt;
+  );
+};</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
                 <span class="ex-name">Comprehensive Server Side</span>
                 <span class="badge ok">story ok</span>
               </div>
@@ -5571,7 +5740,7 @@ width?: number | string</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> docs</h2>
       <div class="badges">
-        <label for="c-14-backstage-ui-table-docs-props" class="badge ok as-toggle">12 prop types</label>
+        <label for="c-14-backstage-ui-table-docs-props" class="badge ok as-toggle">13 prop types</label>
         <label for="c-14-backstage-ui-table-docs-info" class="badge info as-toggle">1 info</label>
         <label for="c-14-backstage-ui-table-docs-stories" class="badge ok as-toggle">4 stories</label>
         
@@ -5605,7 +5774,7 @@ width?: number | string</code></pre>
           <div class="note ok">
             <div class="row">
               <span class="ex-name">Prop types <small>(react-docgen)</small></span>
-              <span class="badge ok">12 prop types</span>
+              <span class="badge ok">13 prop types</span>
             </div>
             <pre><code>Component: packages/ui/src/components/Table/components/Table.tsx::Table</code></pre>
             <pre><code>Props:</code></pre>
@@ -5631,7 +5800,11 @@ selection?: TableSelection
 
 sort?: SortState
 
-style?: React.CSSProperties</code></pre>
+style?: React.CSSProperties
+
+virtualized?: | boolean
+| { rowHeight: number }
+| { estimatedRowHeight: number }</code></pre>
           </div>
         </div>
     
@@ -13821,7 +13994,7 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> visual</h2>
       <div class="badges">
-        <label for="c-42-backstage-ui-table-visual-props" class="badge ok as-toggle">12 prop types</label>
+        <label for="c-42-backstage-ui-table-visual-props" class="badge ok as-toggle">13 prop types</label>
         <label for="c-42-backstage-ui-table-visual-info" class="badge info as-toggle">1 info</label>
         <label for="c-42-backstage-ui-table-visual-stories" class="badge ok as-toggle">9 stories</label>
         
@@ -13855,7 +14028,7 @@ import { RiArrowRightSLine, RiCloudLine, RiStarFill, RiStarLine } from "@remixic
           <div class="note ok">
             <div class="row">
               <span class="ex-name">Prop types <small>(react-docgen)</small></span>
-              <span class="badge ok">12 prop types</span>
+              <span class="badge ok">13 prop types</span>
             </div>
             <pre><code>Component: packages/ui/src/components/Table/components/Table.tsx::Table</code></pre>
             <pre><code>Props:</code></pre>
@@ -13881,7 +14054,11 @@ selection?: TableSelection
 
 sort?: SortState
 
-style?: React.CSSProperties</code></pre>
+style?: React.CSSProperties
+
+virtualized?: | boolean
+| { rowHeight: number }
+| { estimatedRowHeight: number }</code></pre>
           </div>
         </div>
     
