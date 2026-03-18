@@ -30,7 +30,7 @@
 <script src="/js/medium-zoom.js"></script>
 <script src="/js/dismissable-banner.js"></script>
 <script src="/js/scroll-nav-to-view-in-docs.js"></script><link rel="stylesheet" href="/assets/css/styles.a6a6a0a6.css">
-<script src="/assets/js/runtime~main.9ba8fbbe.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.387b5886.js" defer="defer"></script>
 <script src="/assets/js/main.e34079fa.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -100,7 +100,7 @@ operator. For example:</p>
 <p>To read required configuration, simply use the methods without <code>Optional</code>, for
 example <code>getString</code>. These will throw an error if there is no value available.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="accessing-configapi-in-frontend-plugins">Accessing ConfigApi in Frontend Plugins<a href="#accessing-configapi-in-frontend-plugins" class="hash-link" aria-label="Direct link to Accessing ConfigApi in Frontend Plugins" title="Direct link to Accessing ConfigApi in Frontend Plugins" translate="no">​</a></h2>
-<p>The <a href="https://backstage.io/api/stable/types/_backstage_frontend-plugin-api.ConfigApi.html" target="_blank" rel="noopener noreferrer" class="">ConfigApi</a> in the frontend is a
+<p>The <a href="https://backstage.io/api/stable/types/_backstage_frontend-plugin-api.index.ConfigApi.html" target="_blank" rel="noopener noreferrer" class="">ConfigApi</a> in the frontend is a
 <a class="" href="/docs/next/api/utility-apis">UtilityApi</a>. It&#x27;s accessible as usual via the
 <code>configApiRef</code> exported from <code>@backstage/core-plugin-api</code>:</p>
 <div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#9CDCFE;--prism-background-color:#232323"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#9CDCFE;background-color:#232323"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#9CDCFE"><span class="token plain">import { useApi, configApiRef } from &#x27;@backstage/core-plugin-api&#x27;;</span><br></span><span class="token-line" style="color:#9CDCFE"><span class="token plain">...</span><br></span><span class="token-line" style="color:#9CDCFE"><span class="token plain">const MyReactComponent = (...) =&gt; {</span><br></span><span class="token-line" style="color:#9CDCFE"><span class="token plain">  const config = useApi(configApiRef);</span><br></span><span class="token-line" style="color:#9CDCFE"><span class="token plain">  ...</span><br></span><span class="token-line" style="color:#9CDCFE"><span class="token plain">}</span><br></span></code></pre></div></div>
