@@ -1,0 +1,104 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": [],
+  "categories": {
+    "correctness": "allow",
+    "suspicious": "allow",
+    "pedantic": "allow",
+    "perf": "allow",
+    "style": "allow",
+    "restriction": "allow",
+    "nursery": "allow"
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/dist-types/**",
+    "**/storybook-static/**",
+    "**/coverage/**",
+    "**/build/**",
+    "**/.git/**",
+    "**/public/**",
+    "**/microsite/**",
+    "**/docs-ui/**",
+    "**/templates/**",
+    "**/sample-templates/**",
+    "**/static/**",
+    "**/.eslintrc.*",
+    "**/playwright.config.ts",
+    "**/packages/cli-node/config/**",
+    "**/packages/cli-module-test-jest/config/**",
+    "**/packages/cli-module-build/config/**"
+  ],
+  "jsPlugins": ["@backstage/eslint-plugin"],
+  "rules": {
+    "@backstage/no-forbidden-package-imports": "error",
+    "@backstage/no-relative-monorepo-imports": "error",
+    "@backstage/no-undeclared-imports": "error",
+    "@backstage/no-mixed-plugin-imports": [
+      "warn",
+      {
+        "excludedTargetPackages": [
+          "@backstage/plugin-catalog",
+          "@backstage/plugin-techdocs",
+          "@backstage/plugin-app",
+          "@backstage/plugin-catalog-backend",
+          "@backstage/test-utils",
+          "@backstage/plugin-auth-backend",
+          "@backstage/plugin-permission-backend",
+          "@backstage/plugin-kubernetes-backend",
+          "@backstage/config-loader",
+          "@backstage/plugin-app-backend"
+        ],
+        "includedFiles": ["**/src/**"],
+        "excludedFiles": ["**/dev/**"]
+      }
+    ],
+    "@backstage/no-ui-css-imports-in-non-frontend": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/packages/app/**",
+        "**/packages/app-legacy/**",
+        "**/packages/app-example-plugin/**",
+        "**/packages/core-components/**",
+        "**/plugins/catalog-react/**",
+        "**/plugins/notifications/**",
+        "**/plugins/user-settings/**",
+        "**/plugins/techdocs/**",
+        "**/plugins/techdocs-react/**",
+        "**/plugins/signals/**",
+        "**/plugins/signals-react/**",
+        "**/plugins/search/**",
+        "**/plugins/search-react/**",
+        "**/plugins/scaffolder/**",
+        "**/plugins/scaffolder-react/**",
+        "**/plugins/scaffolder-common/**",
+        "**/plugins/org/**",
+        "**/plugins/org-react/**",
+        "**/plugins/config-schema/**",
+        "**/plugins/mui-to-bui/**",
+        "**/plugins/devtools/**",
+        "**/plugins/home/**",
+        "**/plugins/home-react/**",
+        "**/plugins/kubernetes/**",
+        "**/plugins/kubernetes-react/**"
+      ],
+      "rules": {
+        "@backstage/no-top-level-material-ui-4-imports": "error"
+      }
+    },
+    {
+      "files": ["**/packages/ui/**"],
+      "rules": {
+        "@backstage/no-forbidden-package-imports": "off",
+        "@backstage/no-relative-monorepo-imports": "off",
+        "@backstage/no-undeclared-imports": "off",
+        "@backstage/no-mixed-plugin-imports": "off",
+        "@backstage/no-ui-css-imports-in-non-frontend": "off",
+        "@backstage/no-top-level-material-ui-4-imports": "off"
+      }
+    }
+  ]
+}

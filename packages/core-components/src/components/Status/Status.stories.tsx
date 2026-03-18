@@ -82,9 +82,9 @@ export const Default = () => (
   </div>
 );
 
-export const statusOK = () => <StatusOK />;
-export const statusWarning = () => <StatusWarning />;
-export const statusError = () => <StatusError />;
-export const statusAborted = () => <StatusAborted />;
-export const statusPending = () => <StatusPending />;
-export const statusRunning = () => <StatusRunning />;
+export const StatusOk = () => <StatusOK />;
+export const StatusWarn = () => <StatusWarning />;
+export const StatusErr = () => <StatusError />;
+export const StatusAbort = () => <StatusAborted />;
+export const StatusPend = () => <StatusPending />;
+export const StatusRun = () => <StatusRunning />;

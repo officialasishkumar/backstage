@@ -31,7 +31,7 @@ export const Default = () => {
   return <Header title={<WelcomeTitle />} pageTitleOverride="Home" />;
 };
 
-export const withLanguage = () => {
+export const WithLanguage = () => {
   const languages = ['English', 'Spanish'];
   return (
     <Header

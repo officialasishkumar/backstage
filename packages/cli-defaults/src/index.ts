@@ -19,7 +19,7 @@ import build from '@backstage/cli-module-build';
 import config from '@backstage/cli-module-config';
 import github from '@backstage/cli-module-github';
 import info from '@backstage/cli-module-info';
-import lint from '@backstage/cli-module-lint';
+import lint from '@backstage/cli-module-oxlint';
 import maintenance from '@backstage/cli-module-maintenance';
 import migrate from '@backstage/cli-module-migrate';
 import newModule from '@backstage/cli-module-new';

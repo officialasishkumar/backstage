@@ -435,9 +435,6 @@ Usage: backstage-cli package lint [directories...]
 
 Options:
   --fix
-  --format <string>
-  --max-warnings <string>
-  --output-file <string>
   -h, --help
 ```
 
@@ -647,12 +644,7 @@ Usage: backstage-cli repo lint
 
 Options:
   --fix
-  --format <string>
-  --max-warnings <string>
-  --output-file <string>
   --since <string>
-  --success-cache
-  --success-cache-dir <string>
   -h, --help
 ```
 

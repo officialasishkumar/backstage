@@ -34,12 +34,15 @@ module.exports = {
     },
   },
   create(context) {
-    const packages = getPackages(context.getCwd());
+    const cwd = context.cwd ?? context.getCwd?.();
+    const packages = getPackages(cwd);
     if (!packages) {
       return {};
     }
 
-    const currentPackage = packages.byPath(context.filename);
+    const currentPackage = packages.byPath(
+      context.physicalFilename ?? context.filename,
+    );
     if (!currentPackage) {
       return {};
     }

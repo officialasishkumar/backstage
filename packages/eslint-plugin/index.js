@@ -15,6 +15,9 @@
  */
 
 module.exports = {
+  meta: {
+    name: '@backstage/eslint-plugin',
+  },
   configs: {
     recommended: {
       plugins: ['@backstage'],

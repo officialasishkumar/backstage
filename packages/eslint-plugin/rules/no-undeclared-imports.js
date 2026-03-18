@@ -293,13 +293,16 @@ module.exports = {
     },
   },
   create(context) {
-    const packages = getPackageMap(context.getCwd());
+    const cwd = context.cwd ?? context.getCwd?.();
+    const packages = getPackageMap(cwd);
     if (!packages) {
       return {};
     }
-    const filePath = context.getPhysicalFilename
-      ? context.getPhysicalFilename()
-      : context.getFilename();
+    const filePath =
+      context.physicalFilename ??
+      context.getPhysicalFilename?.() ??
+      context.filename ??
+      context.getFilename?.();
 
     const localPkg = packages.byPath(filePath);
     if (!localPkg) {

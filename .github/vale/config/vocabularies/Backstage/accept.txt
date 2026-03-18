@@ -327,6 +327,8 @@ openssl
 opentelemetry
 orgs
 overridable
+oxlint
+oxlint's
 padding
 paddings
 pagerduty

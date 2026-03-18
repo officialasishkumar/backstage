@@ -74,8 +74,8 @@ export function createFetchRailsAction(options: {
             skipActiveRecord?: boolean | undefined;
             webpacker?:
               | 'react'
-              | 'angular'
               | 'vue'
+              | 'angular'
               | 'elm'
               | 'stimulus'
               | undefined;

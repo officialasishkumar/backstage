@@ -30,8 +30,8 @@ export function getPackageExportDetails(pkg: JsonObject): Array<{
     return Object.entries(pkg.exports).flatMap(
       ([mount, path]: [string, string]) => {
         const ext = extname(path);
-        if (!['.ts', '.tsx', '.cts', '.mts'].includes(ext)) {
-          return []; // Ignore non-TS entry points
+        if (!['.ts', '.tsx'].includes(ext)) {
+          return [];
         }
 
         let name = mount;

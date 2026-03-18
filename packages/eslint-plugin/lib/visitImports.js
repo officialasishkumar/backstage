@@ -121,7 +121,8 @@ function getImportInfo(node) {
  * @param {ImportVisitor} visitor
  */
 module.exports = function visitImports(context, visitor) {
-  const packages = getPackages(context.getCwd());
+  const cwd = context.cwd ?? context.getCwd?.();
+  const packages = getPackages(cwd);
   if (!packages) {
     return;
   }

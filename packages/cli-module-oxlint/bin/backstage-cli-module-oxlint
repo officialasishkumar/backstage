@@ -1,5 +1,6 @@
+#!/usr/bin/env node
 /*
- * Copyright 2020 The Backstage Authors
+ * Copyright 2026 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +15,18 @@
  * limitations under the License.
  */
 
-import { Progress } from './Progress';
+const path = require('node:path');
 
-export default {
-  title: 'Feedback/Progress',
-  component: Progress,
-  tags: ['!manifest'],
-};
+/* eslint-disable-next-line no-restricted-syntax */
+const isLocal = require('node:fs').existsSync(
+  path.resolve(__dirname, '../src'),
+);
 
-export const ProgressStory = () => <Progress />;
+if (isLocal) {
+  require('@backstage/cli-node/config/nodeTransform.cjs');
+}
+
+const { runCliModule } = require('@backstage/cli-node');
+const cliModule = require(isLocal ? '../src/index' : '..').default;
+const pkg = require('../package.json');
+runCliModule({ module: cliModule, name: pkg.name, version: pkg.version });
