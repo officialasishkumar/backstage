@@ -32,20 +32,23 @@ import { performance } from 'node:perf_hooks';
 
 import { handleErrors } from './handleErrors';
 import { bucketBoundaries, McpServerOperationAttributes } from '../metrics';
-import { FilterRule, McpServerConfig } from '../config';
+import { FilterRule, McpServerConfig, ToolOverride } from '../config';
 
 export class McpService {
   private readonly actions: ActionsService;
   private readonly namespacedToolNames: boolean;
+  private readonly overrides: Map<string, ToolOverride>;
   private readonly operationDuration: MetricsServiceHistogram<McpServerOperationAttributes>;
 
   constructor(
     actions: ActionsService,
     metrics: MetricsService,
     namespacedToolNames?: boolean,
+    overrides?: Map<string, ToolOverride>,
   ) {
     this.actions = actions;
     this.namespacedToolNames = namespacedToolNames ?? true;
+    this.overrides = overrides ?? new Map();
     this.operationDuration =
       metrics.createHistogram<McpServerOperationAttributes>(
         'mcp.server.operation.duration',
@@ -61,12 +64,14 @@ export class McpService {
     actions,
     metrics,
     namespacedToolNames,
+    overrides,
   }: {
     actions: ActionsService;
     metrics: MetricsService;
     namespacedToolNames?: boolean;
+    overrides?: Map<string, ToolOverride>;
   }) {
-    return new McpService(actions, metrics, namespacedToolNames);
+    return new McpService(actions, metrics, namespacedToolNames, overrides);
   }
 
   getServer({
@@ -101,21 +106,24 @@ export class McpService {
           : allActions;
 
         return {
-          tools: actions.map(action => ({
-            inputSchema: action.schema.input,
-            // todo(blam): this is unfortunately not supported by most clients yet.
-            // When this is provided you need to provide structuredContent instead.
-            // outputSchema: action.schema.output,
-            name: this.getToolName(action),
-            description: action.description,
-            annotations: {
-              title: action.title,
-              destructiveHint: action.attributes.destructive,
-              idempotentHint: action.attributes.idempotent,
-              readOnlyHint: action.attributes.readOnly,
-              openWorldHint: false,
-            },
-          })),
+          tools: actions.map(action => {
+            const override = this.overrides.get(action.id);
+            return {
+              inputSchema: action.schema.input,
+              // todo(blam): this is unfortunately not supported by most clients yet.
+              // When this is provided you need to provide structuredContent instead.
+              // outputSchema: action.schema.output,
+              name: this.getToolName(action),
+              description: override?.description ?? action.description,
+              annotations: {
+                title: override?.title ?? action.title,
+                destructiveHint: action.attributes.destructive,
+                idempotentHint: action.attributes.idempotent,
+                readOnlyHint: action.attributes.readOnly,
+                openWorldHint: false,
+              },
+            };
+          }),
         };
       } catch (err) {
         errorType = err instanceof Error ? err.name : 'Error';
@@ -222,6 +230,10 @@ export class McpService {
   }
 
   private getToolName(action: ActionsServiceAction): string {
+    const override = this.overrides.get(action.id);
+    if (override?.name) {
+      return override.name;
+    }
     if (this.namespacedToolNames) {
       return `${action.pluginId}.${action.name}`;
     }

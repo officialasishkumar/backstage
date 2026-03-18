@@ -37,6 +37,21 @@ export interface Config {
     namespacedToolNames?: boolean;
 
     /**
+     * Per-action overrides for tool definitions exposed via MCP.
+     * Each key is an action ID such as "catalog:query-catalog-entities".
+     */
+    overrides?: {
+      [actionId: string]: {
+        /** Override the tool name exposed via MCP. */
+        name?: string;
+        /** Override the tool description exposed via MCP. */
+        description?: string;
+        /** Override the tool title exposed via MCP. */
+        title?: string;
+      };
+    };
+
+    /**
      * Named MCP servers, each exposed at /api/mcp-actions/v1/{key}.
      * When not configured, the plugin serves a single server at /api/mcp-actions/v1.
      */

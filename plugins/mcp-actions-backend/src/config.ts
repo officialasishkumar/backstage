@@ -17,6 +17,12 @@
 import { Config } from '@backstage/config';
 import { Minimatch } from 'minimatch';
 
+export type ToolOverride = {
+  name?: string;
+  description?: string;
+  title?: string;
+};
+
 export type FilterRule = {
   idMatcher?: Minimatch;
   attributes?: Partial<
@@ -94,4 +100,26 @@ export function parseServerConfigs(
   }
 
   return servers;
+}
+
+export function parseToolOverrides(
+  config: Config,
+): Map<string, ToolOverride> {
+  const overridesConfig = config.getOptionalConfig('mcpActions.overrides');
+  if (!overridesConfig) {
+    return new Map();
+  }
+
+  const overrides = new Map<string, ToolOverride>();
+
+  for (const actionId of overridesConfig.keys()) {
+    const actionConfig = overridesConfig.getConfig(actionId);
+    overrides.set(actionId, {
+      name: actionConfig.getOptionalString('name'),
+      description: actionConfig.getOptionalString('description'),
+      title: actionConfig.getOptionalString('title'),
+    });
+  }
+
+  return overrides;
 }
