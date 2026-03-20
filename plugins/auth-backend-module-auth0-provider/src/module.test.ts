@@ -66,7 +66,7 @@ describe('authModuleAuth0Provider', () => {
     });
     expect(nonceCookie).toBeDefined();
 
-    const startUrl = new URL(res.get('location'));
+    const startUrl = new URL(res.get('location')!);
     expect(startUrl.origin).toBe('https://domain');
     expect(startUrl.pathname).toBe('/authorize');
     expect(Object.fromEntries(startUrl.searchParams)).toEqual({
@@ -84,7 +84,7 @@ describe('authModuleAuth0Provider', () => {
 
     expect(decodeOAuthState(startUrl.searchParams.get('state')!)).toEqual({
       env: 'development',
-      nonce: decodeURIComponent(nonceCookie.value),
+      nonce: decodeURIComponent(nonceCookie!.value),
     });
   });
 
@@ -126,7 +126,7 @@ describe('authModuleAuth0Provider', () => {
       '/api/auth/auth0/start?env=development&organization=foo-organization&invitation=foo-invitation',
     );
 
-    const startUrl = new URL(res.get('location'));
+    const startUrl = new URL(res.get('location')!);
     expect(startUrl.origin).toBe('https://domain');
     expect(startUrl.pathname).toBe('/authorize');
     expect(Object.fromEntries(startUrl.searchParams)).toEqual(

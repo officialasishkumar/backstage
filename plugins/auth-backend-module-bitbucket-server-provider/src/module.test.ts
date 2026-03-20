@@ -63,7 +63,7 @@ describe('authModuleBitbucketServerProvider', () => {
     });
     expect(nonceCookie).toBeDefined();
 
-    const startUrl = new URL(res.get('location'));
+    const startUrl = new URL(res.get('location')!);
     expect(startUrl.origin).toBe('https://bitbucket.org');
     expect(startUrl.pathname).toBe('/rest/oauth2/latest/authorize');
     expect(Object.fromEntries(startUrl.searchParams)).toEqual({
@@ -75,7 +75,7 @@ describe('authModuleBitbucketServerProvider', () => {
 
     expect(decodeOAuthState(startUrl.searchParams.get('state')!)).toEqual({
       env: 'development',
-      nonce: decodeURIComponent(nonceCookie.value),
+      nonce: decodeURIComponent(nonceCookie!.value),
     });
   });
 });

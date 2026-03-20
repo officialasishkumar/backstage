@@ -260,11 +260,11 @@ describe('rootHttpRouterServiceFactory', () => {
       status: 'ok',
     });
 
-    await request(app)
+    await request(app!)
       .get('/.backstage/health/v1/liveness')
       .expect(200, { status: 'ok' });
 
-    await request(app).get('/.backstage/health/v1/readiness').expect(200, {
+    await request(app!).get('/.backstage/health/v1/readiness').expect(200, {
       status: 'ok',
     });
 
@@ -279,12 +279,12 @@ describe('rootHttpRouterServiceFactory', () => {
       status: 'ok',
     });
 
-    await request(app)
+    await request(app!)
       .get('/.backstage/health/v1/liveness')
       .expect(200, { status: 'ok' });
 
     // Immediately start failing the readiness health check
-    await request(app).get('/.backstage/health/v1/readiness').expect(503, {
+    await request(app!).get('/.backstage/health/v1/readiness').expect(503, {
       message: 'Backend is shutting down',
       status: 'error',
     });
@@ -296,22 +296,22 @@ describe('rootHttpRouterServiceFactory', () => {
       status: 'ok',
     });
 
-    await request(app)
+    await request(app!)
       .get('/.backstage/health/v1/liveness')
       .expect(200, { status: 'ok' });
 
-    await request(app).get('/.backstage/health/v1/readiness').expect(503, {
+    await request(app!).get('/.backstage/health/v1/readiness').expect(503, {
       message: 'Backend is shutting down',
       status: 'error',
     });
 
     jest.advanceTimersByTime(1);
 
-    await request(app)
+    await request(app!)
       .get('/.backstage/health/v1/liveness')
       .expect(200, { status: 'ok' });
 
-    await request(app).get('/.backstage/health/v1/readiness').expect(503, {
+    await request(app!).get('/.backstage/health/v1/readiness').expect(503, {
       message: 'Backend is shutting down',
       status: 'error',
     });

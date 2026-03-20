@@ -61,7 +61,7 @@ describe('authModuleOauth2Provider', () => {
     });
     expect(nonceCookie).toBeDefined();
 
-    const startUrl = new URL(res.get('location'));
+    const startUrl = new URL(res.get('location')!);
     expect(startUrl.origin).toBe('https://oauth2.com');
     expect(startUrl.pathname).toBe('/authorize');
     expect(Object.fromEntries(startUrl.searchParams)).toEqual({
@@ -73,7 +73,7 @@ describe('authModuleOauth2Provider', () => {
 
     expect(decodeOAuthState(startUrl.searchParams.get('state')!)).toEqual({
       env: 'development',
-      nonce: decodeURIComponent(nonceCookie.value),
+      nonce: decodeURIComponent(nonceCookie!.value),
     });
   });
 });

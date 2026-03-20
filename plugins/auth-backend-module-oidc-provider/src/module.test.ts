@@ -192,7 +192,7 @@ describe('authModuleOidcProvider', () => {
     });
     expect(nonceCookie).toBeDefined();
 
-    const startUrl = new URL(startResponse.get('location'));
+    const startUrl = new URL(startResponse.get('location')!);
     expect(startUrl.origin).toBe('https://oidc.test');
     expect(startUrl.pathname).toBe('/oauth2/authorize');
     const expected = Object.fromEntries(startUrl.searchParams);
@@ -211,7 +211,7 @@ describe('authModuleOidcProvider', () => {
 
     expect(decodeOAuthState(startUrl.searchParams.get('state')!)).toEqual({
       env: 'development',
-      nonce: decodeURIComponent(nonceCookie.value),
+      nonce: decodeURIComponent(nonceCookie!.value),
       scope: 'openid profile email',
     });
   });
@@ -222,10 +222,10 @@ describe('authModuleOidcProvider', () => {
       `${appUrl}/api/auth/oidc/start?env=development`,
     );
     const authorizationResponse = await agent.get(
-      startResponse.header.location,
+      startResponse.header.location!,
     );
     const handlerResponse = await agent.get(
-      authorizationResponse.header.location,
+      authorizationResponse.header.location!,
     );
 
     expect(handlerResponse.text).toContain(

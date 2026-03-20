@@ -59,7 +59,7 @@ describe('authModuleGitlabProvider', () => {
     });
     expect(nonceCookie).toBeDefined();
 
-    const startUrl = new URL(res.get('location'));
+    const startUrl = new URL(res.get('location')!);
     expect(startUrl.origin).toBe('https://gitlab.com');
     expect(startUrl.pathname).toBe('/oauth/authorize');
     expect(Object.fromEntries(startUrl.searchParams)).toEqual({
@@ -72,7 +72,7 @@ describe('authModuleGitlabProvider', () => {
 
     expect(decodeOAuthState(startUrl.searchParams.get('state')!)).toEqual({
       env: 'development',
-      nonce: decodeURIComponent(nonceCookie.value),
+      nonce: decodeURIComponent(nonceCookie!.value),
     });
   });
 });

@@ -16,7 +16,7 @@
 
 import { ConfigReader } from '@backstage/config';
 import express from 'express';
-import request, { SuperAgentTest } from 'supertest';
+import request from 'supertest';
 import cookieParser from 'cookie-parser';
 import PromiseRouter from 'express-promise-router';
 import {
@@ -97,7 +97,7 @@ function wrapInApp(handlers: AuthProviderRouteHandlers) {
   return app;
 }
 
-function getNonceCookie(test: SuperAgentTest) {
+function getNonceCookie(test: request.Agent) {
   return test.jar.getCookie('my-provider-nonce', {
     domain: '127.0.0.1',
     path: '/my-provider/handler',
@@ -106,7 +106,7 @@ function getNonceCookie(test: SuperAgentTest) {
   });
 }
 
-function getRefreshTokenCookie(test: SuperAgentTest, chunkNumber?: number) {
+function getRefreshTokenCookie(test: request.Agent, chunkNumber?: number) {
   if (chunkNumber !== undefined) {
     return test.jar.getCookie(`my-provider-refresh-token-${chunkNumber}`, {
       domain: '127.0.0.1',
@@ -147,7 +147,7 @@ function confirmRefreshTokenCookieDeletion(
   );
 }
 
-function getGrantedScopesCookie(test: SuperAgentTest) {
+function getGrantedScopesCookie(test: request.Agent) {
   return test.jar.getCookie('my-provider-granted-scope', {
     domain: '127.0.0.1',
     path: '/my-provider',
@@ -202,7 +202,7 @@ describe('createOAuthRouteHandlers', () => {
         '/my-provider/start?env=development&scope=my-scope',
       );
 
-      const { value: nonce } = getNonceCookie(agent);
+      const { value: nonce } = getNonceCookie(agent)!;
 
       expect(res.text).toBe('');
       expect(res.status).toBe(302);
@@ -316,7 +316,7 @@ describe('createOAuthRouteHandlers', () => {
         },
       });
 
-      expect(getRefreshTokenCookie(agent).value).toBe('refresh-token');
+      expect(getRefreshTokenCookie(agent)!.value).toBe('refresh-token');
       expect(getGrantedScopesCookie(agent)).toBeUndefined();
     });
 
@@ -365,10 +365,10 @@ describe('createOAuthRouteHandlers', () => {
         },
       });
 
-      expect(getRefreshTokenCookie(agent, 0).value).toBe(
+      expect(getRefreshTokenCookie(agent, 0)!.value).toBe(
         extractTokenStringSlice(fiveKilobyteRefreshToken, 0),
       );
-      expect(getRefreshTokenCookie(agent, 1).value).toBe(
+      expect(getRefreshTokenCookie(agent, 1)!.value).toBe(
         extractTokenStringSlice(fiveKilobyteRefreshToken, 1),
       );
       expect(getGrantedScopesCookie(agent)).toBeUndefined();
@@ -465,10 +465,10 @@ describe('createOAuthRouteHandlers', () => {
         },
       });
 
-      expect(getRefreshTokenCookie(agent, 0).value).toBe(
+      expect(getRefreshTokenCookie(agent, 0)!.value).toBe(
         extractTokenStringSlice(fiveKilobyteRefreshToken, 0),
       );
-      expect(getRefreshTokenCookie(agent, 1).value).toBe(
+      expect(getRefreshTokenCookie(agent, 1)!.value).toBe(
         extractTokenStringSlice(fiveKilobyteRefreshToken, 1),
       );
       // verify that the old chunked cookie 2 is cleaned up
@@ -531,7 +531,7 @@ describe('createOAuthRouteHandlers', () => {
         confirmRefreshTokenCookieDeletion(res, { domain: '127.0.0.1' }),
       ).toBe(true);
 
-      expect(getRefreshTokenCookie(agent).value).toBe('refresh-token');
+      expect(getRefreshTokenCookie(agent)!.value).toBe('refresh-token');
     });
 
     it('should clean up old chunked cookies with domain attribute during migration', async () => {
@@ -593,10 +593,10 @@ describe('createOAuthRouteHandlers', () => {
         }),
       ).toBe(true);
 
-      expect(getRefreshTokenCookie(agent, 0).value).toBe(
+      expect(getRefreshTokenCookie(agent, 0)!.value).toBe(
         extractTokenStringSlice(fiveKilobyteRefreshToken, 0),
       );
-      expect(getRefreshTokenCookie(agent, 1).value).toBe(
+      expect(getRefreshTokenCookie(agent, 1)!.value).toBe(
         extractTokenStringSlice(fiveKilobyteRefreshToken, 1),
       );
     });
@@ -656,7 +656,7 @@ describe('createOAuthRouteHandlers', () => {
         }),
       ).toBe(true);
 
-      expect(getRefreshTokenCookie(agent).value).toBe('refresh-token');
+      expect(getRefreshTokenCookie(agent)!.value).toBe('refresh-token');
       expect(getRefreshTokenCookie(agent, 0)).toBeUndefined();
       expect(getRefreshTokenCookie(agent, 1)).toBeUndefined();
     });
@@ -717,8 +717,8 @@ describe('createOAuthRouteHandlers', () => {
         },
       });
 
-      expect(getRefreshTokenCookie(agent).value).toBe('refresh-token');
-      expect(getGrantedScopesCookie(agent).value).toBe(
+      expect(getRefreshTokenCookie(agent)!.value).toBe('refresh-token');
+      expect(getGrantedScopesCookie(agent)!.value).toBe(
         'my-scope%20my-other-scope',
       );
     });
@@ -762,8 +762,8 @@ describe('createOAuthRouteHandlers', () => {
       expect(res.status).toBe(302);
       expect(res.get('Location')).toBe('https://127.0.0.1:3000/redirect');
 
-      expect(getRefreshTokenCookie(agent).value).toBe('refresh-token');
-      expect(getGrantedScopesCookie(agent).value).toBe(
+      expect(getRefreshTokenCookie(agent)!.value).toBe('refresh-token');
+      expect(getGrantedScopesCookie(agent)!.value).toBe(
         'my-scope%20my-other-scope',
       );
     });
@@ -1070,7 +1070,7 @@ describe('createOAuthRouteHandlers', () => {
           token: mockBackstageToken,
         },
       });
-      expect(getRefreshTokenCookie(agent).value).toBe('new-refresh-token');
+      expect(getRefreshTokenCookie(agent)!.value).toBe('new-refresh-token');
     });
 
     it('should forward errors', async () => {
@@ -1171,7 +1171,7 @@ describe('createOAuthRouteHandlers', () => {
 
       expect(res.status).toBe(200);
       const expectedExpirationDate = Date.now() + 7 * 24 * 60 * 60 * 1000;
-      const cookie = getRefreshTokenCookie(agent);
+      const cookie = getRefreshTokenCookie(agent)!;
       expect(cookie.expiration_date).toBeGreaterThanOrEqual(
         expectedExpirationDate - 1000,
       );
@@ -1202,7 +1202,7 @@ describe('createOAuthRouteHandlers', () => {
 
       expect(res.status).toBe(200);
       const expectedExpirationDate = Date.now() + 1000 * 24 * 60 * 60 * 1000;
-      const cookie = getRefreshTokenCookie(agent);
+      const cookie = getRefreshTokenCookie(agent)!;
       expect(cookie.expiration_date).toBeGreaterThanOrEqual(
         expectedExpirationDate - 5000,
       );
@@ -1224,7 +1224,7 @@ describe('createOAuthRouteHandlers', () => {
         '/my-provider',
       );
 
-      expect(getRefreshTokenCookie(agent).value).toBe('my-refresh-token');
+      expect(getRefreshTokenCookie(agent)!.value).toBe('my-refresh-token');
 
       const res = await agent
         .post('/my-provider/logout')

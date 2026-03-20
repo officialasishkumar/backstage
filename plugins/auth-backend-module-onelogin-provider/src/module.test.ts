@@ -60,7 +60,7 @@ describe('authModuleOneLoginProvider', () => {
     });
     expect(nonceCookie).toBeDefined();
 
-    const startUrl = new URL(res.get('location'));
+    const startUrl = new URL(res.get('location')!);
     expect(startUrl.origin).toBe('https://my-company.onelogin.com');
     expect(startUrl.pathname).toBe('/oidc/2/auth');
     expect(Object.fromEntries(startUrl.searchParams)).toEqual({
@@ -73,7 +73,7 @@ describe('authModuleOneLoginProvider', () => {
 
     expect(decodeOAuthState(startUrl.searchParams.get('state')!)).toEqual({
       env: 'development',
-      nonce: decodeURIComponent(nonceCookie.value),
+      nonce: decodeURIComponent(nonceCookie!.value),
     });
   });
 });

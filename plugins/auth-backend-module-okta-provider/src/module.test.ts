@@ -60,7 +60,7 @@ describe('authModuleOktaProvider', () => {
     });
     expect(nonceCookie).toBeDefined();
 
-    const startUrl = new URL(res.get('location'));
+    const startUrl = new URL(res.get('location')!);
     expect(startUrl.origin).toBe('https://okta.com');
     expect(startUrl.pathname).toBe('/oauth2/v1/authorize');
     expect(Object.fromEntries(startUrl.searchParams)).toEqual({
@@ -73,7 +73,7 @@ describe('authModuleOktaProvider', () => {
 
     expect(decodeOAuthState(startUrl.searchParams.get('state')!)).toEqual({
       env: 'development',
-      nonce: decodeURIComponent(nonceCookie.value),
+      nonce: decodeURIComponent(nonceCookie!.value),
     });
   });
 

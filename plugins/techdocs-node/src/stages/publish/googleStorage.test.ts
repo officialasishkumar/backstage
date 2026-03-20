@@ -491,7 +491,7 @@ describe('GoogleGCSPublish', () => {
     const entityTripletPath = `${entity.metadata.namespace}/${entity.kind}/${entity.metadata.name}`;
     // const entityTripletPath =
 
-    let app: Express.Application;
+    let app: any;
 
     beforeEach(async () => {
       const publisher = createPublisherFromConfig();

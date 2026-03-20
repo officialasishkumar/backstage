@@ -1342,7 +1342,7 @@ describe('scaffolder router', () => {
       let headers: Record<string, string> = {};
       const responseDataFn = jest.fn();
 
-      const req = request(router)
+      const req = request(router as any)
         .get('/v2/tasks/a-random-id/eventstream')
         .set('accept', 'text/event-stream')
         .parse((res, _) => {
@@ -1424,7 +1424,7 @@ data: {"id":1,"taskId":"a-random-id","type":"completion","createdAt":"","body":{
       let statusCode: number | undefined = undefined;
       let headers: Record<string, string> = {};
 
-      const req = request(router)
+      const req = request(router as any)
         .get('/v2/tasks/a-random-id/eventstream')
         .query({ after: 10 })
         .set('accept', 'text/event-stream')
@@ -1677,7 +1677,7 @@ data: {"id":1,"taskId":"a-random-id","type":"completion","createdAt":"","body":{
       const mockToken = mockCredentials.user.token();
       const mockTemplate = generateMockTemplate();
 
-      const response = await request(unwrappedRouter)
+      const response = await request(unwrappedRouter as any)
         .post('/v2/dry-run')
         .set('Authorization', `Bearer ${mockToken}`)
         .send({
