@@ -13321,15 +13321,23 @@ var import_react10, Container, ActionButton, ActionBar, init_ActionBar = __esm({
     "use strict";
     import_react10 = __toESM(require_react(), 1);
     init_theming();
-    Container = styled.div(({ theme: theme3 }) => ({
-      position: "absolute",
-      bottom: 0,
-      right: 0,
-      maxWidth: "100%",
-      display: "flex",
-      background: theme3.background.content,
-      zIndex: 1
-    })), ActionButton = styled.button(
+    Container = styled.div(({ theme: theme3, $flexLayout = !1 }) => [
+      {
+        background: theme3.background.content
+      },
+      $flexLayout ? {
+        display: "inline-flex",
+        marginInlineStart: "auto",
+        alignSelf: "flex-end"
+      } : {
+        position: "absolute",
+        bottom: 0,
+        right: 0,
+        maxWidth: "100%",
+        display: "flex",
+        zIndex: 1
+      }
+    ]), ActionButton = styled.button(
       ({ theme: theme3 }) => ({
         margin: 0,
         border: "0 none",
@@ -13366,7 +13374,7 @@ var import_react10, Container, ActionButton, ActionBar, init_ActionBar = __esm({
       }
     );
     ActionButton.displayName = "ActionButton";
-    ActionBar = ({ actionItems, ...props }) => import_react10.default.createElement(Container, { ...props }, actionItems.map(({ title, className, onClick, disabled }, index4) => import_react10.default.createElement(ActionButton, { key: index4, className, onClick, disabled: !!disabled }, title)));
+    ActionBar = ({ actionItems, flexLayout = !1, ...props }) => import_react10.default.createElement(Container, { ...props, $flexLayout: flexLayout }, actionItems.map(({ title, className, onClick, disabled }, index4) => import_react10.default.createElement(ActionButton, { key: index4, className, onClick, disabled: !!disabled }, title)));
   }
 });
 
@@ -14411,6 +14419,8 @@ var import_react12, import_memoizerific2, globalWindow3, supportedLanguages, the
     ), copyToClipboard = createCopyToClipboardFunction(), Wrapper = styled.div(
       ({ theme: theme3 }) => ({
         position: "relative",
+        display: "flex",
+        flexWrap: "wrap",
         overflow: "hidden",
         color: theme3.color.defaultText
       }),
@@ -14427,7 +14437,10 @@ var import_react12, import_memoizerific2, globalWindow3, supportedLanguages, the
       } : {}
     ), UnstyledScroller = ({ children, className }) => import_react12.default.createElement(ScrollArea2, { horizontal: !0, vertical: !0, focusable: !0, className }, children), Scroller = styled(UnstyledScroller)(
       {
-        position: "relative"
+        flex: 1,
+        flexShrink: 0,
+        flexBasis: "fit-content",
+        maxWidth: "100%"
       },
       ({ theme: theme3 }) => themedSyntax(theme3)
     ), Pre = styled.pre(({ theme: theme3, padded }) => ({
@@ -14511,7 +14524,7 @@ var import_react12, import_memoizerific2, globalWindow3, supportedLanguages, the
           },
           highlightableCode
         )),
-        copyable ? import_react12.default.createElement(ActionBar, { actionItems: [{ title: copied ? "Copied" : "Copy", onClick }] }) : null
+        copyable ? import_react12.default.createElement(ActionBar, { actionItems: [{ title: copied ? "Copied" : "Copy", onClick }], flexLayout: !0 }) : null
       );
     };
     SyntaxHighlighter2.registerLanguage = (...args) => prism_light_default.registerLanguage(...args);
@@ -29149,16 +29162,16 @@ __export(WithTooltip_exports, {
   WithTooltip: () => WithToolTipState,
   WithTooltipPure: () => DeprecatedPure
 });
-var import_react158, import_react_dom7, import_memoizerific10, document12, match2, ArrowSpacing, Arrow, Wrapper5, Tooltip3, TargetContainer, TargetSvgContainer, WithTooltipPure, WithToolTipState, DeprecatedPure, DeprecatedState, init_WithTooltip = __esm({
+var import_react158, import_react_dom7, import_memoizerific11, document12, match2, ArrowSpacing, Arrow, Wrapper5, Tooltip3, TargetContainer, TargetSvgContainer, WithTooltipPure, WithToolTipState, DeprecatedPure, DeprecatedState, init_WithTooltip = __esm({
   "src/components/components/tooltip/WithTooltip.tsx"() {
     "use strict";
     import_react158 = __toESM(require_react(), 1), import_react_dom7 = __toESM(require_react_dom(), 1);
     init_client_logger();
     init_dist();
-    import_memoizerific10 = __toESM(require_memoizerific(), 1);
+    import_memoizerific11 = __toESM(require_memoizerific(), 1);
     init_react_popper_tooltip();
     init_theming();
-    ({ document: document12 } = scope), match2 = (0, import_memoizerific10.default)(1e3)(
+    ({ document: document12 } = scope), match2 = (0, import_memoizerific11.default)(1e3)(
       (requests, actual, value, fallback = 0) => actual.split("-")[0] === requests ? value : fallback
     ), ArrowSpacing = 8, Arrow = styled.div(
       {
@@ -31166,10 +31179,17 @@ function invariant(condition, message) {
 
 // src/channels/postmessage/getEventSourceUrl.ts
 init_client_logger();
-var getEventSourceUrl = (event) => {
-  let frames = Array.from(
+var pickFrameByRefId = (candidates, refId) => {
+  if (candidates.length === 1)
+    return candidates[0];
+  if (!(candidates.length === 0 || !refId))
+    return candidates.find(
+      (el) => (el.getAttribute("src") ?? "").includes(`refId=${encodeURIComponent(refId)}`)
+    );
+}, getEventSourceUrl = (event, refId) => {
+  let candidates = Array.from(
     document.querySelectorAll("iframe[data-is-storybook]")
-  ), [frame, ...remainder] = frames.filter((element) => {
+  ).filter((element) => {
     try {
       return element.contentWindow?.location.origin === event.source.location.origin && element.contentWindow?.location.pathname === event.source.location.pathname;
     } catch {
@@ -31187,12 +31207,12 @@ var getEventSourceUrl = (event) => {
       return !1;
     }
     return origin === event.origin;
-  }), src = frame?.getAttribute("src");
-  if (src && remainder.length === 0) {
+  }), src = pickFrameByRefId(candidates, refId)?.getAttribute("src");
+  if (src) {
     let { protocol, host, pathname } = new URL(src, document.location.toString());
     return `${protocol}//${host}${pathname}`;
   }
-  return remainder.length > 0 && logger.error("found multiple candidates for event source"), null;
+  return candidates.length > 1 && logger.error("found multiple candidates for event source"), null;
 };
 
 // src/channels/postmessage/index.ts
@@ -31293,7 +31313,7 @@ var { document: document2, location: location2 } = scope, KEY = "storybook-chann
       let { data } = rawEvent, { key, event, refId } = typeof data == "string" && isJSON(data) ? parse(data, scope.CHANNEL_OPTIONS || {}) : data;
       if (key === KEY) {
         let pageString = this.config.page === "manager" ? '<span style="color: #37D5D3; background: black"> manager </span>' : '<span style="color: #1EA7FD; background: black"> preview </span>', eventString = Object.values(core_events_exports).includes(event.type) ? `<span style="color: #FF4785">${event.type}</span>` : `<span style="color: #FFAE00">${event.type}</span>`;
-        if (refId && (event.refId = refId), event.source = this.config.page === "preview" ? rawEvent.origin : getEventSourceUrl(rawEvent), !event.source) {
+        if (refId && (event.refId = refId), event.source = this.config.page === "preview" ? rawEvent.origin : getEventSourceUrl(rawEvent, refId), !event.source) {
           pretty.error(
             `${pageString} received ${eventString} but was unable to determine the source of the event`
           );
@@ -31539,11 +31559,15 @@ var import_react7 = __toESM(require_react(), 1), Link = ({
 };
 
 // src/components/components/typography/elements/A.tsx
-var A = styled(Link)(withReset, ({ theme: theme3 }) => ({
+var A = styled(Link)(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
   fontSize: "inherit",
   lineHeight: "24px",
   color: theme3.color.secondary,
-  textDecoration: "none",
+  // Ensure WCAG Level A compliance (SC 1.4.1), see https://www.w3.org/WAI/WCAG22/Techniques/failures/F73
+  textDecoration: "underline",
+  textDecorationThickness: "0.03125rem",
+  textUnderlineOffset: "0.11em",
   "&.absent": {
     color: "#cc0000"
   },
@@ -31555,13 +31579,19 @@ var A = styled(Link)(withReset, ({ theme: theme3 }) => ({
     position: "absolute",
     top: 0,
     left: 0,
-    bottom: 0
+    bottom: 0,
+    textDecoration: "none"
+  },
+  "&.anchor:hover, &.anchor:focus": {
+    textDecoration: "underline"
   }
 }));
 
 // src/components/components/typography/elements/Blockquote.tsx
 init_theming();
-var Blockquote = styled.blockquote(withReset, withMargin, ({ theme: theme3 }) => ({
+var Blockquote = styled.blockquote(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...withMargin,
   borderLeft: `4px solid ${theme3.color.medium}`,
   padding: "0 15px",
   color: theme3.color.dark,
@@ -31608,20 +31638,18 @@ SyntaxHighlighter3.registerLanguage = (...args) => {
 var isReactChildString = (child) => typeof child == "string";
 
 // src/components/components/typography/elements/Code.tsx
-var isInlineCodeRegex = /[\n\r]/g, DefaultCodeBlock = styled.code(
-  ({ theme: theme3 }) => ({
-    // from reset
-    fontFamily: theme3.typography.fonts.mono,
-    WebkitFontSmoothing: "antialiased",
-    MozOsxFontSmoothing: "grayscale",
-    display: "inline-block",
-    paddingLeft: 2,
-    paddingRight: 2,
-    verticalAlign: "baseline",
-    color: "inherit"
-  }),
-  codeCommon
-), StyledSyntaxHighlighter = styled(SyntaxHighlighter3)(({ theme: theme3 }) => ({
+var isInlineCodeRegex = /[\n\r]/g, DefaultCodeBlock = styled.code(({ theme: theme3 }) => ({
+  // from reset
+  fontFamily: theme3.typography.fonts.mono,
+  WebkitFontSmoothing: "antialiased",
+  MozOsxFontSmoothing: "grayscale",
+  display: "inline-block",
+  paddingLeft: 2,
+  paddingRight: 2,
+  verticalAlign: "baseline",
+  color: "inherit",
+  ...codeCommon({ theme: theme3 })
+})), StyledSyntaxHighlighter = styled(SyntaxHighlighter3)(({ theme: theme3 }) => ({
   // DocBlocks-specific styling and overrides
   fontFamily: theme3.typography.fonts.mono,
   fontSize: `${theme3.typography.size.s2 - 1}px`,
@@ -31654,7 +31682,9 @@ var isInlineCodeRegex = /[\n\r]/g, DefaultCodeBlock = styled.code(
 
 // src/components/components/typography/elements/DL.tsx
 init_theming();
-var DL = styled.dl(withReset, withMargin, {
+var DL = styled.dl(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...withMargin,
   padding: 0,
   "& dt": {
     fontSize: "14px",
@@ -31682,7 +31712,7 @@ var DL = styled.dl(withReset, withMargin, {
   "& dd > :last-child": {
     marginBottom: 0
   }
-});
+}));
 
 // src/components/components/typography/elements/Div.tsx
 init_theming();
@@ -31690,14 +31720,18 @@ var Div = styled.div(withReset);
 
 // src/components/components/typography/elements/H1.tsx
 init_theming();
-var H1 = styled.h1(withReset, headerCommon, ({ theme: theme3 }) => ({
+var H1 = styled.h1(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...headerCommon({ theme: theme3 }),
   fontSize: `${theme3.typography.size.l1}px`,
   fontWeight: theme3.typography.weight.bold
 }));
 
 // src/components/components/typography/elements/H2.tsx
 init_theming();
-var H2 = styled.h2(withReset, headerCommon, ({ theme: theme3 }) => ({
+var H2 = styled.h2(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...headerCommon({ theme: theme3 }),
   fontSize: `${theme3.typography.size.m2}px`,
   paddingBottom: 4,
   borderBottom: `1px solid ${theme3.appBorderColor}`
@@ -31705,25 +31739,33 @@ var H2 = styled.h2(withReset, headerCommon, ({ theme: theme3 }) => ({
 
 // src/components/components/typography/elements/H3.tsx
 init_theming();
-var H3 = styled.h3(withReset, headerCommon, ({ theme: theme3 }) => ({
+var H3 = styled.h3(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...headerCommon({ theme: theme3 }),
   fontSize: `${theme3.typography.size.m1}px`
 }));
 
 // src/components/components/typography/elements/H4.tsx
 init_theming();
-var H4 = styled.h4(withReset, headerCommon, ({ theme: theme3 }) => ({
+var H4 = styled.h4(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...headerCommon({ theme: theme3 }),
   fontSize: `${theme3.typography.size.s3}px`
 }));
 
 // src/components/components/typography/elements/H5.tsx
 init_theming();
-var H5 = styled.h5(withReset, headerCommon, ({ theme: theme3 }) => ({
+var H5 = styled.h5(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...headerCommon({ theme: theme3 }),
   fontSize: `${theme3.typography.size.s2}px`
 }));
 
 // src/components/components/typography/elements/H6.tsx
 init_theming();
-var H6 = styled.h6(withReset, headerCommon, ({ theme: theme3 }) => ({
+var H6 = styled.h6(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...headerCommon({ theme: theme3 }),
   fontSize: `${theme3.typography.size.s2}px`,
   color: theme3.color.dark
 }));
@@ -31745,7 +31787,8 @@ var Img = styled.img({
 
 // src/components/components/typography/elements/LI.tsx
 init_theming();
-var LI = styled.li(withReset, ({ theme: theme3 }) => ({
+var LI = styled.li(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
   fontSize: theme3.typography.size.s2,
   color: theme3.color.defaultText,
   lineHeight: "24px",
@@ -31769,13 +31812,18 @@ var listCommon = {
   "& :last-child": {
     marginBottom: 0
   }
-}, OL = styled.ol(withReset, withMargin, listCommon, {
+}, OL = styled.ol(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...withMargin,
+  ...listCommon,
   listStyle: "decimal"
-});
+}));
 
 // src/components/components/typography/elements/P.tsx
 init_theming();
-var P = styled.p(withReset, withMargin, ({ theme: theme3 }) => ({
+var P = styled.p(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...withMargin,
   fontSize: theme3.typography.size.s2,
   lineHeight: "24px",
   color: theme3.color.defaultText,
@@ -31784,7 +31832,9 @@ var P = styled.p(withReset, withMargin, ({ theme: theme3 }) => ({
 
 // src/components/components/typography/elements/Pre.tsx
 init_theming();
-var Pre2 = styled.pre(withReset, withMargin, ({ theme: theme3 }) => ({
+var Pre2 = styled.pre(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...withMargin,
   // reset
   fontFamily: theme3.typography.fonts.mono,
   WebkitFontSmoothing: "antialiased",
@@ -31824,7 +31874,8 @@ var Pre2 = styled.pre(withReset, withMargin, ({ theme: theme3 }) => ({
 
 // src/components/components/typography/elements/Span.tsx
 init_theming();
-var Span = styled.span(withReset, ({ theme: theme3 }) => ({
+var Span = styled.span(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
   "&.frame": {
     display: "block",
     overflow: "hidden",
@@ -31907,7 +31958,9 @@ var TT = styled.title(codeCommon);
 
 // src/components/components/typography/elements/Table.tsx
 init_theming();
-var Table = styled.table(withReset, withMargin, ({ theme: theme3 }) => ({
+var Table = styled.table(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...withMargin,
   fontSize: theme3.typography.size.s2,
   lineHeight: "24px",
   padding: 0,
@@ -31952,7 +32005,12 @@ var listCommon2 = {
   "& :last-child": {
     marginBottom: 0
   }
-}, UL = styled.ul(withReset, withMargin, listCommon2, { listStyle: "disc" });
+}, UL = styled.ul(({ theme: theme3 }) => ({
+  ...withReset({ theme: theme3 }),
+  ...withMargin,
+  ...listCommon2,
+  listStyle: "disc"
+}));
 
 // src/components/components/typography/components.tsx
 var components = {
@@ -32053,6 +32111,7 @@ var BadgeWrapper = styled.div(
 
 // src/components/components/typography/link/link.tsx
 var import_react17 = __toESM(require_react(), 1);
+init_client_logger();
 
 // ../../node_modules/@storybook/icons/dist/index.js
 var dist_exports2 = {};
@@ -38121,12 +38180,19 @@ var LEFT_BUTTON = 0, isPlainLeftClick = (e) => e.button === LEFT_BUTTON && !e.al
       }
     }
   } : {},
-  ({ isButton: isButton2 }) => isButton2 ? {
+  ({ isButton: isButton2, theme: theme3 }) => isButton2 ? {
     border: 0,
-    borderRadius: 0,
+    borderRadius: theme3.input.borderRadius,
     background: "none",
     padding: 0,
-    fontSize: "inherit"
+    fontSize: "inherit",
+    lineHeight: "inherit",
+    "&:focus-visible": {
+      outline: `2px solid ${theme3.color.secondary}`,
+      outlineOffset: 2,
+      // Should ensure focus outline gets drawn above next sibling
+      zIndex: "1"
+    }
   } : {}
 ), Link2 = (0, import_react17.forwardRef)(
   ({
@@ -38136,21 +38202,24 @@ var LEFT_BUTTON = 0, isPlainLeftClick = (e) => e.button === LEFT_BUTTON && !e.al
     withArrow = !1,
     containsIcon = !1,
     className = void 0,
-    style = void 0,
-    isButton: isButton2 = !1,
+    isButton: isButton2 = void 0,
+    href,
     ...rest
-  }, ref) => import_react17.default.createElement(
+  }, ref) => (isButton2 !== void 0 && deprecate(
+    "Link: `isButton` is deprecated and will be removed in Storybook 11. Links without a `href` are automatically rendered as buttons."
+  ), import_react17.default.createElement(
     A2,
     {
+      as: href ? "a" : "button",
+      href,
       ...rest,
       ref,
-      isButton: isButton2,
-      role: isButton2 ? "button" : void 0,
+      isButton: !href || isButton2 === !0,
       onClick: onClick && cancel ? (e) => cancelled(e, onClick) : onClick,
       className
     },
     import_react17.default.createElement(LinkInner, { withArrow, containsIcon }, children, withArrow && import_react17.default.createElement(ChevronRightIcon, null))
-  )
+  ))
 );
 Link2.displayName = "Link";
 
@@ -38219,7 +38288,10 @@ var DocumentWrapper = styled.div(({ theme: theme3 }) => ({
   },
   a: {
     color: theme3.color.secondary,
-    textDecoration: "none"
+    // Ensure WCAG Level A compliance (SC 1.4.1), see https://www.w3.org/WAI/WCAG22/Techniques/failures/F73
+    textDecoration: "underline",
+    textDecorationThickness: "0.03125rem",
+    textUnderlineOffset: "0.11em"
   },
   "a.absent": {
     color: "#cc0000"
@@ -38232,7 +38304,11 @@ var DocumentWrapper = styled.div(({ theme: theme3 }) => ({
     position: "absolute",
     top: 0,
     left: 0,
-    bottom: 0
+    bottom: 0,
+    textDecoration: "none"
+  },
+  "&.anchor:hover, &.anchor:focus": {
+    textDecoration: "underline"
   },
   "h1, h2, h3, h4, h5, h6": {
     margin: "20px 0 10px",
@@ -39409,7 +39485,11 @@ var Tag = {
   TEST: "test",
   /** Manifest generation tag */
   MANIFEST: "manifest"
-};
+}, BUILT_IN_FILTERS = {
+  _docs: (entry, excluded) => excluded ? entry.type !== "docs" : entry.type === "docs",
+  _play: (entry, excluded) => excluded ? entry.type !== "story" || !entry.tags?.includes(Tag.PLAY_FN) : entry.type === "story" && !!entry.tags?.includes(Tag.PLAY_FN),
+  _test: (entry, excluded) => excluded ? entry.type !== "story" || entry.subtype !== "test" : entry.type === "story" && entry.subtype === "test"
+}, USER_TAG_FILTER = (tag) => (entry, excluded) => excluded ? !entry.tags?.includes(tag) : !!entry.tags?.includes(tag);
 
 // src/preview-api/modules/store/parameters.ts
 var combineParameters = (...parameterSets) => {
@@ -49753,7 +49833,7 @@ var P2 = (e) => {
 }, K = (e) => (f3(e, u, { value: { reset: () => P2(e[u]) } }), e[u]), T = (e) => e[u] || K(e);
 
 // src/test/spy.ts
-var listeners = /* @__PURE__ */ new Set();
+var moduleMockSpies = globalThis.__STORYBOOK_MODULE_MOCK_SPIES__ ??= /* @__PURE__ */ new Set(), listeners = /* @__PURE__ */ new Set();
 function onMockCall(callback) {
   return listeners.add(callback), () => void listeners.delete(callback);
 }
@@ -49776,13 +49856,13 @@ function listenWhenCalled(mock) {
   }), mock;
 }
 function clearAllMocks() {
-  mocks.forEach((spy) => spy.mockClear());
+  mocks.forEach((spy) => spy.mockClear()), moduleMockSpies.forEach((spy) => spy.mockClear());
 }
 function resetAllMocks() {
-  mocks.forEach((spy) => spy.mockReset());
+  mocks.forEach((spy) => spy.mockReset()), moduleMockSpies.forEach((spy) => spy.mockReset());
 }
 function restoreAllMocks() {
-  mocks.forEach((spy) => spy.mockRestore());
+  mocks.forEach((spy) => spy.mockRestore()), moduleMockSpies.forEach((spy) => spy.mockClear());
 }
 function mocked(item, _options = {}) {
   return item;
@@ -56016,7 +56096,7 @@ var defaultGrid = {
     options = DEFAULT_BACKGROUNDS,
     disable,
     grid = defaultGrid
-  } = parameters2[PARAM_KEY] || {}, data = globals[PARAM_KEY] || {}, backgroundName = typeof data == "string" ? data : data?.value, item = backgroundName ? options[backgroundName] : void 0, value = typeof item == "string" ? item : item?.value || "transparent", showGrid = typeof data == "string" ? !1 : data.grid || !1, shownBackground = !!item && !disable, backgroundSelector = viewMode === "docs" ? `#anchor--${id} .docs-story` : ".sb-show-main", gridSelector = viewMode === "docs" ? `#anchor--${id} .docs-story` : ".sb-show-main", isLayoutPadded = parameters2.layout === void 0 || parameters2.layout === "padded", defaultOffset = viewMode === "docs" ? 20 : isLayoutPadded ? 16 : 0, { cellAmount, cellSize, opacity, offsetX = defaultOffset, offsetY = defaultOffset } = grid, backgroundSelectorId = viewMode === "docs" ? `${BG_SELECTOR_BASE}-docs-${id}` : `${BG_SELECTOR_BASE}-color`, backgroundTarget = viewMode === "docs" ? id : null;
+  } = parameters2[PARAM_KEY] || {}, data = globals[PARAM_KEY] || {}, backgroundName = typeof data == "string" ? data : data?.value, item = backgroundName ? options[backgroundName] : void 0, value = typeof item == "string" ? item : item?.value || "transparent", showGrid = typeof data == "string" ? !1 : data.grid || !1, shownBackground = !!item && !disable, backgroundSelector = viewMode === "docs" ? `#anchor--${id} .docs-story, #anchor--primary--${id} .docs-story` : ".sb-show-main", gridSelector = viewMode === "docs" ? `#anchor--${id} .docs-story, #anchor--primary--${id} .docs-story` : ".sb-show-main", isLayoutPadded = parameters2.layout === void 0 || parameters2.layout === "padded", defaultOffset = viewMode === "docs" ? 20 : isLayoutPadded ? 16 : 0, { cellAmount, cellSize, opacity, offsetX = defaultOffset, offsetY = defaultOffset } = grid, backgroundSelectorId = viewMode === "docs" ? `${BG_SELECTOR_BASE}-docs-${id}` : `${BG_SELECTOR_BASE}-color`, backgroundTarget = viewMode === "docs" ? id : null;
   useEffect5(() => {
     let backgroundStyles = `
     ${backgroundSelector} {
@@ -57902,8 +57982,8 @@ var init5 = ({ store: store2, fullAPI, provider }) => {
   ), provider.channel?.on(
     SET_GLOBALS,
     function({ globals, globalTypes }) {
-      let { ref } = getEventMetadata(this, fullAPI), currentGlobals = store2.getState()?.globals;
-      ref ? Object.keys(globals).length > 0 && logger.warn("received globals from a non-local ref. This is not currently supported.") : store2.setState({ globals, userGlobals: globals, globalTypes }), currentGlobals && Object.keys(currentGlobals).length !== 0 && !dequal(globals, currentGlobals) && api.updateGlobals(currentGlobals);
+      let { ref } = getEventMetadata(this, fullAPI), currentUserGlobals = store2.getState()?.userGlobals;
+      ref ? Object.keys(globals).length > 0 && logger.warn("received globals from a non-local ref. This is not currently supported.") : store2.setState({ globals, userGlobals: globals, globalTypes }), currentUserGlobals && Object.keys(currentUserGlobals).length !== 0 && !dequal(globals, currentUserGlobals) && api.updateGlobals(currentUserGlobals);
     }
   ), {
     api,
@@ -57915,8 +57995,11 @@ var init5 = ({ store: store2, fullAPI, provider }) => {
 var layout_exports = {};
 __export(layout_exports, {
   ActiveTabs: () => ActiveTabs,
-  defaultLayoutState: () => defaultLayoutState,
+  DEFAULT_BOTTOM_PANEL_HEIGHT: () => DEFAULT_BOTTOM_PANEL_HEIGHT,
+  DEFAULT_NAV_SIZE: () => DEFAULT_NAV_SIZE,
+  DEFAULT_RIGHT_PANEL_WIDTH: () => DEFAULT_RIGHT_PANEL_WIDTH,
   focusableUIElements: () => focusableUIElements,
+  getDefaultLayoutState: () => getDefaultLayoutState,
   init: () => init6
 });
 init_dist();
@@ -57925,20 +58008,20 @@ var { document: document8 } = scope, isFunction4 = (val) => typeof val == "funct
   SIDEBAR: "sidebar",
   CANVAS: "canvas",
   ADDONS: "addons"
-}, defaultLayoutState = {
+}, DEFAULT_NAV_SIZE = 300, DEFAULT_BOTTOM_PANEL_HEIGHT = 300, DEFAULT_RIGHT_PANEL_WIDTH = 400, getDefaultLayoutState = () => ({
   ui: {
     enableShortcuts: !0
   },
   layout: {
     initialActive: ActiveTabs.CANVAS,
     showToolbar: !0,
-    navSize: 300,
-    bottomPanelHeight: 300,
-    rightPanelWidth: 400,
+    navSize: DEFAULT_NAV_SIZE,
+    bottomPanelHeight: DEFAULT_BOTTOM_PANEL_HEIGHT,
+    rightPanelWidth: DEFAULT_RIGHT_PANEL_WIDTH,
     recentVisibleSizes: {
-      navSize: 300,
-      bottomPanelHeight: 300,
-      rightPanelWidth: 400
+      navSize: DEFAULT_NAV_SIZE,
+      bottomPanelHeight: DEFAULT_BOTTOM_PANEL_HEIGHT,
+      rightPanelWidth: DEFAULT_RIGHT_PANEL_WIDTH
     },
     panelPosition: "bottom",
     showTabs: !0
@@ -57949,10 +58032,14 @@ var { document: document8 } = scope, isFunction4 = (val) => typeof val == "funct
   },
   selectedPanel: void 0,
   theme: create()
-}, focusableUIElements = {
+}), focusableUIElements = {
+  addonPanel: "storybook-panel-region",
   storySearchField: "storybook-explorer-searchfield",
   storyListMenu: "storybook-explorer-menu",
-  storyPanelRoot: "storybook-panel-root"
+  storyPanelRoot: "storybook-panel-root",
+  showAddonPanel: "storybook-show-addon-panel",
+  sidebarRegion: "storybook-sidebar-region",
+  showSidebar: "storybook-show-sidebar"
 }, getIsNavShown = (state3) => state3.layout.navSize > 0, getIsPanelShown = (state3) => {
   let { bottomPanelHeight, rightPanelWidth, panelPosition } = state3.layout;
   return panelPosition === "bottom" && bottomPanelHeight > 0 || panelPosition === "right" && rightPanelWidth > 0;
@@ -58086,32 +58173,40 @@ var { document: document8 } = scope, isFunction4 = (val) => typeof val == "funct
     /**
      * Attempts to focus (and select) an element identified by its ID. It is the responsibility of
      * the callee to ensure that the element is present in the DOM and that no focus trap is
-     * available. This API polls and attempts to perform the focus for a set duration (max 500ms),
-     * so that race conditions can be avoided with the current API design. Because this API is
-     * historically synchronous, it cannot report errors or failure to focus. It fails silently.
+     * available. When polling is enabled, this API polls and attempts to perform the focus for a
+     * set duration (max 500ms), so that race conditions can be avoided with the current API
+     * design.
      *
      * @param elementId The id of the element to focus.
-     * @param select Whether to call select() on the element after focusing it.
+     * @param options When a boolean, treated as the `select` option for backwards compatibility.
+     *   When an object, may contain `select` and `poll` options.
+     * @returns Whether the element was successfully focused. Returns a Promise when polling.
      */
-    focusOnUIElement(elementId, select) {
+    focusOnUIElement(elementId, options) {
+      let {
+        forceFocus = !1,
+        select = !1,
+        poll = !0
+      } = typeof options == "boolean" ? { select: options } : options ?? {};
       if (!elementId)
-        return;
-      let startTime = Date.now(), maxDuration = 500, pollInterval = 50, attemptFocus = () => {
+        return !1;
+      let attemptFocus = () => {
         let element = document8.getElementById(elementId);
-        return !element || (element.focus(), element !== document8.activeElement) ? !1 : (select && element.select?.(), !0);
+        return !element || (element.focus(), element !== document8.activeElement && forceFocus && element.getAttribute("tabindex") === null && (element.setAttribute("tabindex", "-1"), element.focus()), element !== document8.activeElement && element.id !== document8.activeElement?.id) ? !1 : (select && element.select?.(), !0);
       };
-      if (attemptFocus())
-        return;
-      let intervalId = setInterval(() => {
-        if (Date.now() - startTime >= maxDuration) {
-          clearInterval(intervalId);
-          return;
-        }
-        attemptFocus() && clearInterval(intervalId);
-      }, pollInterval);
+      return attemptFocus() ? !0 : poll ? new Promise((resolve) => {
+        let startTime = Date.now(), maxDuration = 500, intervalId = setInterval(() => {
+          let elapsed = Date.now() - startTime;
+          if (attemptFocus()) {
+            clearInterval(intervalId), resolve(!0);
+            return;
+          }
+          elapsed >= maxDuration && (clearInterval(intervalId), resolve(!1));
+        }, 50);
+      }) : !1;
     },
     getInitialOptions() {
-      let { theme: theme3, selectedPanel, layoutCustomisations, ...options } = provider.getConfig();
+      let { theme: theme3, selectedPanel, layoutCustomisations, ...options } = provider.getConfig(), defaultLayoutState = getDefaultLayoutState();
       return {
         ...defaultLayoutState,
         layout: {
@@ -58339,7 +58434,11 @@ var controlOrMetaSymbol = () => isMacLike() ? "\u2318" : "ctrl", controlOrMetaKe
 ), eventMatchesShortcut = (e, shortcut) => shortcutMatchesShortcut(eventToShortcut(e), shortcut), keyToSymbol = (key) => key === "alt" ? optionOrAltSymbol() : key === "control" ? "\u2303" : key === "meta" ? "\u2318" : key === "shift" ? "\u21E7\u200B" : key === "Enter" || key === "Backspace" || key === "Esc" || key === "escape" ? "" : key === " " ? "SPACE" : key === "ArrowUp" ? "\u2191" : key === "ArrowDown" ? "\u2193" : key === "ArrowLeft" ? "\u2190" : key === "ArrowRight" ? "\u2192" : key?.toUpperCase(), shortcutToHumanString = (shortcut) => shortcut.map(keyToSymbol).join(" "), shortcutToAriaKeyshortcuts = (shortcut) => shortcut.map((shortcut2) => shortcut2 === "+" ? "plus" : shortcut2 === " " ? "space" : shortcut2).join("+");
 
 // src/manager-api/modules/shortcuts.ts
-var { navigator: navigator3, document: document9 } = scope, isMacLike2 = () => navigator3 && navigator3.platform ? !!navigator3.platform.match(/(Mac|iPhone|iPod|iPad)/i) : !1, controlOrMetaKey2 = () => isMacLike2() ? "meta" : "control";
+var { navigator: navigator3, document: document9 } = scope;
+function wasFocusInElement(element) {
+  return document9.activeElement && element?.contains(document9.activeElement);
+}
+var isMacLike2 = () => navigator3 && navigator3.platform ? !!navigator3.platform.match(/(Mac|iPhone|iPod|iPad)/i) : !1, controlOrMetaKey2 = () => isMacLike2() ? "meta" : "control";
 function keys2(o) {
   return Object.keys(o);
 }
@@ -58497,11 +58596,21 @@ var init11 = ({ store: store2, fullAPI, provider }) => {
             break;
           }
           case "togglePanel": {
-            fullAPI.togglePanel();
+            let wasPanelShown = fullAPI.getIsPanelShown(), panelElement = document9.getElementById(focusableUIElements.addonPanel);
+            fullAPI.togglePanel(), wasPanelShown && wasFocusInElement(panelElement) && fullAPI.focusOnUIElement(focusableUIElements.showAddonPanel, {
+              poll: !0
+            }).then((success) => {
+              success === !1 && document9.body.focus();
+            });
             break;
           }
           case "toggleNav": {
-            fullAPI.toggleNav();
+            let wasNavShown = fullAPI.getIsNavShown(), sidebarElement = document9.getElementById(focusableUIElements.sidebarRegion);
+            fullAPI.toggleNav(), wasNavShown && wasFocusInElement(sidebarElement) && fullAPI.focusOnUIElement(focusableUIElements.showSidebar, {
+              poll: !0
+            }).then((success) => {
+              success === !1 && document9.body.focus();
+            });
             break;
           }
           case "toolbar": {
@@ -58584,10 +58693,12 @@ var init11 = ({ store: store2, fullAPI, provider }) => {
 // src/manager-api/modules/stories.ts
 var stories_exports = {};
 __export(stories_exports, {
+  getDefaultTagsFromPreset: () => getDefaultTagsFromPreset,
   init: () => init12
 });
 init_client_logger();
 init_dist();
+var import_memoizerific7 = __toESM(require_memoizerific(), 1);
 
 // src/manager-errors.ts
 var manager_errors_exports = {};
@@ -58796,7 +58907,38 @@ var statusStore = createStatusStore({
 }), { fullStatusStore, getStatusStoreByTypeId, useStatusStore, universalStatusStore } = statusStore;
 
 // src/manager-api/modules/stories.ts
-var { fetch: fetch3 } = scope, STORY_INDEX_PATH = "./index.json", removedOptions = ["enableShortcuts", "theme", "showRoots"];
+var { fetch: fetch3 } = scope, STORY_INDEX_PATH = "./index.json", TAGS_FILTER = "tags-filter", STATIC_FILTER = "static-filter", getDefaultTagsFromPreset = (0, import_memoizerific7.default)(1)(
+  (presets) => {
+    let presetEntries = Object.entries(presets);
+    return {
+      included: presetEntries.filter(([, option]) => option.defaultFilterSelection === "include").map(([tag]) => tag),
+      excluded: presetEntries.filter(([, option]) => option.defaultFilterSelection === "exclude").map(([tag]) => tag)
+    };
+  }
+), computeStaticFilterFn = (tagPresets) => {
+  let staticExcludeTags = Object.entries(tagPresets).reduce(
+    (acc, entry) => {
+      let [tag, option] = entry;
+      return option.excludeFromSidebar && (acc[tag] = !0), acc;
+    },
+    {}
+  );
+  return (item) => {
+    let tags2 = item.tags ?? [];
+    return (tags2.includes(Tag.DEV) || item.type === "docs") && tags2.filter((tag) => staticExcludeTags[tag]).length === 0;
+  };
+}, computeTagsFilterFn = (includedTagFilters, excludedTagFilters) => {
+  let computeFilterFunctions = (set3) => Object.values(
+    set3.reduce(
+      (acc, tag) => (Object.hasOwn(BUILT_IN_FILTERS, tag) ? acc["built-in"].push(BUILT_IN_FILTERS[tag]) : acc.user.push(USER_TAG_FILTER(tag)), acc),
+      { "built-in": [], user: [] }
+    )
+  ).filter((group) => group.length > 0);
+  return (item) => {
+    let included = computeFilterFunctions(includedTagFilters), excluded = computeFilterFunctions(excludedTagFilters);
+    return (!included.length || included.every((group) => group.some((filterFn) => filterFn(item, !1)))) && (!excluded.length || excluded.every((group) => group.every((filterFn) => filterFn(item, !0))));
+  };
+}, removedOptions = ["enableShortcuts", "theme", "showRoots"];
 function removeRemovedOptions(options) {
   if (!options || typeof options == "string")
     return options;
@@ -59045,7 +59187,53 @@ var init12 = ({
       for (let [refId, { internal_index, ...ref }] of Object.entries(refs))
         await fullAPI.setRef(refId, { ...ref, storyIndex: internal_index }, !0);
       provider.channel?.emit(SET_FILTER, { id });
+    },
+    resetTagFilters: async () => {
+      await store2.setState(
+        (s3) => ({
+          includedTagFilters: s3.defaultIncludedTagFilters,
+          excludedTagFilters: s3.defaultExcludedTagFilters
+        }),
+        { persistence: "permanent" }
+      ), recomputeFilters();
+    },
+    setAllTagFilters: async (included, excluded) => {
+      await store2.setState(
+        {
+          includedTagFilters: included,
+          excludedTagFilters: excluded
+        },
+        { persistence: "permanent" }
+      ), recomputeFilters();
+    },
+    addTagFilters: async (tags2, excluded) => {
+      let state3 = store2.getState(), newIncluded = new Set(state3.includedTagFilters), newExcluded = new Set(state3.excludedTagFilters);
+      for (let tag of tags2)
+        excluded ? (newIncluded.delete(tag), newExcluded.add(tag)) : (newIncluded.add(tag), newExcluded.delete(tag));
+      await store2.setState(
+        {
+          includedTagFilters: Array.from(newIncluded),
+          excludedTagFilters: Array.from(newExcluded)
+        },
+        { persistence: "permanent" }
+      ), recomputeFilters();
+    },
+    removeTagFilters: async (tags2) => {
+      let state3 = store2.getState();
+      await store2.setState(
+        {
+          includedTagFilters: state3.includedTagFilters.filter((tag) => !tags2.includes(tag)),
+          excludedTagFilters: state3.excludedTagFilters.filter((tag) => !tags2.includes(tag))
+        },
+        { persistence: "permanent" }
+      ), recomputeFilters();
     }
+  }, recomputeFilters = () => {
+    let { includedTagFilters, excludedTagFilters } = store2.getState();
+    api.experimental_setFilter(
+      TAGS_FILTER,
+      computeTagsFilterFn(includedTagFilters, excludedTagFilters)
+    );
   };
   provider.channel?.on(
     STORY_SPECIFIED,
@@ -59142,11 +59330,13 @@ var init12 = ({
     let { ref } = getEventMetadata(this, fullAPI);
     api.setPreviewInitialized(ref);
   }), provider.channel?.on(SET_CONFIG, () => {
-    let config5 = provider.getConfig();
-    config5?.sidebar?.filters && store2.setState({
+    let configFilters2 = provider.getConfig()?.sidebar?.filters || {}, { includedTagFilters, excludedTagFilters, tagPresets: tagPresets2 } = store2.getState();
+    store2.setState({
       filters: {
         ...store2.getState().filters,
-        ...config5?.sidebar?.filters
+        ...configFilters2,
+        [STATIC_FILTER]: computeStaticFilterFn(tagPresets2),
+        [TAGS_FILTER]: computeTagsFilterFn(includedTagFilters, excludedTagFilters)
       }
     });
   }), fullStatusStore.onAllStatusChange(async () => {
@@ -59159,7 +59349,11 @@ var init12 = ({
       fullAPI.setRef(refId, { ...ref, storyIndex: internal_index }, !0);
     });
   });
-  let config4 = provider.getConfig();
+  let configFilters = provider.getConfig()?.sidebar?.filters || {}, tagPresets = scope.TAGS_OPTIONS || {}, defaultTags = getDefaultTagsFromPreset(tagPresets), persistedState = store2.getState(), initialIncluded = persistedState.includedTagFilters ?? persistedState.layout?.includedTagFilters ?? defaultTags.included, initialExcluded = persistedState.excludedTagFilters ?? persistedState.layout?.excludedTagFilters ?? defaultTags.excluded, initialFilters = {
+    ...configFilters,
+    [STATIC_FILTER]: computeStaticFilterFn(tagPresets),
+    [TAGS_FILTER]: computeTagsFilterFn(initialIncluded, initialExcluded)
+  };
   return {
     api,
     state: {
@@ -59167,7 +59361,12 @@ var init12 = ({
       viewMode: initialViewMode,
       hasCalledSetOptions: !1,
       previewInitialized: !1,
-      filters: config4?.sidebar?.filters || {}
+      filters: initialFilters,
+      tagPresets,
+      defaultIncludedTagFilters: defaultTags.included,
+      defaultExcludedTagFilters: defaultTags.excluded,
+      includedTagFilters: initialIncluded,
+      excludedTagFilters: initialExcluded
     },
     init: async () => {
       provider.channel?.on(STORY_INDEX_INVALIDATED, () => api.fetchIndex()), await api.fetchIndex();
@@ -59203,9 +59402,9 @@ __export(router_exports, {
 
 // src/router/utils.ts
 init_client_logger();
-var import_memoizerific7 = __toESM(require_memoizerific(), 1), import_picoquery4 = __toESM(require_main(), 1);
+var import_memoizerific8 = __toESM(require_memoizerific(), 1), import_picoquery4 = __toESM(require_main(), 1);
 init_esm();
-var splitPathRegex = /\/([^/]+)\/(?:(.*)_)?([^/]+)?/, parsePath2 = (0, import_memoizerific7.default)(1e3)((path) => {
+var splitPathRegex = /\/([^/]+)\/(?:(.*)_)?([^/]+)?/, parsePath2 = (0, import_memoizerific8.default)(1e3)((path) => {
   let result = {
     viewMode: void 0,
     storyId: void 0,
@@ -59269,10 +59468,10 @@ var splitPathRegex = /\/([^/]+)\/(?:(.*)_)?([^/]+)?/, parsePath2 = (0, import_me
     nestingSyntax: "js"
     // encode objects using dot notation: obj.key=val
   }).replace(knownQueryChar, decodeKnownQueryChar).split(";").map((part) => part.replace("=", ":")).join(";");
-}, queryFromString = (0, import_memoizerific7.default)(1e3)((s3) => s3 !== void 0 ? (0, import_picoquery4.parse)(s3) : {}), queryFromLocation = (location4) => queryFromString(location4.search ? location4.search.slice(1) : ""), stringifyQuery = (query) => {
+}, queryFromString = (0, import_memoizerific8.default)(1e3)((s3) => s3 !== void 0 ? (0, import_picoquery4.parse)(s3) : {}), queryFromLocation = (location4) => queryFromString(location4.search ? location4.search.slice(1) : ""), stringifyQuery = (query) => {
   let queryStr = (0, import_picoquery4.stringify)(query);
   return queryStr ? "?" + queryStr : "";
-}, getMatch = (0, import_memoizerific7.default)(1e3)((current, target, startsWith4 = !0) => {
+}, getMatch = (0, import_memoizerific8.default)(1e3)((current, target, startsWith4 = !0) => {
   if (startsWith4) {
     if (typeof target != "string")
       throw new Error("startsWith only works with string targets");
@@ -60231,7 +60430,7 @@ var parseBoolean = (value) => {
     ...otherParams
     // the rest gets passed to the iframe
   } = queryFromLocation(location4), navSize, bottomPanelHeight, rightPanelWidth;
-  parseBoolean(full) === !0 ? (navSize = 0, bottomPanelHeight = 0, rightPanelWidth = 0) : parseBoolean(full) === !1 && (navSize = defaultLayoutState.layout.navSize, bottomPanelHeight = defaultLayoutState.layout.bottomPanelHeight, rightPanelWidth = defaultLayoutState.layout.rightPanelWidth), singleStory || (parseBoolean(nav) === !0 && (navSize = defaultLayoutState.layout.navSize), parseBoolean(nav) === !1 && (navSize = 0)), parseBoolean(panel) === !1 && (bottomPanelHeight = 0, rightPanelWidth = 0);
+  parseBoolean(full) === !0 ? (navSize = 0, bottomPanelHeight = 0, rightPanelWidth = 0) : parseBoolean(full) === !1 && (navSize = DEFAULT_NAV_SIZE, bottomPanelHeight = DEFAULT_BOTTOM_PANEL_HEIGHT, rightPanelWidth = DEFAULT_RIGHT_PANEL_WIDTH), singleStory || (parseBoolean(nav) === !0 && (navSize = DEFAULT_NAV_SIZE), parseBoolean(nav) === !1 && (navSize = 0)), parseBoolean(panel) === !1 && (bottomPanelHeight = 0, rightPanelWidth = 0);
   let layout = {
     navSize,
     bottomPanelHeight,
@@ -60330,13 +60529,13 @@ __export(versions_exports, {
   init: () => init14
 });
 init_dist();
-var import_memoizerific8 = __toESM(require_memoizerific(), 1), import_semver = __toESM(require_semver2(), 1);
+var import_memoizerific9 = __toESM(require_memoizerific(), 1), import_semver = __toESM(require_semver2(), 1);
 
 // src/manager-api/version.ts
-var version = "10.3.0-alpha.14";
+var version = "10.3.1";
 
 // src/manager-api/modules/versions.ts
-var { VERSIONCHECK } = scope, getVersionCheckData = (0, import_memoizerific8.default)(1)(() => {
+var { VERSIONCHECK } = scope, getVersionCheckData = (0, import_memoizerific9.default)(1)(() => {
   try {
     return { ...JSON.parse(VERSIONCHECK).data || {} };
   } catch {
@@ -60514,8 +60713,8 @@ function update(storage, patch) {
   return set2(storage, { ...previous, ...patch });
 }
 var Store = class {
-  constructor({ setState: setState2, getState: getState3 }) {
-    this.upstreamSetState = setState2, this.upstreamGetState = getState3;
+  constructor({ allowPersistence, setState: setState2, getState: getState3 }) {
+    this.upstreamPersistence = allowPersistence ?? !0, this.upstreamSetState = setState2, this.upstreamGetState = getState3;
   }
   // The assumption is that this will be called once, to initialize the React state
   // when the module is instantiated
@@ -60535,7 +60734,7 @@ var Store = class {
         resolve(this.getState());
       });
     });
-    if (persistence !== "none") {
+    if (persistence !== "none" && this.upstreamPersistence) {
       let storage = persistence === "session" ? import_store22.default.session : import_store22.default.local;
       await update(storage, delta);
     }
@@ -63485,7 +63684,7 @@ function __spreadArray(to, from2, pack) {
 }
 
 // ../../node_modules/@formatjs/fast-memoize/lib/index.js
-function memoize11(fn4, options) {
+function memoize12(fn4, options) {
   var cache = options && options.cache ? options.cache : cacheDefault, serializer = options && options.serializer ? options.serializer : serializerDefault, strategy = options && options.strategy ? options.strategy : strategyDefault;
   return strategy(fn4, {
     cache,
@@ -66159,7 +66358,7 @@ function createDefaultFormatters(cache) {
     dateTime: {},
     pluralRules: {}
   }), {
-    getNumberFormat: memoize11(function() {
+    getNumberFormat: memoize12(function() {
       for (var _a4, args = [], _i = 0; _i < arguments.length; _i++)
         args[_i] = arguments[_i];
       return new ((_a4 = Intl.NumberFormat).bind.apply(_a4, __spreadArray([void 0], args, !1)))();
@@ -66167,7 +66366,7 @@ function createDefaultFormatters(cache) {
       cache: createFastMemoizeCache(cache.number),
       strategy: strategies.variadic
     }),
-    getDateTimeFormat: memoize11(function() {
+    getDateTimeFormat: memoize12(function() {
       for (var _a4, args = [], _i = 0; _i < arguments.length; _i++)
         args[_i] = arguments[_i];
       return new ((_a4 = Intl.DateTimeFormat).bind.apply(_a4, __spreadArray([void 0], args, !1)))();
@@ -66175,7 +66374,7 @@ function createDefaultFormatters(cache) {
       cache: createFastMemoizeCache(cache.dateTime),
       strategy: strategies.variadic
     }),
-    getPluralRules: memoize11(function() {
+    getPluralRules: memoize12(function() {
       for (var _a4, args = [], _i = 0; _i < arguments.length; _i++)
         args[_i] = arguments[_i];
       return new ((_a4 = Intl.PluralRules).bind.apply(_a4, __spreadArray([void 0], args, !1)))();
@@ -68130,9 +68329,9 @@ function $4e3b923658d69c60$var$TooltipInner(props) {
 
 // src/components/components/shared/overlayHelpers.tsx
 var import_react89 = __toESM(require_react(), 1);
-var import_memoizerific9 = __toESM(require_memoizerific(), 1);
+var import_memoizerific10 = __toESM(require_memoizerific(), 1);
 init_theming();
-var convertToReactAriaPlacement = (0, import_memoizerific9.default)(1e3)((p3) => p3 === "left-end" ? "left bottom" : p3 === "right-end" ? "right bottom" : p3 === "left-start" ? "left top" : p3 === "right-start" ? "right top" : p3.replace("-", " ")), Container2 = styled.div({
+var convertToReactAriaPlacement = (0, import_memoizerific10.default)(1e3)((p3) => p3 === "left-end" ? "left bottom" : p3 === "right-end" ? "right bottom" : p3 === "left-start" ? "left top" : p3 === "right-start" ? "right top" : p3.replace("-", " ")), Container2 = styled.div({
   width: 500,
   height: 500,
   paddingTop: 100,
@@ -68283,12 +68482,13 @@ var Button = (0, import_react93.forwardRef)(
           variant,
           size,
           padding,
-          disabled: disabled || readOnly,
+          $disabled: disabled || readOnly,
+          "aria-disabled": disabled || readOnly ? "true" : void 0,
           readOnly,
           active,
           animating: isAnimating,
           animation: animation2,
-          onClick: handleClick,
+          onClick: disabled || readOnly ? void 0 : handleClick,
           "aria-label": !readOnly && ariaLabel !== !1 ? ariaLabel : void 0,
           "aria-keyshortcuts": readOnly ? void 0 : shortcutAttribute,
           ...readOnly ? {} : ariaDescriptionAttrs,
@@ -68306,7 +68506,7 @@ var StyledButton = styled("button", {
     theme: theme3,
     variant,
     size,
-    disabled,
+    $disabled,
     readOnly,
     active,
     animating,
@@ -68314,7 +68514,7 @@ var StyledButton = styled("button", {
     padding
   }) => ({
     border: 0,
-    cursor: readOnly ? "inherit" : disabled ? "not-allowed" : "pointer",
+    cursor: readOnly ? "inherit" : $disabled ? "not-allowed" : "pointer",
     display: "inline-flex",
     gap: "6px",
     alignItems: "center",
@@ -68331,7 +68531,7 @@ var StyledButton = styled("button", {
     verticalAlign: "top",
     whiteSpace: "nowrap",
     userSelect: "none",
-    opacity: disabled && !readOnly ? 0.5 : 1,
+    opacity: $disabled && !readOnly ? 0.5 : 1,
     margin: 0,
     fontSize: `${theme3.typography.size.s1}px`,
     fontWeight: theme3.typography.weight.bold,
@@ -69150,7 +69350,7 @@ function BaseModal({
       $transitionDuration: transitionDuration,
       ...underlayProps
     }
-  ), import_react105.default.createElement("div", { role: "dialog", "aria-label": ariaLabel, ref: overlayRef, ...finalModalProps }, import_react105.default.createElement(ModalContext.Provider, { value: { close } }, import_react105.default.createElement(
+  ), import_react105.default.createElement("div", { role: "dialog", "aria-label": ariaLabel, ref: overlayRef, ...finalModalProps }, import_react105.default.createElement(ModalContext.Provider, { value: { close } }, import_react105.default.createElement("div", { tabIndex: -1 }, import_react105.default.createElement(
     Container3,
     {
       "data-deprecated": deprecated,
@@ -69163,7 +69363,7 @@ function BaseModal({
       ...props
     },
     children
-  )))));
+  ))))));
 }
 var Modal = Object.assign(BaseModal, Modal_styled_exports), ModalDecorator = (Story, { args }) => {
   let [container, setContainer] = (0, import_react105.useState)(null);
@@ -73996,7 +74196,7 @@ init_theming();
 // src/components/components/tooltip/ListItem.tsx
 var import_react161 = __toESM(require_react(), 1);
 init_client_logger();
-var import_memoizerific11 = __toESM(require_memoizerific(), 1);
+var import_memoizerific12 = __toESM(require_memoizerific(), 1);
 init_theming();
 var Title4 = styled(({ active, loading, disabled, ...rest }) => import_react161.default.createElement("span", { ...rest }))(
   ({ theme: theme3 }) => ({
@@ -74096,7 +74296,7 @@ var Title4 = styled(({ active, loading, disabled, ...rest }) => import_react161.
     }
   },
   ({ disabled }) => disabled && { cursor: "not-allowed" }
-), getItemProps = (0, import_memoizerific11.default)(100)(({ onClick, input: input2, href, LinkWrapper }) => ({
+), getItemProps = (0, import_memoizerific12.default)(100)(({ onClick, input: input2, href, LinkWrapper }) => ({
   ...onClick && {
     as: "button",
     role: "button",
