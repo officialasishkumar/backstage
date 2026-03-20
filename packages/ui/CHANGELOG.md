@@ -1,5 +1,17 @@
 # @backstage/ui
 
+## 0.13.1
+
+### Patch Changes
+
+- f46c17d: Made `SearchAutocomplete` background-aware. The input now adapts its background color based on its parent container's background level.
+
+  **Affected components:** SearchAutocomplete
+
+- f46c17d: Added `aria-hidden` to the `PluginHeader` icon to prevent screen readers from announcing decorative plugin icons.
+
+  **Affected components:** PluginHeader
+
 ## 0.13.0
 
 ### Minor Changes
