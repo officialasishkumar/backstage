@@ -2938,6 +2938,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@backstage/cli-module-catalog@workspace:*, @backstage/cli-module-catalog@workspace:packages/cli-module-catalog":
+  version: 0.0.0-use.local
+  resolution: "@backstage/cli-module-catalog@workspace:packages/cli-module-catalog"
+  dependencies:
+    "@backstage/catalog-client": "workspace:^"
+    "@backstage/cli": "workspace:^"
+    "@backstage/cli-common": "workspace:^"
+    "@backstage/cli-node": "workspace:^"
+    "@backstage/filter-predicates": "workspace:^"
+    cleye: "npm:^2.3.0"
+  bin:
+    cli-module-catalog: bin/backstage-cli-module-catalog
+  languageName: unknown
+  linkType: soft
+
 "@backstage/cli-module-config@workspace:^, @backstage/cli-module-config@workspace:packages/cli-module-config":
   version: 0.0.0-use.local
   resolution: "@backstage/cli-module-config@workspace:packages/cli-module-config"
@@ -45125,6 +45140,7 @@ __metadata:
   dependencies:
     "@backstage/cli": "workspace:*"
     "@backstage/cli-defaults": "workspace:*"
+    "@backstage/cli-module-catalog": "workspace:*"
     "@backstage/codemods": "workspace:*"
     "@backstage/create-app": "workspace:*"
     "@backstage/e2e-test-utils": "workspace:*"
