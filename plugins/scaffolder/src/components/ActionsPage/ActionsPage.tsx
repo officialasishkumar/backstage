@@ -53,8 +53,8 @@ import { scaffolderTranslationRef } from '../../translation';
 import { Expanded, RenderSchema, SchemaRenderContext } from '../RenderSchema';
 import { ScaffolderUsageExamplesTable } from '../ScaffolderUsageExamplesTable';
 
-const INITIAL_CHUNK = 15;
-const CHUNK_SIZE = 30;
+const INITIAL_CHUNK = 5;
+const CHUNK_SIZE = 5;
 
 /**
  * Progressively reveals items across frames so the initial render
