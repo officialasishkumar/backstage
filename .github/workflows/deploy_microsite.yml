@@ -27,37 +27,56 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: find latest release branch
+      - name: find latest release
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         id: find-release
         with:
           script: |
-            const data = await octokit.paginate(github.rest.repos.listBranches, {
+            function versionValue(version) {
+              return version
+                .split('.')
+                .reduce((val, part) => Number(val) * 1000 + Number(part))
+            }
+
+            // Find the latest version tag
+            const tags = await octokit.paginate(github.rest.repos.listTags, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               per_page: 100,
             })
 
-            const [{branch}] = data
-              .map(i => i.name)
-              .filter(branch => branch.match(/^patch\/v\d+\.\d+\.\d+$/))
-              .map(branch => ({
-                branch,
-                val: branch
-                  .split('/')[1]
-                  .slice(1)
-                  .split('.')
-                  .reduce((val, part) => Number(val) * 1000 + Number(part))
-              }))
-              .sort((a, b) => b.val - a.val)
+            const latestTag = tags
+              .map(t => t.name)
+              .filter(name => name.match(/^v\d+\.\d+\.\d+$/))
+              .map(name => ({ name, val: versionValue(name.slice(1)) }))
+              .sort((a, b) => b.val - a.val)[0]
 
-            return branch
+            if (!latestTag) {
+              throw new Error('No version tags found')
+            }
+
+            // Check if a corresponding patch branch exists
+            let patchBranch = null
+            try {
+              patchBranch = await github.rest.repos.getBranch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                branch: `patch/${latestTag.name}`,
+              })
+            } catch (e) {
+              if (e.status !== 404) throw e
+            }
+
+            if (patchBranch) {
+              return `refs/heads/patch/${latestTag.name}`
+            }
+            return `refs/tags/${latestTag.name}`
           result-encoding: string
 
       - name: checkout latest release
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: refs/heads/${{ steps.find-release.outputs.result }}
+          ref: ${{ steps.find-release.outputs.result }}
 
       - name: Use Node.js 22.x
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -233,7 +252,7 @@ jobs:
       - name: checkout latest release
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: refs/heads/${{ needs.stable.outputs.release }}
+          ref: ${{ needs.stable.outputs.release }}
 
       - name: microsite yarn install
         run: yarn install --immutable
