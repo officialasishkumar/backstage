@@ -314,6 +314,7 @@ nunjucks
 nvarchar
 nvm
 OAuth
+OKRs
 octokit
 oidc
 Okta
@@ -563,11 +564,14 @@ VMware
 Vodafone
 VPCs
 VSCode
+walkthrough
+walkthroughs
 Wayfair
 Weaveworks
 Webpack
 widget's
 winston
+wishlist
 Wolfi
 www
 WWW
@@ -588,7 +592,3 @@ cleye
 createRouter
 createPlugin
 baseUrl
-walkthrough
-walkthroughs
-wishlist
-OKRs
