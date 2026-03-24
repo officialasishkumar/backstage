@@ -106,25 +106,6 @@ export default {
                 'golden-path/plugins/backend/reading-from-source',
                 'golden-path/plugins/backend/testing',
               ]),
-              sidebarElementWithIndex({ label: 'Frontend Plugins' }, [
-                'golden-path/plugins/frontend/first-steps',
-                'golden-path/plugins/frontend/poking-around',
-                'golden-path/plugins/frontend/dynamic-config',
-                'golden-path/plugins/frontend/http-client',
-                'golden-path/plugins/frontend/testing',
-              ]),
-            ]),
-            sidebarElementWithIndex({ label: '003 - Deployment' }, [
-              'golden-path/deployment/index',
-            ]),
-            sidebarElementWithIndex({ label: '004 - Adoption' }, [
-              'golden-path/adoption/getting-started',
-              'golden-path/adoption/leadership-buy-in',
-              'golden-path/adoption/setting-up-a-poc',
-              'golden-path/adoption/first-stakeholder-feedback',
-              'golden-path/adoption/preparing-for-ga',
-              'golden-path/adoption/plugin-ownership',
-              'golden-path/adoption/full-catalog',
             ]),
           ]),
         ]
