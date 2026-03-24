@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useAsync from 'react-use/esm/useAsync';
 import { Action, scaffolderApiRef } from '@backstage/plugin-scaffolder-react';
 import Accordion from '@material-ui/core/Accordion';
@@ -53,33 +53,36 @@ import { scaffolderTranslationRef } from '../../translation';
 import { Expanded, RenderSchema, SchemaRenderContext } from '../RenderSchema';
 import { ScaffolderUsageExamplesTable } from '../ScaffolderUsageExamplesTable';
 
-const INITIAL_CHUNK = 5;
-const CHUNK_SIZE = 5;
-
 /**
- * Progressively reveals items across frames so the initial render
- * doesn't block the main thread when the list is large.
+ * Defers rendering of children until the placeholder element is
+ * within `rootMargin` of the viewport. Once visible the content
+ * stays mounted so scroll-back is instant.
  */
-function useChunkedRendering<T>(items: T[]): T[] {
-  const [visibleCount, setVisibleCount] = useState(
-    Math.min(INITIAL_CHUNK, items.length),
-  );
+function useLazyVisible(
+  rootMargin = '400px',
+): [React.RefObject<HTMLElement | null>, boolean] {
+  const ref = useRef<HTMLElement | null>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setVisibleCount(Math.min(INITIAL_CHUNK, items.length));
-  }, [items]);
-
-  useEffect(() => {
-    if (visibleCount >= items.length) {
+    const el = ref.current;
+    if (!el || visible) {
       return undefined;
     }
-    const id = requestAnimationFrame(() => {
-      setVisibleCount(prev => Math.min(prev + CHUNK_SIZE, items.length));
-    });
-    return () => cancelAnimationFrame(id);
-  }, [visibleCount, items.length]);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visible, rootMargin]);
 
-  return items.slice(0, visibleCount);
+  return [ref, visible];
 }
 
 const useStyles = makeStyles(theme => ({
@@ -111,6 +114,100 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+const ActionItem = ({
+  action,
+  classes,
+  expanded,
+}: {
+  action: Action;
+  classes: ReturnType<typeof useStyles>;
+  expanded: SchemaRenderContext['expanded'];
+}) => {
+  const { t } = useTranslationRef(scaffolderTranslationRef);
+  const [ref, visible] = useLazyVisible();
+
+  const partialSchemaRenderContext: Omit<SchemaRenderContext, 'parentId'> = {
+    classes,
+    expanded,
+    headings: [<Typography variant="h6" component="h4" />],
+  };
+
+  return (
+    <Box pb={3}>
+      <div
+        ref={ref as React.Ref<HTMLDivElement>}
+        style={{ display: 'flex', alignItems: 'center' }}
+      >
+        <Typography
+          id={action.id.replaceAll(':', '-')}
+          variant="h5"
+          component="h2"
+          className={classes.code}
+        >
+          {action.id}
+        </Typography>
+        <Link
+          className={classes.link}
+          to={`#${action.id.replaceAll(':', '-')}`}
+        >
+          <LinkIcon />
+        </Link>
+      </div>
+      {visible && (
+        <>
+          {action.description && (
+            <MarkdownContent content={action.description} />
+          )}
+          {action.schema?.input && (
+            <Box pb={2}>
+              <Typography variant="h6" component="h3">
+                {t('actionsPage.action.input')}
+              </Typography>
+              <RenderSchema
+                strategy="properties"
+                context={{
+                  parentId: `${action.id}.input`,
+                  ...partialSchemaRenderContext,
+                }}
+                schema={action?.schema?.input}
+              />
+            </Box>
+          )}
+          {action.schema?.output && (
+            <Box pb={2}>
+              <Typography variant="h5" component="h3">
+                {t('actionsPage.action.output')}
+              </Typography>
+              <RenderSchema
+                strategy="properties"
+                context={{
+                  parentId: `${action.id}.output`,
+                  ...partialSchemaRenderContext,
+                }}
+                schema={action?.schema?.output}
+              />
+            </Box>
+          )}
+          {action.examples && (
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="h6" component="h3">
+                  {t('actionsPage.action.examples')}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box pb={2}>
+                  <ScaffolderUsageExamplesTable examples={action.examples} />
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          )}
+        </>
+      )}
+    </Box>
+  );
+};
+
 export const ActionPageContent = () => {
   const api = useApi(scaffolderApiRef);
   const { t } = useTranslationRef(scaffolderTranslationRef);
@@ -126,13 +223,6 @@ export const ActionPageContent = () => {
 
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
   const expanded = useState<Expanded>({});
-  const visibleActions = useChunkedRendering(value);
-
-  useEffect(() => {
-    if (visibleActions.length && window.location.hash) {
-      document.querySelector(window.location.hash)?.scrollIntoView();
-    }
-  }, [visibleActions]);
 
   if (loading) {
     return <Progress />;
@@ -181,84 +271,17 @@ export const ActionPageContent = () => {
           fullWidth
         />
       </Box>
-      {(selectedAction ? [selectedAction] : visibleActions).map(action => {
+      {(selectedAction ? [selectedAction] : value).map(action => {
         if (action.id.startsWith('legacy:')) {
           return undefined;
         }
-        const partialSchemaRenderContext: Omit<
-          SchemaRenderContext,
-          'parentId'
-        > = {
-          classes,
-          expanded,
-          headings: [<Typography variant="h6" component="h4" />],
-        };
         return (
-          <Box pb={3} key={action.id}>
-            <Box display="flex" alignItems="center">
-              <Typography
-                id={action.id.replaceAll(':', '-')}
-                variant="h5"
-                component="h2"
-                className={classes.code}
-              >
-                {action.id}
-              </Typography>
-              <Link
-                className={classes.link}
-                to={`#${action.id.replaceAll(':', '-')}`}
-              >
-                <LinkIcon />
-              </Link>
-            </Box>
-            {action.description && (
-              <MarkdownContent content={action.description} />
-            )}
-            {action.schema?.input && (
-              <Box pb={2}>
-                <Typography variant="h6" component="h3">
-                  {t('actionsPage.action.input')}
-                </Typography>
-                <RenderSchema
-                  strategy="properties"
-                  context={{
-                    parentId: `${action.id}.input`,
-                    ...partialSchemaRenderContext,
-                  }}
-                  schema={action?.schema?.input}
-                />
-              </Box>
-            )}
-            {action.schema?.output && (
-              <Box pb={2}>
-                <Typography variant="h5" component="h3">
-                  {t('actionsPage.action.output')}
-                </Typography>
-                <RenderSchema
-                  strategy="properties"
-                  context={{
-                    parentId: `${action.id}.output`,
-                    ...partialSchemaRenderContext,
-                  }}
-                  schema={action?.schema?.output}
-                />
-              </Box>
-            )}
-            {action.examples && (
-              <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="h6" component="h3">
-                    {t('actionsPage.action.examples')}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Box pb={2}>
-                    <ScaffolderUsageExamplesTable examples={action.examples} />
-                  </Box>
-                </AccordionDetails>
-              </Accordion>
-            )}
-          </Box>
+          <ActionItem
+            key={action.id}
+            action={action}
+            classes={classes}
+            expanded={expanded}
+          />
         );
       })}
     </>

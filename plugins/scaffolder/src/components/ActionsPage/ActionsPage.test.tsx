@@ -45,6 +45,24 @@ const apis = TestApiRegistry.from(
   [permissionApiRef, mockPermissionApi],
 );
 
+window.IntersectionObserver = class MockIntersectionObserver {
+  constructor(private callback: IntersectionObserverCallback) {}
+  observe(el: Element) {
+    this.callback(
+      [{ isIntersecting: true, target: el } as IntersectionObserverEntry],
+      this as unknown as IntersectionObserver,
+    );
+  }
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+  root = null;
+  rootMargin = '';
+  thresholds = [0];
+} as unknown as typeof IntersectionObserver;
+
 describe('TemplatePage', () => {
   beforeEach(() => jest.resetAllMocks());
 
