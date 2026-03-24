@@ -49,7 +49,7 @@ imports:
 source: github/gh-aw/.github/workflows/daily-doc-updater.md@852cb06ad52958b402ed982b69957ffc57ca0619
 ---
 
-{{#runtime-import? .github/shared-instructions.md}}
+{{#runtime-import? .github/copilot-instructions.md}}
 
 # Daily Documentation Updater
 
@@ -103,13 +103,11 @@ Pay special attention to:
 
 - The tone and voice guidelines (neutral, technical, not promotional)
 - Proper use of headings (markdown syntax, not bold text)
-- Code samples with appropriate language tags (use `aw` for agentic workflows)
-- Astro Starlight syntax for callouts, tabs, and cards
-- Minimal use of components (prefer standard markdown)
+- Code samples with appropriate language tags (`ts` for Typescript code snippets)
 
 ### 4. Identify Documentation Gaps
 
-Review the documentation in the `docs/src/content/docs/` directory:
+Review the documentation in the `docs/` directory:
 
 - Check if new features are already documented
 - Identify which documentation files need updates
@@ -141,7 +139,6 @@ For each missing or incomplete feature documentation:
    - Update existing sections for modified features
    - Add deprecation notices for removed features
    - Include code examples with proper syntax highlighting
-   - Use appropriate Astro Starlight components (callouts, tabs, cards) sparingly
 
 4. **Maintain consistency** with existing documentation style:
    - Use the same tone and voice
@@ -208,7 +205,6 @@ This PR updates the documentation based on features merged in the last 24 hours.
 - **Follow Guidelines**: Strictly adhere to the documentation instructions
 - **Be Selective**: Only document features that affect users (skip internal refactoring unless it's significant)
 - **Be Clear**: Write clear, concise documentation that helps users
-- **Use Proper Format**: Use the correct Diátaxis category and Astro Starlight syntax
 - **Link References**: Include links to relevant PRs and issues where appropriate
 - **Test Understanding**: If unsure about a feature, review the code changes in detail
 
