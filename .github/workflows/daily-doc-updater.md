@@ -89,7 +89,7 @@ Create a summary of changes that should be documented.
 
 ```bash
 # Load the documentation instructions
-cat .github/instructions/documentation.instructions.md
+cat docs/contribute/doc-style-guide.md
 ```
 
 The documentation follows the **Diátaxis framework** with four distinct types:
