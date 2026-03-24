@@ -240,16 +240,16 @@ Exception: Use "etc." for and so on.
 
 ## Patterns to avoid
 
-### Avoid using "we"
+### Be intentional with "we"
 
-Using "we" in a sentence can be confusing, because the reader might not know
-whether they're part of the "we" you're describing.
+"We" is fine in tutorials and walkthroughs where it means "you and I, working
+through this together." Avoid "we" when it's unclear whether it refers to the
+Backstage project, the maintainers, or the reader's team.
 
-| Do                                        | Don't                                              |
-| :---------------------------------------- | :------------------------------------------------- |
-| Version 1.25 includes ...                 | In version 1.25, we have added ...                 |
-| Backstage provides a new feature for ...  | We provide a new feature ...                       |
-| This page teaches you how to use plugins. | In this page, we are going to learn about plugins. |
+| Ok                                          | Avoid                              |
+| :------------------------------------------ | :--------------------------------- |
+| Next, we need to add the backend package.   | We provide a new feature ...       |
+| We can verify this by running `yarn start`. | In version 1.25, we have added ... |
 
 ### Avoid jargon and idioms
 
