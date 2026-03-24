@@ -13,7 +13,7 @@ Packages prefixed with `core-` (e.g., `@backstage/core-plugin-api`) are part of 
 
 ## Writing Standards
 
-Changes to the docs should follow the documentation style guide at `docs/contribute/doc-style-guide.md`.
+Changes to the docs should follow the documentation style guide at `/docs/contribute/doc-style-guide.md`.
 
 ## Code Standards
 

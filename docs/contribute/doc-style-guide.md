@@ -304,4 +304,4 @@ the site.
 | app-config          | Use code style: `app-config.yaml`.                                                                                                     |
 | open source         | Two words, lowercase (unless starting a sentence).                                                                                     |
 | backend system      | Lowercase when referring to the Backstage backend framework.                                                                           |
-| new frontend system | Lowercase. Acceptable to abbreviate as "new frontend system" after first use.                                                          |
+| new frontend system | Lowercase. Acceptable to abbreviate as "NFS" after first use.                                                                          |
