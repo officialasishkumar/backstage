@@ -125,7 +125,7 @@ export default {
               'golden-path/adoption/preparing-for-ga',
               'golden-path/adoption/plugin-ownership',
               'golden-path/adoption/full-catalog',
-            ])
+            ]),
           ]),
         ]
       : []),
