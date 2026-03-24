@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
 const FIRST_PAGE_CURSOR = Symbol('firstPage');
 
@@ -44,6 +44,7 @@ export interface UsePageCacheOptions<T, TCursor extends CursorType = string> {
     signal: AbortSignal;
   }) => Promise<GetDataResult<T, TCursor>>;
   initialCurrentCursor?: TCursor;
+  infinite?: boolean;
 }
 
 /** @internal */
@@ -112,6 +113,41 @@ class PageCacheStore<T, TCursor extends CursorType> {
       : currentEntry.prevCursor;
   }
 
+  getAllData(startCursor: InternalCursor<TCursor>): T[] | undefined {
+    const firstEntry = this.cache.get(startCursor);
+    if (!firstEntry || firstEntry.data === undefined) {
+      return undefined;
+    }
+
+    const result: T[] = [];
+    let cursor: InternalCursor<TCursor> | undefined = startCursor;
+
+    while (cursor !== undefined) {
+      const entry = this.cache.get(cursor);
+      if (!entry?.data) break;
+      result.push(...entry.data);
+      cursor = entry.nextCursor;
+    }
+
+    return result;
+  }
+
+  getFirstCursor(fromCursor: InternalCursor<TCursor>): InternalCursor<TCursor> {
+    let cursor = fromCursor;
+    const visited = new Set<InternalCursor<TCursor>>();
+
+    while (true) {
+      visited.add(cursor);
+      const entry = this.cache.get(cursor);
+      if (!entry?.prevCursor || visited.has(entry.prevCursor)) break;
+      const prevEntry = this.cache.get(entry.prevCursor);
+      if (!prevEntry?.data) break;
+      cursor = entry.prevCursor;
+    }
+
+    return cursor;
+  }
+
   linkEntryToSource(
     entry: PageEntry<T, TCursor>,
     direction: Direction,
@@ -141,7 +177,7 @@ function toExternalCursor<TCursor extends CursorType>(
 export function usePageCache<T, TCursor extends CursorType = string>(
   options: UsePageCacheOptions<T, TCursor>,
 ): UsePageCacheResult<T, TCursor> {
-  const { getData, initialCurrentCursor } = options;
+  const { getData, initialCurrentCursor, infinite } = options;
 
   const [currentCursor, setCurrentCursor] = useState<InternalCursor<TCursor>>(
     () => toInternalCursor(initialCurrentCursor),
@@ -159,6 +195,12 @@ export function usePageCache<T, TCursor extends CursorType = string>(
   const data = currentPage?.data;
   const hasNextPage = currentPage?.nextCursor !== undefined;
   const hasPreviousPage = currentPage?.prevCursor !== undefined;
+
+  const firstCursor = cacheStore.getFirstCursor(currentCursor);
+  const allData = useMemo(
+    () => cacheStore.getAllData(firstCursor),
+    [cacheStore, firstCursor, data, loading],
+  );
 
   const goToPage = useCallback(
     async (direction: Direction) => {
@@ -268,7 +310,7 @@ export function usePageCache<T, TCursor extends CursorType = string>(
   return {
     loading,
     error,
-    data,
+    data: infinite ? allData : data,
     totalCount,
     currentCursor: toExternalCursor(currentCursor),
     hasPreviousPage,
