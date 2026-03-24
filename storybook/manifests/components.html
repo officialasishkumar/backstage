@@ -576,13 +576,13 @@
 <header>
   <div class="wrap">
     <h1>Manifest Debugger</h1>
-    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/48 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">32/48 infos</a><span class="filter-pill ok" aria-disabled="true">427 stories ok</span></div>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/48 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">32/48 infos</a><span class="filter-pill ok" aria-disabled="true">425 stories ok</span></div>
   </div>
 </header>
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>3.0s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>3.1s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -6913,9 +6913,9 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> Header</h2>
       <div class="badges">
-        <label for="c-20-backstage-ui-header-props" class="badge ok as-toggle">5 prop types</label>
+        <label for="c-20-backstage-ui-header-props" class="badge ok as-toggle">6 prop types</label>
         
-        <label for="c-20-backstage-ui-header-stories" class="badge ok as-toggle">9 stories</label>
+        <label for="c-20-backstage-ui-header-stories" class="badge ok as-toggle">7 stories</label>
         
       </div>
     </div>
@@ -6940,17 +6940,19 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
           <div class="note ok">
             <div class="row">
               <span class="ex-name">Prop types <small>(react-docgen)</small></span>
-              <span class="badge ok">5 prop types</span>
+              <span class="badge ok">6 prop types</span>
             </div>
             <pre><code>Component: packages/ui/src/components/Header/Header.tsx::Header</code></pre>
             <pre><code>Props:</code></pre>
-            <pre><code>breadcrumbs?: HeaderBreadcrumb[]
+            <pre><code>activeTabId?: string
+
+breadcrumbs?: HeaderBreadcrumb[]
 
 className?: string
 
 customActions?: React.ReactNode
 
-tabs?: HeaderTab[]
+tabs?: HeaderNavTabItem[]
 
 title?: string</code></pre>
           </div>
@@ -6964,17 +6966,7 @@ title?: string</code></pre>
                 <div class="row">
                   <span class="ex-name">Imports</span>
                 </div>
-                <pre><code>import {
-    BUIProvider,
-    Button,
-    ButtonIcon,
-    Container,
-    Header,
-    Menu,
-    MenuItem,
-    MenuTrigger,
-    Text,
-} from "@backstage/ui";
+                <pre><code>import { BUIProvider, Button, ButtonIcon, Header, Menu, MenuItem, MenuTrigger } from "@backstage/ui";
 import { MemoryRouter } from "react-router-dom";
 import { RiMore2Line } from "@remixicon/react";</code></pre>
               </div>
@@ -6996,7 +6988,10 @@ import { RiMore2Line } from "@remixicon/react";</code></pre>
               </div>
               
               
-              <pre><code>const WithTabs = () =&gt; &lt;Header tabs={tabs} /&gt;;</code></pre>
+              <pre><code>const WithTabs = () =&gt; {
+  const activeTabId = useActiveTabId(tabs);
+  return &lt;Header title=&quot;Page Title&quot; tabs={tabs} activeTabId={activeTabId} /&gt;;
+};</code></pre>
             </div>
             <div class="note ok">
               <div class="row">
@@ -7063,172 +7058,32 @@ import { RiMore2Line } from "@remixicon/react";</code></pre>
               </div>
               
               
-              <pre><code>const WithEverything = () =&gt; (
-  &lt;Header
-    {...Default.input.args}
-    tabs={tabs}
-    customActions={&lt;Button&gt;Custom action&lt;/Button&gt;}
-    breadcrumbs={[{ label: &#39;Home&#39;, href: &#39;/&#39; }]}
-  /&gt;
-);</code></pre>
+              <pre><code>const WithEverything = () =&gt; {
+  const activeTabId = useActiveTabId(tabs);
+  return (
+    &lt;Header
+      title=&quot;Page Title&quot;
+      tabs={tabs}
+      activeTabId={activeTabId}
+      customActions={&lt;Button&gt;Custom action&lt;/Button&gt;}
+      breadcrumbs={[{ label: &#39;Home&#39;, href: &#39;/&#39; }]}
+    /&gt;
+  );
+};</code></pre>
             </div>
             <div class="note ok">
               <div class="row">
-                <span class="ex-name">With Tabs Matching Strategies</span>
+                <span class="ex-name">With Grouped Tabs</span>
                 <span class="badge ok">story ok</span>
               </div>
               
               
-              <pre><code>const WithTabsMatchingStrategies = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/mentorship/events&#39;]}&gt;
-    &lt;BUIProvider&gt;
-        &lt;Header
-            title=&quot;Route Matching Demo&quot;
-            tabs={[
-              {
-                id: &#39;home&#39;,
-                label: &#39;Home&#39;,
-                href: &#39;/home&#39;,
-              },
-              {
-                id: &#39;mentorship&#39;,
-                label: &#39;Mentorship&#39;,
-                href: &#39;/mentorship&#39;,
-                matchStrategy: &#39;prefix&#39;,
-              },
-              {
-                id: &#39;catalog&#39;,
-                label: &#39;Catalog&#39;,
-                href: &#39;/catalog&#39;,
-                matchStrategy: &#39;prefix&#39;,
-              },
-              {
-                id: &#39;settings&#39;,
-                label: &#39;Settings&#39;,
-                href: &#39;/settings&#39;,
-              },
-            ]} /&gt;
-        &lt;Container&gt;
-            &lt;Text&gt;
-                &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
-                          &lt;/Text&gt;
-            &lt;br /&gt;
-            &lt;Text&gt;Notice how the &quot;Mentorship&quot; tab is active even though we&#39;re on a
-                            nested route. This is because it uses{&#39; &#39;}
-                &lt;code&gt;matchStrategy=&quot;prefix&quot;&lt;/code&gt;.
-                          &lt;/Text&gt;
-            &lt;br /&gt;
-            &lt;Text&gt;• &lt;strong&gt;Home&lt;/strong&gt;: exact matching (default) - not active
-                          &lt;/Text&gt;
-            &lt;Text&gt;• &lt;strong&gt;Mentorship&lt;/strong&gt;: prefix matching - IS active (URL
-                            starts with /mentorship)
-                          &lt;/Text&gt;
-            &lt;Text&gt;• &lt;strong&gt;Catalog&lt;/strong&gt;: prefix matching - not active
-                          &lt;/Text&gt;
-            &lt;Text&gt;• &lt;strong&gt;Settings&lt;/strong&gt;: exact matching (default) - not active
-                          &lt;/Text&gt;
-        &lt;/Container&gt;
-    &lt;/BUIProvider&gt;
-&lt;/MemoryRouter&gt;;</code></pre>
-            </div>
-            <div class="note ok">
-              <div class="row">
-                <span class="ex-name">With Tabs Exact Matching</span>
-                <span class="badge ok">story ok</span>
-              </div>
-              
-              
-              <pre><code>const WithTabsExactMatching = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/mentorship/events&#39;]}&gt;
-    &lt;BUIProvider&gt;
-        &lt;Header
-            title=&quot;Exact Matching Demo&quot;
-            tabs={[
-              {
-                id: &#39;mentorship&#39;,
-                label: &#39;Mentorship&#39;,
-                href: &#39;/mentorship&#39;,
-              },
-              {
-                id: &#39;events&#39;,
-                label: &#39;Events&#39;,
-                href: &#39;/mentorship/events&#39;,
-              },
-              {
-                id: &#39;mentors&#39;,
-                label: &#39;Mentors&#39;,
-                href: &#39;/mentorship/mentors&#39;,
-              },
-            ]} /&gt;
-        &lt;Container&gt;
-            &lt;Text&gt;
-                &lt;strong&gt;Current URL:&lt;/strong&gt;/mentorship/events
-                          &lt;/Text&gt;
-            &lt;br /&gt;
-            &lt;Text&gt;With default exact matching, only the &quot;Events&quot; tab is active because
-                            it exactly matches the current URL. The &quot;Mentorship&quot; tab is not
-                            active even though the URL is under /mentorship.
-                          &lt;/Text&gt;
-        &lt;/Container&gt;
-    &lt;/BUIProvider&gt;
-&lt;/MemoryRouter&gt;;</code></pre>
-            </div>
-            <div class="note ok">
-              <div class="row">
-                <span class="ex-name">With Tabs Prefix Matching Deep</span>
-                <span class="badge ok">story ok</span>
-              </div>
-              
-              
-              <pre><code>const WithTabsPrefixMatchingDeep = () =&gt; &lt;MemoryRouter initialEntries={[&#39;/catalog/users/john/details&#39;]}&gt;
-    &lt;BUIProvider&gt;
-        &lt;Header
-            title=&quot;Deep Nesting Demo&quot;
-            tabs={[
-              {
-                id: &#39;catalog&#39;,
-                label: &#39;Catalog&#39;,
-                href: &#39;/catalog&#39;,
-                matchStrategy: &#39;prefix&#39;,
-              },
-              {
-                id: &#39;users&#39;,
-                label: &#39;Users&#39;,
-                href: &#39;/catalog/users&#39;,
-                matchStrategy: &#39;prefix&#39;,
-              },
-              {
-                id: &#39;components&#39;,
-                label: &#39;Components&#39;,
-                href: &#39;/catalog/components&#39;,
-                matchStrategy: &#39;prefix&#39;,
-              },
-            ]} /&gt;
-        &lt;Container&gt;
-            &lt;Text as=&quot;p&quot;&gt;
-                &lt;strong&gt;Current URL:&lt;/strong&gt;/catalog/users/john/details
-                          &lt;/Text&gt;
-            &lt;br /&gt;
-            &lt;Text as=&quot;p&quot;&gt;Active tab is &lt;strong&gt;Users&lt;/strong&gt;because:
-                          &lt;/Text&gt;
-            &lt;ul&gt;
-                &lt;li&gt;
-                    &lt;strong&gt;Catalog&lt;/strong&gt;: Matches since URL starts with /catalog
-                                &lt;/li&gt;
-                &lt;li&gt;
-                    &lt;strong&gt;Users&lt;/strong&gt;: Is active since URL starts with
-                                  /catalog/users, and is more specific (has more url segments) than
-                                  &quot;Catalog&quot;
-                                &lt;/li&gt;
-                &lt;li&gt;
-                    &lt;strong&gt;Components&lt;/strong&gt;: not active (URL doesn&#39;t start with
-                                  /catalog/components)
-                                &lt;/li&gt;
-            &lt;/ul&gt;
-            &lt;Text as=&quot;p&quot;&gt;This demonstrates how prefix matching works with deeply nested
-                            routes.
-                          &lt;/Text&gt;
-        &lt;/Container&gt;
-    &lt;/BUIProvider&gt;
-&lt;/MemoryRouter&gt;;</code></pre>
+              <pre><code>const WithGroupedTabs = () =&gt; {
+  const activeTabId = useActiveTabId(groupedTabs);
+  return (
+    &lt;Header title=&quot;Page Title&quot; tabs={groupedTabs} activeTabId={activeTabId} /&gt;
+  );
+};</code></pre>
             </div>
         </div>
     
@@ -9679,7 +9534,7 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> PluginHeaderandHeader</h2>
       <div class="badges">
-        <label for="c-29-recipes-pluginheader-and-header-props" class="badge ok as-toggle">5 prop types</label>
+        <label for="c-29-recipes-pluginheader-and-header-props" class="badge ok as-toggle">6 prop types</label>
         
         <label for="c-29-recipes-pluginheader-and-header-stories" class="badge ok as-toggle">5 stories</label>
         
@@ -9706,17 +9561,19 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
           <div class="note ok">
             <div class="row">
               <span class="ex-name">Prop types <small>(react-docgen)</small></span>
-              <span class="badge ok">5 prop types</span>
+              <span class="badge ok">6 prop types</span>
             </div>
             <pre><code>Component: packages/ui/src/components/Header/Header.tsx::Header</code></pre>
             <pre><code>Props:</code></pre>
-            <pre><code>breadcrumbs?: HeaderBreadcrumb[]
+            <pre><code>activeTabId?: string
+
+breadcrumbs?: HeaderBreadcrumb[]
 
 className?: string
 
 customActions?: React.ReactNode
 
-tabs?: HeaderTab[]
+tabs?: HeaderNavTabItem[]
 
 title?: string</code></pre>
           </div>
@@ -9904,54 +9761,53 @@ import {
               </div>
               
               
-              <pre><code>const WithSubTabs = () =&gt; (
-  &lt;&gt;
-    &lt;PluginHeader
-      icon={&lt;RiGitBranchLine /&gt;}
-      title=&quot;CI/CD&quot;
-      titleLink=&quot;/&quot;
-      tabs={[
-        { id: &#39;builds&#39;, label: &#39;Builds&#39;, href: &#39;/builds&#39; },
-        { id: &#39;pipelines&#39;, label: &#39;Pipelines&#39;, href: &#39;/pipelines&#39; },
-        { id: &#39;deployments&#39;, label: &#39;Deployments&#39;, href: &#39;/deployments&#39; },
-        { id: &#39;settings&#39;, label: &#39;Settings&#39;, href: &#39;/settings&#39; },
-      ]}
-      customActions={
-        &lt;&gt;
-          &lt;ButtonIcon
-            variant=&quot;secondary&quot;
-            icon={&lt;RiRefreshLine /&gt;}
-            aria-label=&quot;Refresh&quot;
-          /&gt;
-        &lt;/&gt;
-      }
-    /&gt;
-    &lt;Header
-      title=&quot;main · #842&quot;
-      tabs={[
-        { id: &#39;summary&#39;, label: &#39;Summary&#39;, href: &#39;/summary&#39; },
-        { id: &#39;steps&#39;, label: &#39;Steps&#39;, href: &#39;/steps&#39; },
-        { id: &#39;artifacts&#39;, label: &#39;Artifacts&#39;, href: &#39;/artifacts&#39; },
-        { id: &#39;logs&#39;, label: &#39;Logs&#39;, href: &#39;/logs&#39; },
-      ]}
-      breadcrumbs={[
-        { label: &#39;Catalog&#39;, href: &#39;/catalog&#39; },
-        { label: &#39;Services&#39;, href: &#39;/catalog?kind=Component&#39; },
-      ]}
-      customActions={
-        &lt;&gt;
-          &lt;Button variant=&quot;secondary&quot; iconStart={&lt;RiDownloadLine /&gt;}&gt;
-            Download logs
-          &lt;/Button&gt;
-          &lt;Button variant=&quot;primary&quot; iconStart={&lt;RiPlayLine /&gt;}&gt;
-            Re-run pipeline
-          &lt;/Button&gt;
-        &lt;/&gt;
-      }
-    /&gt;
-    &lt;PageContent /&gt;
-  &lt;/&gt;
-);</code></pre>
+              <pre><code>const WithSubTabs = () =&gt; {
+  const activeTabId = useActiveTabId(subTabs);
+  return (
+    &lt;&gt;
+      &lt;PluginHeader
+        icon={&lt;RiGitBranchLine /&gt;}
+        title=&quot;CI/CD&quot;
+        titleLink=&quot;/&quot;
+        tabs={[
+          { id: &#39;builds&#39;, label: &#39;Builds&#39;, href: &#39;/builds&#39; },
+          { id: &#39;pipelines&#39;, label: &#39;Pipelines&#39;, href: &#39;/pipelines&#39; },
+          { id: &#39;deployments&#39;, label: &#39;Deployments&#39;, href: &#39;/deployments&#39; },
+          { id: &#39;settings&#39;, label: &#39;Settings&#39;, href: &#39;/settings&#39; },
+        ]}
+        customActions={
+          &lt;&gt;
+            &lt;ButtonIcon
+              variant=&quot;secondary&quot;
+              icon={&lt;RiRefreshLine /&gt;}
+              aria-label=&quot;Refresh&quot;
+            /&gt;
+          &lt;/&gt;
+        }
+      /&gt;
+      &lt;Header
+        title=&quot;main · #842&quot;
+        activeTabId={activeTabId}
+        tabs={subTabs}
+        breadcrumbs={[
+          { label: &#39;Catalog&#39;, href: &#39;/catalog&#39; },
+          { label: &#39;Services&#39;, href: &#39;/catalog?kind=Component&#39; },
+        ]}
+        customActions={
+          &lt;&gt;
+            &lt;Button variant=&quot;secondary&quot; iconStart={&lt;RiDownloadLine /&gt;}&gt;
+              Download logs
+            &lt;/Button&gt;
+            &lt;Button variant=&quot;primary&quot; iconStart={&lt;RiPlayLine /&gt;}&gt;
+              Re-run pipeline
+            &lt;/Button&gt;
+          &lt;/&gt;
+        }
+      /&gt;
+      &lt;PageContent /&gt;
+    &lt;/&gt;
+  );
+};</code></pre>
             </div>
         </div>
     
