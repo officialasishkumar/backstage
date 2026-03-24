@@ -120,10 +120,12 @@ export function useCompletePagination<T extends TableItem, TFilter>(
   const totalCount = processedData?.length ?? 0;
 
   // Paginate the processed data
-  const paginatedData = useMemo(
-    () => processedData?.slice(offset, offset + pageSize),
-    [processedData, offset, pageSize],
-  );
+  const paginatedData = useMemo(() => {
+    if (paginationOptions.infinite) {
+      return processedData?.slice(0, offset + pageSize);
+    }
+    return processedData?.slice(offset, offset + pageSize);
+  }, [processedData, offset, pageSize, paginationOptions.infinite]);
 
   const hasNextPage = offset + pageSize < totalCount;
   const hasPreviousPage = offset > 0;
