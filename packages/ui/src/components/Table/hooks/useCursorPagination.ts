@@ -67,7 +67,10 @@ export function useCursorPagination<T extends TableItem, TFilter>(
     [getData, pageSize, sort, filter, search],
   );
 
-  const cache = usePageCache<T, string>({ getData: wrappedGetData });
+  const cache = usePageCache<T, string>({
+    getData: wrappedGetData,
+    infinite: paginationOptions.infinite,
+  });
 
   useDebouncedReload(query, pageSize, cache.reload);
 
