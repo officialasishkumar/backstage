@@ -173,7 +173,7 @@ helps downstream localization.
 | Do                                                                                                                   | Don't                                                                                      |
 | :------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
 | Write hyperlinks with descriptive text. For example: See [Getting Started](../getting-started/index.md) for details. | Use ambiguous link text. For example: See [here](../getting-started/index.md) for details. |
-| Write Markdown-style links: `[link text](URL)`.                                                                      | Write HTML-style links or create links that open in new tabs.                              |
+| Write Markdown-style links: `[link text](./index.md)`.                                                               | Write HTML-style links or create links that open in new tabs.                              |
 
 ### Lists
 
