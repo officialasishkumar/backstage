@@ -4,6 +4,7 @@ ACLs
 addon
 addons
 ADRs
+agentic
 airbrake
 Airbrake
 Airbrakes
@@ -18,6 +19,7 @@ api
 apis
 approvers
 asciidoc
+Astro
 async
 Atlassian
 autofix
@@ -49,6 +51,7 @@ bundler
 bundlers
 bursty
 callout
+callouts
 camelCase
 CDNs
 Chai
@@ -159,6 +162,7 @@ Firestore
 Fiverr
 flightcontrol
 Francesco
+frontmatter
 Frontside
 Gaurav
 gerrit
