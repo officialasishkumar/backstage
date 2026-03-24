@@ -42,6 +42,7 @@ export {
   type FrontendPluginInfo,
   type FrontendPluginInfoOptions,
 } from './createFrontendPlugin';
+export { type MakeSortedExtensionsMap } from './MakeSortedExtensionsMap';
 export {
   createFrontendModule,
   type FrontendModule,
