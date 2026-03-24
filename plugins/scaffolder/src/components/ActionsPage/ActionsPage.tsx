@@ -69,6 +69,10 @@ function useLazyVisible(
     if (!el || visible) {
       return undefined;
     }
+    if (typeof IntersectionObserver === 'undefined') {
+      setVisible(true);
+      return undefined;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
