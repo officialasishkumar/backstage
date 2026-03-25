@@ -362,7 +362,9 @@ describe('<AboutContent />', () => {
       expect(screen.getByText('Owner').nextSibling).toHaveTextContent(
         'user:guest',
       );
-      expect(screen.queryByText('Domain')).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('heading', { name: 'Domain' }),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText('System')).not.toBeInTheDocument();
       expect(screen.queryByText('Parent Component')).not.toBeInTheDocument();
       expect(screen.queryByText('Type')).not.toBeInTheDocument();
@@ -389,7 +391,9 @@ describe('<AboutContent />', () => {
       expect(screen.getByText('Owner').nextSibling).toHaveTextContent(
         'No Owner',
       );
-      expect(screen.queryByText('Domain')).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('heading', { name: 'Domain' }),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText('System')).not.toBeInTheDocument();
       expect(screen.queryByText('Parent Component')).not.toBeInTheDocument();
       expect(screen.queryByText('Type')).not.toBeInTheDocument();
@@ -617,7 +621,9 @@ describe('<AboutContent />', () => {
       expect(screen.getByText('Domain').nextSibling).toHaveTextContent(
         'domain',
       );
-      expect(screen.queryByText('System')).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('heading', { name: 'System' }),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText('Parent Component')).not.toBeInTheDocument();
       expect(screen.queryByText('Type')).not.toBeInTheDocument();
       expect(screen.queryByText('Lifecycle')).not.toBeInTheDocument();
@@ -648,7 +654,9 @@ describe('<AboutContent />', () => {
       expect(screen.getByText('Domain').nextSibling).toHaveTextContent(
         'No Domain',
       );
-      expect(screen.queryByText('System')).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('heading', { name: 'System' }),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText('Parent Component')).not.toBeInTheDocument();
       expect(screen.queryByText('Type')).not.toBeInTheDocument();
       expect(screen.queryByText('Lifecycle')).not.toBeInTheDocument();

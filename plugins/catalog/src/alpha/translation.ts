@@ -61,6 +61,9 @@ export const catalogTranslationRef = createTranslationRef({
         label: 'Parent Component',
         value: 'No Parent Component',
       },
+      kindField: {
+        label: 'Kind',
+      },
       typeField: {
         label: 'Type',
       },
@@ -179,6 +182,10 @@ export const catalogTranslationRef = createTranslationRef({
         provides: 'provides',
         dependsOn: 'depends on',
       },
+    },
+    favoriteEntity: {
+      addLabel: 'Add to favorites',
+      removeLabel: 'Remove from favorites',
     },
   },
 });
