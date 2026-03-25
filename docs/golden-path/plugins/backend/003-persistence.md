@@ -190,7 +190,8 @@ We also need to do 1 more thing,
 
 ```diff file="package.json"
 "files": [
-    "dist"
+-    "dist"
++    "dist",
 +    "migrations"
   ],
 ```
@@ -198,6 +199,58 @@ We also need to do 1 more thing,
 This will make sure the migrations in our plugin work for all users.
 
 For those who want more details, the full [Knex migration docs](https://knexjs.org/guide/migrations.html#migration-cli) are very informative!
+
+### Defining our types
+
+Now that we have our table, we need to add types for it to protect against runtime incompatibilities. For now, these are hand written.
+
+```diff title="services/TodoListService.ts"
++export interface TodoDatabaseRow {
++  title: string;
++  id: string;
++  created_by: string;
++  created_at: string;
++}
+
+export interface TodoItem {
+  title: string;
+  id: string;
+  createdBy: string;
+  createdAt: string;
+}
+```
+
+Notice the change to snake case as it has to match the database schema we have above. Now we need to transform `TodoItem` to `TodoDatabaseRow` for writes and `TodoDatabaseRow` to `TodoItem` for reads.
+
+```diff title="services/TodoListService.ts"
+  private constructor(
+    logger: LoggerService,
+    catalog: typeof catalogServiceRef.T,
+  ) {
+    this.#logger = logger;
+    this.#catalog = catalog;
+  }
+
++  private toDatabaseRow(todo: TodoItem): TodoDatabaseRow {
++    return {
++      id: todo.id,
++      title: todo.title,
++      created_by: todo.createdBy,
++      created_at: todo.createdAt,
++    }
++  }
+
++  private fromDatabaseRow(row: TodoDatabaseRow): TodoItem {
++    return {
++      id: row.id,
++      title: row.title,
++      createdBy: row.created_by,
++      createdAt: row.created_at,
++    }
++  }
+```
+
+And that's it! You're now set up to actually read from and write to your database.
 
 ### Writing to your table
 
@@ -207,42 +260,50 @@ Creating your table was a solid chunk of work - thankfully, writing to it is goi
 
   async createTodo(
     // ...
--    const id = crypto.randomUUID();
+    const id = crypto.randomUUID();
     const createdBy = options.credentials.principal.userEntityRef;
--    const newTodo = {
--      title,
--      id,
--      createdBy,
--      createdAt: new Date().toISOString(),
--    };
+    const newTodo = {
+      title,
+      id,
+      createdBy,
+      createdAt: new Date().toISOString(),
+    };
 
-+   const newTodo = await this.#db
-+      .insert({
-+         title,
-+         createdBy
-+      })
++   await this.#database
++      .insert(this.toDatabaseRow(newTodo))
 +      .into('todo');
 
     return newTodo;
   }
 ```
 
-We've basically just updated our service call to use `this.#db` instead of `this.#storedTodos`. We can also return the actual database created object instead of the one we create so that the database handles `id` and `createdAt` generation.
+We've basically just updated our service call to use `this.#database` instead of `this.#storedTodos`.
 
 ### Reading from your table
 
 Now that we have things in our database, how do we actually get them back out again?
 
 ```diff title="services/TodoListService.ts"
+
+
++  private fromDatabaseRow(todo: TodoItem) {
++    return {
++      id: row.id,
++      title: row.title,
++      createdBy: row.created_by,
++      createdAt: row.created_at,
++    }
++  }
+
   async getTodo(request: { id: string }): Promise<TodoItem> {
 -    const todo = this.#storedTodos.find(item => item.id === request.id);
-+    const items = await this.#db('todo').where({id}).select()
++    const items = await this.#database('todo').where({ id: request.id }).select()
 -    if (!todo) {
 +    if (!items.length) {
       throw new NotFoundError(`No todo found with id '${request.id}'`);
     }
 -    return todo;
-+    return items[0];
++    return this.fromDatabaseRow(items[0]);
   }
 ```
 
