@@ -167,6 +167,12 @@ export interface FrontendPlugin<
    * The display icon of the plugin, used in page headers and navigation.
    */
   readonly icon?: IconElement;
+  /**
+   * A route ref used to resolve the title link in the plugin header.
+   * When set, page headers will render the plugin title as a link to this route.
+   * Falls back to the `root` route if not provided, then to the page's own route ref.
+   */
+  readonly titleRouteRef?: RouteRef;
   readonly routes: TRoutes;
   readonly externalRoutes: TExternalRoutes;
 
@@ -197,6 +203,12 @@ export interface CreateFrontendPluginOptions<
    * The display icon of the plugin, used in page headers and navigation.
    */
   icon?: IconElement;
+  /**
+   * A route ref used to resolve the title link in the plugin header.
+   * When set, page headers will render the plugin title as a link to this route.
+   * Falls back to the `root` route if not provided, then to the page's own route ref.
+   */
+  titleRouteRef?: RouteRef;
   routes?: TRoutes;
   externalRoutes?: TExternalRoutes;
   extensions?: TExtensions;
@@ -308,6 +320,7 @@ export function createFrontendPlugin<
     id: pluginId,
     title: options.title,
     icon: options.icon,
+    titleRouteRef: options.titleRouteRef,
     routes: options.routes ?? ({} as TRoutes),
     externalRoutes: options.externalRoutes ?? ({} as TExternalRoutes),
     featureFlags: options.featureFlags ?? [],
