@@ -79,17 +79,17 @@ export const catalogReactTranslationRef: TranslationRef<
     readonly 'inspectEntityDialog.overviewPage.metadata.title': 'Metadata';
     readonly 'inspectEntityDialog.overviewPage.labels': 'Labels';
     readonly 'inspectEntityDialog.overviewPage.status.title': 'Status';
-    readonly 'inspectEntityDialog.overviewPage.identity.title': 'Identity';
     readonly 'inspectEntityDialog.overviewPage.annotations': 'Annotations';
     readonly 'inspectEntityDialog.overviewPage.tags': 'Tags';
     readonly 'inspectEntityDialog.overviewPage.relation.title': 'Relations';
+    readonly 'inspectEntityDialog.overviewPage.identity.title': 'Identity';
     readonly 'inspectEntityDialog.yamlPage.title': 'Entity as YAML';
     readonly 'inspectEntityDialog.yamlPage.description': 'This is the raw entity data as received from the catalog, on YAML form.';
     readonly 'inspectEntityDialog.tabNames.json': 'Raw JSON';
-    readonly 'inspectEntityDialog.tabNames.yaml': 'Raw YAML';
     readonly 'inspectEntityDialog.tabNames.overview': 'Overview';
     readonly 'inspectEntityDialog.tabNames.ancestry': 'Ancestry';
     readonly 'inspectEntityDialog.tabNames.colocated': 'Colocated';
+    readonly 'inspectEntityDialog.tabNames.yaml': 'Raw YAML';
     readonly 'unregisterEntityDialog.title': 'Are you sure you want to unregister this entity?';
     readonly 'unregisterEntityDialog.cancelButtonTitle': 'Cancel';
     readonly 'unregisterEntityDialog.deleteButtonTitle': 'Delete Entity';
@@ -115,13 +115,13 @@ export const catalogReactTranslationRef: TranslationRef<
     readonly 'entityTableColumnTitle.label': 'Label';
     readonly 'entityTableColumnTitle.title': 'Title';
     readonly 'entityTableColumnTitle.description': 'Description';
+    readonly 'entityTableColumnTitle.domain': 'Domain';
     readonly 'entityTableColumnTitle.system': 'System';
     readonly 'entityTableColumnTitle.namespace': 'Namespace';
-    readonly 'entityTableColumnTitle.domain': 'Domain';
-    readonly 'entityTableColumnTitle.tags': 'Tags';
-    readonly 'entityTableColumnTitle.owner': 'Owner';
     readonly 'entityTableColumnTitle.lifecycle': 'Lifecycle';
+    readonly 'entityTableColumnTitle.owner': 'Owner';
     readonly 'entityTableColumnTitle.targets': 'Targets';
+    readonly 'entityTableColumnTitle.tags': 'Tags';
     readonly 'entityRelationCard.emptyHelpLinkTitle': 'Learn how to change this.';
     readonly 'missingAnnotationEmptyState.title': 'Missing Annotation';
     readonly 'missingAnnotationEmptyState.readMore': 'Read more';
@@ -658,17 +658,17 @@ export type EntityRow = Entity & TableItem;
 export const EntityTableColumnTitle: (
   input: EntityTableColumnTitleProps,
 ) =>
-  | 'System'
-  | 'Title'
   | 'Domain'
+  | 'System'
+  | 'Name'
+  | 'Description'
   | 'Lifecycle'
   | 'Namespace'
   | 'Owner'
   | 'Tags'
   | 'Type'
-  | 'Name'
-  | 'Description'
   | 'Targets'
+  | 'Title'
   | 'Label';
 
 // @alpha (undocumented)
