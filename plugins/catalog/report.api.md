@@ -220,6 +220,8 @@ export type CatalogTableToolbarClassKey = 'root' | 'text';
 export const catalogTranslationRef: TranslationRef<
   'catalog',
   {
+    readonly 'favoriteEntity.removeLabel': 'Remove from favorites';
+    readonly 'favoriteEntity.addLabel': 'Add to favorites';
     readonly 'deleteEntity.description': 'This entity is not referenced by any location and is therefore not receiving updates.';
     readonly 'deleteEntity.cancelButtonTitle': 'Cancel';
     readonly 'deleteEntity.deleteButtonTitle': 'Delete';
@@ -251,6 +253,7 @@ export const catalogTranslationRef: TranslationRef<
     readonly 'aboutCard.systemField.label': 'System';
     readonly 'aboutCard.parentComponentField.value': 'No Parent Component';
     readonly 'aboutCard.parentComponentField.label': 'Parent Component';
+    readonly 'aboutCard.kindField.label': 'Kind';
     readonly 'aboutCard.typeField.label': 'Type';
     readonly 'aboutCard.lifecycleField.label': 'Lifecycle';
     readonly 'aboutCard.tagsField.value': 'No Tags';
@@ -258,8 +261,8 @@ export const catalogTranslationRef: TranslationRef<
     readonly 'aboutCard.targetsField.label': 'Targets';
     readonly 'searchResultItem.type': 'Type';
     readonly 'searchResultItem.kind': 'Kind';
-    readonly 'searchResultItem.owner': 'Owner';
     readonly 'searchResultItem.lifecycle': 'Lifecycle';
+    readonly 'searchResultItem.owner': 'Owner';
     readonly 'catalogTable.allFilters': 'All';
     readonly 'catalogTable.warningPanelTitle': 'Could not fetch catalog entities.';
     readonly 'catalogTable.viewActionTitle': 'View';
@@ -279,16 +282,16 @@ export const catalogTranslationRef: TranslationRef<
     readonly 'entityContextMenu.unregisterMenuTitle': 'Unregister entity';
     readonly 'entityContextMenu.moreButtonAriaLabel': 'more';
     readonly 'entityLabelsCard.title': 'Labels';
-    readonly 'entityLabelsCard.readMoreButtonTitle': 'Read more';
     readonly 'entityLabelsCard.columnKeyLabel': 'Label';
     readonly 'entityLabelsCard.columnValueLabel': 'Value';
     readonly 'entityLabelsCard.emptyDescription': 'No labels defined for this entity. You can add labels to your entity YAML as shown in the highlighted example below:';
-    readonly 'entityLabels.ownerLabel': 'Owner';
+    readonly 'entityLabelsCard.readMoreButtonTitle': 'Read more';
     readonly 'entityLabels.warningPanelTitle': 'Entity not found';
+    readonly 'entityLabels.ownerLabel': 'Owner';
     readonly 'entityLabels.lifecycleLabel': 'Lifecycle';
     readonly 'entityLinksCard.title': 'Links';
-    readonly 'entityLinksCard.readMoreButtonTitle': 'Read more';
     readonly 'entityLinksCard.emptyDescription': 'No links defined for this entity. You can add links to your entity YAML as shown in the highlighted example below:';
+    readonly 'entityLinksCard.readMoreButtonTitle': 'Read more';
     readonly 'entityNotFound.title': 'Entity was not found';
     readonly 'entityNotFound.description': 'Want to help us build this? Check out our Getting Started documentation.';
     readonly 'entityNotFound.docButtonTitle': 'DOCS';
