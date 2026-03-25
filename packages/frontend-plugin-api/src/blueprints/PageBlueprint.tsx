@@ -96,7 +96,9 @@ export const PageBlueprint = createExtensionBlueprint({
       title ?? node.spec.plugin.title ?? node.spec.plugin.pluginId;
     const resolvedIcon = icon ?? node.spec.plugin.icon;
     const titleRouteRef =
-      (node.spec.plugin.routes as { root?: RouteRef }).root ?? params.routeRef;
+      node.spec.plugin.titleRouteRef ??
+      (node.spec.plugin.routes as { root?: RouteRef }).root ??
+      params.routeRef;
 
     yield coreExtensionData.routePath(config.path ?? params.path);
     if (params.loader) {

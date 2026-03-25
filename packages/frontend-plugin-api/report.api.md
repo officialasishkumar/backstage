@@ -811,6 +811,7 @@ export interface CreateFrontendPluginOptions<
   // (undocumented)
   routes?: TRoutes;
   title?: string;
+  titleRouteRef?: RouteRef<undefined>;
 }
 
 // @public
@@ -1457,6 +1458,7 @@ export interface FrontendPlugin<
   // (undocumented)
   readonly routes: TRoutes;
   readonly title?: string;
+  readonly titleRouteRef?: RouteRef<undefined>;
 }
 
 // @public

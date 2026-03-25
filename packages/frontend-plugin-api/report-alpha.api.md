@@ -444,6 +444,7 @@ export interface FrontendPlugin<
   // (undocumented)
   readonly routes: TRoutes;
   readonly title?: string;
+  readonly titleRouteRef?: RouteRef<undefined>;
 }
 
 // @public

@@ -19,6 +19,7 @@ import { createElement } from 'react';
 import { createApp } from '../../../frontend-defaults/src/createApp';
 import { screen } from '@testing-library/react';
 import { FrontendPlugin, createFrontendPlugin } from './createFrontendPlugin';
+import { createRouteRef } from '../routing';
 import { JsonObject } from '@backstage/types';
 import { createExtension } from './createExtension';
 import { createExtensionDataRef } from './createExtensionDataRef';
@@ -140,6 +141,16 @@ describe('createFrontendPlugin', () => {
 
     expect(plugin).toBeDefined();
     expect(String(plugin)).toBe('Plugin{id=test}');
+  });
+
+  it('should expose titleRouteRef on the created plugin', () => {
+    const titleRouteRef = createRouteRef();
+    const plugin = createFrontendPlugin({
+      pluginId: 'test',
+      titleRouteRef,
+    });
+
+    expect(plugin.titleRouteRef).toBe(titleRouteRef);
   });
 
   it('should warn about invalid plugin IDs', () => {
