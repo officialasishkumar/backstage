@@ -66,7 +66,7 @@ export class TodoListService {
     catalog: typeof catalogServiceRef.T;
 +    database: DatabaseService;
   }) {
-     const knex = await database.getClient();
+     const knex = await options.database.getClient();
 -    return new TodoListService(options.logger, options.catalog);
 +    return new TodoListService(options.logger, options.catalog, knex);
   }
