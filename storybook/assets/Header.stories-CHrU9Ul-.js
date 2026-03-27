@@ -1,0 +1,23 @@
+import{j as t}from"./iframe-CsOrEaZh.js";import{H as i}from"./Header-BvmtTnpF.js";import{P as a}from"./Page-BA9Esx44.js";import{H as r}from"./HeaderLabel-COfa34kp.js";import"./preload-helper-PPVm8Dsz.js";import"./Helmet-BAD8JOpI.js";import"./makeStyles-RXMzfVyC.js";import"./Box-ULaQRaNA.js";import"./styled-l3-sdTqB.js";import"./Grid-Cp5B6vj7.js";import"./Breadcrumbs-Bs1RfipJ.js";import"./index-B9sM2jn7.js";import"./Popover-D5SZ32eH.js";import"./Modal-DbgEDtBN.js";import"./Portal-DzcrA5JX.js";import"./List-DZ50BoJB.js";import"./ListContext-DMLxEL-p.js";import"./ListItem-C5QPSfoJ.js";import"./Link-D7sNJ_Uq.js";import"./index-Clf9Nm3f.js";import"./lodash-BDBMyJpB.js";import"./useAnalytics-Dzy9lLMd.js";import"./useApp-xQCVi238.js";import"./Page-BdSEZwbq.js";import"./useMediaQuery-LCe4V9Dm.js";import"./Tooltip-DzgDEUmc.js";import"./Popper-CCI27zHX.js";const R={title:"Layout/Header",component:i,argTypes:{type:{options:["home","tool","service","website","library","app","apis","documentation","other"],control:{type:"select"}}},tags:["!manifest"]},p=t.jsxs(t.Fragment,{children:[t.jsx(r,{label:"Owner",value:"players"}),t.jsx(r,{label:"Lifecycle",value:"Production"}),t.jsx(r,{label:"Tier",value:"Level 1"})]}),e=s=>{const{type:o}=s;return t.jsx(a,{themeId:o,children:t.jsx(i,{...s,children:p})})};e.args={type:"home",title:"This is a title",subtitle:"This is a subtitle"};e.__docgenInfo={description:"",methods:[],displayName:"Default",props:{type:{required:!0,tsType:{name:"string"},description:""},title:{required:!0,tsType:{name:"string"},description:""},subtitle:{required:!0,tsType:{name:"string"},description:""}}};e.parameters={...e.parameters,docs:{...e.parameters?.docs,source:{code:`const Default = () => {
+  const { type } = args;
+
+  return (
+    <Page themeId={type}>
+      <Header type="home" title="This is a title" subtitle="This is a subtitle">
+        {labels}
+      </Header>
+    </Page>
+  );
+};
+`,...e.parameters?.docs?.source}}};e.parameters={...e.parameters,docs:{...e.parameters?.docs,source:{originalSource:`(args: {
+  type: string;
+  title: string;
+  subtitle: string;
+}) => {
+  const {
+    type
+  } = args;
+  return <Page themeId={type}>
+      <Header {...args}>{labels}</Header>
+    </Page>;
+}`,...e.parameters?.docs?.source}}};const S=["Default"];export{e as Default,S as __namedExportsOrder,R as default};
