@@ -105,6 +105,7 @@ export const MenuItemDefinition = defineComponent<MenuItemOwnProps>()({
     itemArrow: 'bui-MenuItemArrow',
   },
   analytics: true,
+  resolveHref: true,
   propDefs: {
     iconStart: {},
     children: {},
@@ -119,6 +120,7 @@ export const MenuItemDefinition = defineComponent<MenuItemOwnProps>()({
 export const MenuListBoxItemDefinition =
   defineComponent<MenuListBoxItemOwnProps>()({
     styles,
+    resolveHref: true,
     classNames: {
       root: 'bui-MenuItemListBox',
       itemWrapper: 'bui-MenuItemWrapper',
