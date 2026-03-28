@@ -20,7 +20,15 @@ import {
   relative as relativePath,
 } from 'node:path';
 import fs from 'fs-extra';
-import { createBinRunner } from '../../util';
+import { Command } from 'commander';
+import {
+  OpaqueCliModule,
+  OpaqueCommandTreeNode,
+  OpaqueCommandLeafNode,
+  isCommandNodeHidden,
+} from '@internal/cli';
+import type { CliModule, CliCommand } from '@backstage/cli-node';
+import type { CommandNode } from '@internal/cli';
 import { CliHelpPage, CliModel } from './types';
 import { targetPaths } from '@backstage/cli-common';
 import { generateCliReport } from './generateCliReport';
@@ -90,30 +98,149 @@ function parseHelpPage(helpPageContent: string) {
   };
 }
 
-async function exploreCliHelpPages(
-  run: (...args: string[]) => Promise<string>,
-): Promise<CliHelpPage[]> {
-  const helpPages = new Array<CliHelpPage>();
+/**
+ * Extracts the flat list of CliCommands from a CliModule.
+ */
+async function getModuleCommands(
+  cliModule: CliModule,
+): Promise<ReadonlyArray<CliCommand>> {
+  if (!OpaqueCliModule.isType(cliModule)) {
+    throw new Error('Expected a valid CliModule created with createCliModule');
+  }
+  return OpaqueCliModule.toInternal(cliModule).commands;
+}
 
-  async function exploreHelpPage(...path: string[]) {
-    const content = await run(...path, '--help');
-    const parsed = parseHelpPage(content);
-    helpPages.push({ path, ...parsed });
+/**
+ * Loads the CLI module(s) from a package directory. The main `cli` package
+ * (role: 'cli') aggregates all modules via cli-defaults, while individual
+ * cli-module packages export a single CliModule.
+ */
+async function loadCommandsFromPackage(
+  fullDir: string,
+  pkgJson: { name: string; backstage?: { role?: string } },
+): Promise<ReadonlyArray<CliCommand>> {
+  if (pkgJson.backstage?.role === 'cli') {
+    // The main CLI host package discovers and loads modules at runtime.
+    // We resolve cli-defaults from its dependencies to get the full set
+    // of commands without executing the CLI entry point.
+    const defaultsPath = require.resolve('@backstage/cli-defaults', {
+      paths: [fullDir],
+    });
+    const discovered = require(defaultsPath);
+    const modules: CliModule[] = discovered.default ?? discovered;
+    const allCommands: CliCommand[] = [];
+    for (const m of modules) {
+      allCommands.push(...(await getModuleCommands(m)));
+    }
+    return allCommands;
+  }
 
-    await Promise.all(
-      parsed.commands.map(async fullCommand => {
-        const command = fullCommand.split(/[|\s]/)[0];
-        if (command !== 'help') {
-          await exploreHelpPage(...path, command);
-        }
+  // Single cli-module package
+  const srcIndex = resolvePath(fullDir, 'src/index');
+  const mod = require(srcIndex);
+  const cliModule: CliModule = mod.default ?? mod;
+  return getModuleCommands(cliModule);
+}
+
+/**
+ * Builds a Commander program from a flat list of CliCommands, replicating the
+ * same structure that runCliModule / CliInitializer would produce at runtime.
+ */
+function buildCommanderProgram(
+  programName: string,
+  commands: ReadonlyArray<CliCommand>,
+): Command {
+  // Build the command graph (tree nodes + leaf nodes)
+  const graph: CommandNode[] = [];
+
+  for (const command of commands) {
+    const { path } = command;
+    let current = graph;
+
+    for (let i = 0; i < path.length - 1; i++) {
+      const name = path[i];
+      let next = current.find(
+        n =>
+          OpaqueCommandTreeNode.isType(n) &&
+          OpaqueCommandTreeNode.toInternal(n).name === name,
+      );
+      if (!next) {
+        next = OpaqueCommandTreeNode.createInstance('v1', {
+          name,
+          children: [],
+        });
+        current.push(next);
+      }
+      current = OpaqueCommandTreeNode.toInternal(next).children;
+    }
+
+    current.push(
+      OpaqueCommandLeafNode.createInstance('v1', {
+        name: path[path.length - 1],
+        command,
       }),
     );
   }
 
-  await exploreHelpPage();
+  // Register onto a Commander program
+  const program = new Command();
+  program.name(programName).allowUnknownOption(true).allowExcessArguments(true);
+
+  const queue = graph.map(node => ({ node, argParser: program }));
+  while (queue.length) {
+    const { node, argParser } = queue.shift()!;
+    if (OpaqueCommandTreeNode.isType(node)) {
+      const internal = OpaqueCommandTreeNode.toInternal(node);
+      const treeParser = argParser
+        .command(`${internal.name} [command]`, {
+          hidden: isCommandNodeHidden(node),
+        })
+        .description(internal.name);
+      queue.push(
+        ...internal.children.map(child => ({
+          node: child,
+          argParser: treeParser,
+        })),
+      );
+    } else {
+      const internal = OpaqueCommandLeafNode.toInternal(node);
+      argParser
+        .command(internal.name, {
+          hidden:
+            !!internal.command.deprecated || !!internal.command.experimental,
+        })
+        .description(internal.command.description)
+        .helpOption(false)
+        .allowUnknownOption(true)
+        .allowExcessArguments(true);
+    }
+  }
+
+  return program;
+}
+
+/**
+ * Walks a Commander program tree and extracts help pages by calling
+ * helpInformation() on each command, then parsing the output.
+ */
+function extractHelpPages(program: Command): CliHelpPage[] {
+  const helpPages = new Array<CliHelpPage>();
+
+  function walk(cmd: Command, path: string[]) {
+    const helpText = cmd.helpInformation();
+    const parsed = parseHelpPage(helpText);
+    helpPages.push({ path, ...parsed });
+
+    for (const sub of cmd.commands) {
+      if (sub.name() !== 'help') {
+        walk(sub, [...path, sub.name()]);
+      }
+    }
+  }
+
+  walk(program, []);
 
   helpPages.sort((a, b) => a.path.join(' ').localeCompare(b.path.join(' ')));
-
   return helpPages;
 }
 
@@ -140,17 +267,18 @@ export async function runCliExtraction({
       continue;
     }
 
+    const commands = await loadCommandsFromPackage(fullDir, pkgJson);
+
+    const binEntries: Array<[string, string]> =
+      typeof pkgJson.bin === 'string'
+        ? [[basename(pkgJson.bin), pkgJson.bin]]
+        : Object.entries(pkgJson.bin);
+
     const models = new Array<CliModel>();
-    if (typeof pkgJson.bin === 'string') {
-      const run = createBinRunner(fullDir, pkgJson.bin);
-      const helpPages = await exploreCliHelpPages(run);
-      models.push({ name: basename(pkgJson.bin), helpPages });
-    } else {
-      for (const [name, path] of Object.entries<string>(pkgJson.bin)) {
-        const run = createBinRunner(fullDir, path);
-        const helpPages = await exploreCliHelpPages(run);
-        models.push({ name, helpPages });
-      }
+    for (const [name] of binEntries) {
+      const program = buildCommanderProgram(name, commands);
+      const helpPages = extractHelpPages(program);
+      models.push({ name, helpPages });
     }
 
     for (const model of models) {
