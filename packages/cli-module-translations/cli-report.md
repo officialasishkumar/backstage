@@ -5,10 +5,9 @@
 ### `backstage-cli-module-translations`
 
 ```
-Usage: @backstage/cli-module-translations [options] [command]
+Usage: backstage-cli-module-translations [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -19,7 +18,7 @@ Commands:
 ### `backstage-cli-module-translations translations`
 
 ```
-Usage: @backstage/cli-module-translations translations [options] [command] [command]
+Usage: backstage-cli-module-translations translations [options] [command] [command]
 
 Options:
   -h, --help
@@ -33,21 +32,11 @@ Commands:
 ### `backstage-cli-module-translations translations export`
 
 ```
-Usage: @backstage/cli-module-translations translations export
-
-Options:
-  --output <string>
-  --pattern <string>
-  -h, --help
+Usage: backstage-cli-module-translations translations export 
 ```
 
 ### `backstage-cli-module-translations translations import`
 
 ```
-Usage: @backstage/cli-module-translations translations import
-
-Options:
-  --input <string>
-  --output <string>
-  -h, --help
+Usage: backstage-cli-module-translations translations import 
 ```

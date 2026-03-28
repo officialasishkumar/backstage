@@ -5,10 +5,9 @@
 ### `backstage-cli-module-maintenance`
 
 ```
-Usage: @backstage/cli-module-maintenance [options] [command]
+Usage: backstage-cli-module-maintenance [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -19,7 +18,7 @@ Commands:
 ### `backstage-cli-module-maintenance repo`
 
 ```
-Usage: @backstage/cli-module-maintenance repo [options] [command] [command]
+Usage: backstage-cli-module-maintenance repo [options] [command] [command]
 
 Options:
   -h, --help
@@ -33,20 +32,11 @@ Commands:
 ### `backstage-cli-module-maintenance repo fix`
 
 ```
-Usage: @backstage/cli-module-maintenance repo fix
-
-Options:
-  --check
-  --publish
-  -h, --help
+Usage: backstage-cli-module-maintenance repo fix 
 ```
 
 ### `backstage-cli-module-maintenance repo list-deprecations`
 
 ```
-Usage: @backstage/cli-module-maintenance repo list-deprecations
-
-Options:
-  --json
-  -h, --help
+Usage: backstage-cli-module-maintenance repo list-deprecations 
 ```

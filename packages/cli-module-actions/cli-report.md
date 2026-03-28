@@ -5,10 +5,9 @@
 ### `backstage-cli-module-actions`
 
 ```
-Usage: @backstage/cli-module-actions [options] [command]
+Usage: backstage-cli-module-actions [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -19,7 +18,7 @@ Commands:
 ### `backstage-cli-module-actions actions`
 
 ```
-Usage: @backstage/cli-module-actions actions [options] [command] [command]
+Usage: backstage-cli-module-actions actions [options] [command] [command]
 
 Options:
   -h, --help
@@ -34,27 +33,19 @@ Commands:
 ### `backstage-cli-module-actions actions execute`
 
 ```
-Usage: @backstage/cli-module-actions actions execute
-
-Options:
-  --instance <string>
-  -h, --help
+Usage: backstage-cli-module-actions actions execute 
 ```
 
 ### `backstage-cli-module-actions actions list`
 
 ```
-Usage: @backstage/cli-module-actions actions list
-
-Options:
-  --instance <string>
-  -h, --help
+Usage: backstage-cli-module-actions actions list 
 ```
 
 ### `backstage-cli-module-actions actions sources`
 
 ```
-Usage: @backstage/cli-module-actions actions sources [options] [command] [command]
+Usage: backstage-cli-module-actions actions sources [options] [command] [command]
 
 Options:
   -h, --help
@@ -69,26 +60,17 @@ Commands:
 ### `backstage-cli-module-actions actions sources add`
 
 ```
-Usage: @backstage/cli-module-actions actions sources add
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-actions actions sources add 
 ```
 
 ### `backstage-cli-module-actions actions sources list`
 
 ```
-Usage: @backstage/cli-module-actions actions sources list
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-actions actions sources list 
 ```
 
 ### `backstage-cli-module-actions actions sources remove`
 
 ```
-Usage: @backstage/cli-module-actions actions sources remove
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-actions actions sources remove 
 ```

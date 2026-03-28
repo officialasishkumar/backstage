@@ -5,10 +5,9 @@
 ### `backstage-cli-module-build`
 
 ```
-Usage: @backstage/cli-module-build [options] [command]
+Usage: backstage-cli-module-build [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -21,17 +20,13 @@ Commands:
 ### `backstage-cli-module-build build-workspace`
 
 ```
-Usage: @backstage/cli-module-build build-workspace <workspace-dir> [packages...]
-
-Options:
-  --always-pack
-  -h, --help
+Usage: backstage-cli-module-build build-workspace 
 ```
 
 ### `backstage-cli-module-build package`
 
 ```
-Usage: @backstage/cli-module-build package [options] [command] [command]
+Usage: backstage-cli-module-build package [options] [command] [command]
 
 Options:
   -h, --help
@@ -48,66 +43,43 @@ Commands:
 ### `backstage-cli-module-build package build`
 
 ```
-Usage: @backstage/cli-module-build package build
+Usage: backstage-cli-module-build package build 
+```
 
-Options:
-  --config <string>
-  --minify
-  --module-federation
-  --role <string>
-  --skip-build-dependencies
-  --stats
-  -h, --help
+### `backstage-cli-module-build package bundle`
+
+```
+Usage: backstage-cli-module-build package bundle 
 ```
 
 ### `backstage-cli-module-build package clean`
 
 ```
-Usage: @backstage/cli-module-build package clean
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-build package clean 
 ```
 
 ### `backstage-cli-module-build package postpack`
 
 ```
-Usage: @backstage/cli-module-build package postpack
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-build package postpack 
 ```
 
 ### `backstage-cli-module-build package prepack`
 
 ```
-Usage: @backstage/cli-module-build package prepack
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-build package prepack 
 ```
 
 ### `backstage-cli-module-build package start`
 
 ```
-Usage: @backstage/cli-module-build package start
-
-Options:
-  --check
-  --config <string>
-  --entrypoint <string>
-  --inspect <string>
-  --inspect-brk <string>
-  --link <string>
-  --require <string>
-  --role <string>
-  -h, --help
+Usage: backstage-cli-module-build package start 
 ```
 
 ### `backstage-cli-module-build repo`
 
 ```
-Usage: @backstage/cli-module-build repo [options] [command] [command]
+Usage: backstage-cli-module-build repo [options] [command] [command]
 
 Options:
   -h, --help
@@ -122,35 +94,17 @@ Commands:
 ### `backstage-cli-module-build repo build`
 
 ```
-Usage: @backstage/cli-module-build repo build
-
-Options:
-  --all
-  --minify
-  --since <string>
-  -h, --help
+Usage: backstage-cli-module-build repo build 
 ```
 
 ### `backstage-cli-module-build repo clean`
 
 ```
-Usage: @backstage/cli-module-build repo clean
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-build repo clean 
 ```
 
 ### `backstage-cli-module-build repo start`
 
 ```
-Usage: @backstage/cli-module-build repo start [packages...]
-
-Options:
-  --config <string>
-  --inspect <string>
-  --inspect-brk <string>
-  --link <string>
-  --plugin <string>
-  --require <string>
-  -h, --help
+Usage: backstage-cli-module-build repo start 
 ```

@@ -5,10 +5,9 @@
 ### `backstage-cli-module-lint`
 
 ```
-Usage: @backstage/cli-module-lint [options] [command]
+Usage: backstage-cli-module-lint [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -20,7 +19,7 @@ Commands:
 ### `backstage-cli-module-lint package`
 
 ```
-Usage: @backstage/cli-module-lint package [options] [command] [command]
+Usage: backstage-cli-module-lint package [options] [command] [command]
 
 Options:
   -h, --help
@@ -33,20 +32,13 @@ Commands:
 ### `backstage-cli-module-lint package lint`
 
 ```
-Usage: @backstage/cli-module-lint package lint [directories...]
-
-Options:
-  --fix
-  --format <string>
-  --max-warnings <string>
-  --output-file <string>
-  -h, --help
+Usage: backstage-cli-module-lint package lint 
 ```
 
 ### `backstage-cli-module-lint repo`
 
 ```
-Usage: @backstage/cli-module-lint repo [options] [command] [command]
+Usage: backstage-cli-module-lint repo [options] [command] [command]
 
 Options:
   -h, --help
@@ -59,15 +51,5 @@ Commands:
 ### `backstage-cli-module-lint repo lint`
 
 ```
-Usage: @backstage/cli-module-lint repo lint
-
-Options:
-  --fix
-  --format <string>
-  --max-warnings <string>
-  --output-file <string>
-  --since <string>
-  --success-cache
-  --success-cache-dir <string>
-  -h, --help
+Usage: backstage-cli-module-lint repo lint 
 ```

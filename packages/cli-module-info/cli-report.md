@@ -5,10 +5,9 @@
 ### `backstage-cli-module-info`
 
 ```
-Usage: @backstage/cli-module-info [options] [command]
+Usage: backstage-cli-module-info [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -19,10 +18,5 @@ Commands:
 ### `backstage-cli-module-info info`
 
 ```
-Usage: @backstage/cli-module-info info
-
-Options:
-  --format <string>
-  --include <string>
-  -h, --help
+Usage: backstage-cli-module-info info 
 ```

@@ -5,10 +5,9 @@
 ### `backstage-cli-module-config`
 
 ```
-Usage: @backstage/cli-module-config [options] [command]
+Usage: backstage-cli-module-config [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -23,7 +22,7 @@ Commands:
 ### `backstage-cli-module-config config`
 
 ```
-Usage: @backstage/cli-module-config config [options] [command] [command]
+Usage: backstage-cli-module-config config [options] [command] [command]
 
 Options:
   -h, --help
@@ -37,73 +36,35 @@ Commands:
 ### `backstage-cli-module-config config docs`
 
 ```
-Usage: @backstage/cli-module-config config docs
-
-Options:
-  --package <string>
-  -h, --help
+Usage: backstage-cli-module-config config docs 
 ```
 
 ### `backstage-cli-module-config config schema`
 
 ```
-Usage: @backstage/cli-module-config config schema
-
-Options:
-  --format <string>
-  --merge
-  --package <string>
-  -h, --help
+Usage: backstage-cli-module-config config schema 
 ```
 
 ### `backstage-cli-module-config config:check`
 
 ```
-Usage: @backstage/cli-module-config config:check
-
-Options:
-  --config <string>
-  --deprecated
-  --frontend
-  --lax
-  --package <string>
-  --strict
-  -h, --help
+Usage: backstage-cli-module-config config:check 
 ```
 
 ### `backstage-cli-module-config config:docs`
 
 ```
-Usage: @backstage/cli-module-config config:docs
-
-Options:
-  --package <string>
-  -h, --help
+Usage: backstage-cli-module-config config:docs 
 ```
 
 ### `backstage-cli-module-config config:print`
 
 ```
-Usage: @backstage/cli-module-config config:print
-
-Options:
-  --config <string>
-  --format <string>
-  --frontend
-  --lax
-  --package <string>
-  --with-secrets
-  -h, --help
+Usage: backstage-cli-module-config config:print 
 ```
 
 ### `backstage-cli-module-config config:schema`
 
 ```
-Usage: @backstage/cli-module-config config:schema
-
-Options:
-  --format <string>
-  --merge
-  --package <string>
-  -h, --help
+Usage: backstage-cli-module-config config:schema 
 ```

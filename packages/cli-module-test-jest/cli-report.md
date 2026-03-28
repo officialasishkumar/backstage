@@ -5,10 +5,9 @@
 ### `backstage-cli-module-test-jest`
 
 ```
-Usage: @backstage/cli-module-test-jest [options] [command]
+Usage: backstage-cli-module-test-jest [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -20,7 +19,7 @@ Commands:
 ### `backstage-cli-module-test-jest package`
 
 ```
-Usage: @backstage/cli-module-test-jest package [options] [command] [command]
+Usage: backstage-cli-module-test-jest package [options] [command] [command]
 
 Options:
   -h, --help
@@ -33,120 +32,13 @@ Commands:
 ### `backstage-cli-module-test-jest package test`
 
 ```
-Usage: backstage-cli-module-test-jest [--config=<pathToConfigFile>]
-
-Options:
-  --all
-  --automock
-  --cache
-  --cacheDirectory
-  --changedFilesWithAncestor
-  --changedSince
-  --ci
-  --clearCache
-  --clearMocks
-  --collectCoverage
-  --collectCoverageFrom
-  --color
-  --colors
-  --coverage
-  --coverageDirectory
-  --coveragePathIgnorePatterns
-  --coverageProvider
-  --coverageReporters
-  --coverageThreshold
-  --debug
-  --detectLeaks
-  --detectOpenHandles
-  --errorOnDeprecated
-  --filter
-  --findRelatedTests
-  --forceExit
-  --globalSetup
-  --globalTeardown
-  --globals
-  --haste
-  --ignoreProjects
-  --injectGlobals
-  --json
-  --lastCommit
-  --listTests
-  --logHeapUsage
-  --maxConcurrency
-  --moduleDirectories
-  --moduleFileExtensions
-  --moduleNameMapper
-  --modulePathIgnorePatterns
-  --modulePaths
-  --noStackTrace
-  --notify
-  --notifyMode
-  --openHandlesTimeout
-  --outputFile
-  --passWithNoTests
-  --preset
-  --prettierPath
-  --projects
-  --randomize
-  --reporters
-  --resetMocks
-  --resetModules
-  --resolver
-  --restoreMocks
-  --rootDir
-  --roots
-  --runTestsByPath
-  --runner
-  --seed
-  --selectProjects
-  --setupFiles
-  --setupFilesAfterEnv
-  --shard
-  --showConfig
-  --showSeed
-  --silent
-  --skipFilter
-  --snapshotSerializers
-  --testEnvironment, --env
-  --testEnvironmentOptions
-  --testFailureExitCode
-  --testLocationInResults
-  --testMatch
-  --testPathIgnorePatterns
-  --testPathPatterns
-  --testRegex
-  --testResultsProcessor
-  --testRunner
-  --testSequencer
-  --testTimeout
-  --transform
-  --transformIgnorePatterns
-  --unmockedModulePathPatterns
-  --useStderr
-  --verbose
-  --version
-  --waitForUnhandledRejections
-  --watch
-  --watchAll
-  --watchPathIgnorePatterns
-  --watchman
-  --workerThreads
-  -b, --bail
-  -c, --config
-  -e, --expand
-  -f, --onlyFailures
-  -h, --help
-  -i, --runInBand
-  -o, --onlyChanged
-  -t, --testNamePattern
-  -u, --updateSnapshot
-  -w, --maxWorkers
+Usage: backstage-cli-module-test-jest package test 
 ```
 
 ### `backstage-cli-module-test-jest repo`
 
 ```
-Usage: @backstage/cli-module-test-jest repo [options] [command] [command]
+Usage: backstage-cli-module-test-jest repo [options] [command] [command]
 
 Options:
   -h, --help
@@ -159,12 +51,5 @@ Commands:
 ### `backstage-cli-module-test-jest repo test`
 
 ```
-Usage: @backstage/cli-module-test-jest repo test
-
-Options:
-  --jest-help
-  --since <string>
-  --success-cache
-  --success-cache-dir <string>
-  -h, --help
+Usage: backstage-cli-module-test-jest repo test 
 ```

@@ -5,10 +5,9 @@
 ### `backstage-cli-module-new`
 
 ```
-Usage: @backstage/cli-module-new [options] [command]
+Usage: backstage-cli-module-new [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -16,19 +15,20 @@ Commands:
   new
 ```
 
+### `backstage-cli-module-new create`
+
+```
+Usage: backstage-cli-module-new create 
+```
+
+### `backstage-cli-module-new create-plugin`
+
+```
+Usage: backstage-cli-module-new create-plugin 
+```
+
 ### `backstage-cli-module-new new`
 
 ```
-Usage: @backstage/cli-module-new new
-
-Options:
-  --base-version <string>
-  --license <string>
-  --npm-registry <string>
-  --option <string>
-  --private
-  --scope <string>
-  --select <string>
-  --skip-install
-  -h, --help
+Usage: backstage-cli-module-new new 
 ```

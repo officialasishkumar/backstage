@@ -5,10 +5,9 @@
 ### `backstage-cli-module-migrate`
 
 ```
-Usage: @backstage/cli-module-migrate [options] [command]
+Usage: backstage-cli-module-migrate [options] [command]
 
 Options:
-  -V, --version
   -h, --help
 
 Commands:
@@ -21,7 +20,7 @@ Commands:
 ### `backstage-cli-module-migrate migrate`
 
 ```
-Usage: @backstage/cli-module-migrate migrate [options] [command] [command]
+Usage: backstage-cli-module-migrate migrate [options] [command] [command]
 
 Options:
   -h, --help
@@ -38,68 +37,41 @@ Commands:
 ### `backstage-cli-module-migrate migrate package-exports`
 
 ```
-Usage: @backstage/cli-module-migrate migrate package-exports
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-migrate migrate package-exports 
 ```
 
 ### `backstage-cli-module-migrate migrate package-lint-configs`
 
 ```
-Usage: @backstage/cli-module-migrate migrate package-lint-configs
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-migrate migrate package-lint-configs 
 ```
 
 ### `backstage-cli-module-migrate migrate package-roles`
 
 ```
-Usage: @backstage/cli-module-migrate migrate package-roles
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-migrate migrate package-roles 
 ```
 
 ### `backstage-cli-module-migrate migrate package-scripts`
 
 ```
-Usage: @backstage/cli-module-migrate migrate package-scripts
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-migrate migrate package-scripts 
 ```
 
 ### `backstage-cli-module-migrate migrate react-router-deps`
 
 ```
-Usage: @backstage/cli-module-migrate migrate react-router-deps
-
-Options:
-  -h, --help
+Usage: backstage-cli-module-migrate migrate react-router-deps 
 ```
 
 ### `backstage-cli-module-migrate versions:bump`
 
 ```
-Usage: @backstage/cli-module-migrate versions:bump
-
-Options:
-  --pattern <string>
-  --release <string>
-  --skip-install
-  --skip-migrate
-  -h, --help
+Usage: backstage-cli-module-migrate versions:bump 
 ```
 
 ### `backstage-cli-module-migrate versions:migrate`
 
 ```
-Usage: @backstage/cli-module-migrate versions:migrate
-
-Options:
-  --pattern <string>
-  --skip-code-changes
-  -h, --help
+Usage: backstage-cli-module-migrate versions:migrate 
 ```
