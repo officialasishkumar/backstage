@@ -542,6 +542,7 @@ export const ButtonLinkDefinition: {
   };
   readonly bg: 'consumer';
   readonly analytics: true;
+  readonly resolveHref: true;
   readonly propDefs: {
     readonly noTrack: {};
     readonly size: {
@@ -648,6 +649,7 @@ export const CardDefinition: {
   readonly styles: {
     readonly [key: string]: string;
   };
+  readonly resolveHref: true;
   readonly classNames: {
     readonly root: 'bui-Card';
     readonly trigger: 'bui-CardTrigger';
@@ -902,6 +904,12 @@ export type Columns =
   | '11'
   | '12'
   | 'auto';
+
+// @public (undocumented)
+export interface CompletePaginationOptions extends PaginationOptions {
+  // (undocumented)
+  type?: 'page' | 'none';
+}
 
 // @public (undocumented)
 export const Container: ForwardRefExoticComponent<
@@ -1509,6 +1517,7 @@ export const LinkDefinition: {
     readonly root: 'bui-Link';
   };
   readonly analytics: true;
+  readonly resolveHref: true;
   readonly propDefs: {
     readonly noTrack: {};
     readonly variant: {
@@ -1597,6 +1606,7 @@ export const ListRowDefinition: {
     readonly [key: string]: string;
   };
   readonly bg: 'consumer';
+  readonly resolveHref: true;
   readonly classNames: {
     readonly root: 'bui-ListRow';
     readonly check: 'bui-ListRowCheck';
@@ -1885,6 +1895,7 @@ export interface PaginationOptions
       | 'onPreviousPage'
       | 'showPageSizeOptions'
       | 'getLabel'
+      | 'showPaginationLabel'
     >
   > {
   // (undocumented)
@@ -2545,6 +2556,9 @@ export const TablePaginationDefinition: {
       readonly default: true;
     };
     readonly getLabel: {};
+    readonly showPaginationLabel: {
+      readonly default: true;
+    };
   };
 };
 
@@ -2565,6 +2579,7 @@ export type TablePaginationOwnProps = {
     offset?: number;
     totalCount?: number;
   }) => string;
+  showPaginationLabel?: boolean;
 };
 
 // @public (undocumented)
@@ -3027,7 +3042,17 @@ export const useBreakpoint: () => {
 
 // @public (undocumented)
 export function useTable<T extends TableItem, TFilter = unknown>(
-  options: UseTableOptions<T, TFilter>,
+  options: UseTableCompleteOptions<T, TFilter>,
+): UseTableResult<T, TFilter>;
+
+// @public (undocumented)
+export function useTable<T extends TableItem, TFilter = unknown>(
+  options: UseTableOffsetOptions<T, TFilter>,
+): UseTableResult<T, TFilter>;
+
+// @public (undocumented)
+export function useTable<T extends TableItem, TFilter = unknown>(
+  options: UseTableCursorOptions<T, TFilter>,
 ): UseTableResult<T, TFilter>;
 
 // @public (undocumented)
@@ -3036,7 +3061,7 @@ export type UseTableCompleteOptions<
   TFilter = unknown,
 > = QueryOptions<TFilter> & {
   mode: 'complete';
-  paginationOptions?: PaginationOptions;
+  paginationOptions?: CompletePaginationOptions;
   sortFn?: (data: T[], sort: SortDescriptor) => T[];
   filterFn?: (data: T[], filter: TFilter) => T[];
   searchFn?: (data: T[], search: string) => T[];

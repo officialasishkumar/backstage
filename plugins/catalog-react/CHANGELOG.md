@@ -1,5 +1,13 @@
 # @backstage/plugin-catalog-react
 
+## 2.1.1
+
+### Patch Changes
+
+- 448323a: Fixed entity relation cards (e.g., "Has components") only showing one entity at a time by using `paginationOptions: { type: 'none' }` instead of deriving page size from data length.
+- Updated dependencies
+  - @backstage/ui@0.13.2
+
 ## 2.1.0
 
 ### Minor Changes
