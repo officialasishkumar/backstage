@@ -102,3 +102,7 @@ export type { CatalogModelExtensionPoint } from './extensions';
 export { catalogModelExtensionPoint } from './extensions';
 
 export * from './scmEvents';
+export {
+  catalogModelRegistryServiceRef,
+  type CatalogModelRegistryService,
+} from './catalogModelRegistryService';

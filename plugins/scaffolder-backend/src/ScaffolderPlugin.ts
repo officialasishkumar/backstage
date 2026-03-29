@@ -20,6 +20,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { ScmIntegrations } from '@backstage/integration';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
+import { catalogModelRegistryServiceRef } from '@backstage/plugin-catalog-node/alpha';
 import { eventsServiceRef } from '@backstage/plugin-events-node';
 import {
   scaffolderActionsExtensionPoint,
@@ -66,6 +67,7 @@ import {
   metricsServiceRef,
 } from '@backstage/backend-plugin-api/alpha';
 import { createScaffolderActions } from './actions';
+import { templateModelFragment } from '@backstage/plugin-scaffolder-common/alpha';
 
 /**
  * Scaffolder plugin
@@ -148,6 +150,7 @@ export const scaffolderPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         auditor: coreServices.auditor,
         catalog: catalogServiceRef,
+        catalogModelRegistry: catalogModelRegistryServiceRef,
         events: eventsServiceRef,
         actionsRegistry: actionsServiceRef,
         actionsRegistryService: actionsRegistryServiceRef,
@@ -164,6 +167,7 @@ export const scaffolderPlugin = createBackendPlugin({
         httpRouter,
         httpAuth,
         catalog,
+        catalogModelRegistry,
         permissions,
         events,
         auditor,
@@ -174,6 +178,8 @@ export const scaffolderPlugin = createBackendPlugin({
       }) {
         const log = loggerToWinstonLogger(logger);
         const integrations = ScmIntegrations.fromConfig(config);
+
+        catalogModelRegistry.register(templateModelFragment);
 
         const templateExtensions = {
           additionalTemplateFilters: convertFiltersToRecord(
