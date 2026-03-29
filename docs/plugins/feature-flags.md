@@ -4,54 +4,61 @@ title: Feature Flags
 description: Details the process of defining setting and reading a feature flag.
 ---
 
-:::caution Legacy Documentation
+::::info
+This documentation is written for the new frontend system, which is the default
+in new Backstage apps. If your Backstage app still uses the old frontend system,
+read the [old frontend system version of this guide](./feature-flags--old.md)
+instead.
+::::
 
-This page describes feature flags using the **old frontend system** APIs (`createPlugin` from `@backstage/core-plugin-api` and `createApp` from `@backstage/app-defaults`). For the new frontend system version, see [Feature Flags](../frontend-system/building-plugins/09-feature-flags.md). The `FeatureFlagged` component and `featureFlagsApiRef` work the same way in both systems.
+Backstage offers the ability to define feature flags inside a plugin or during
+application creation. This allows you to restrict parts of your plugin to those
+individual users who have toggled the feature flag to on.
 
-:::
-
-Backstage offers the ability to define feature flags inside a plugin or during application creation. This allows you to restrict parts of your plugin to those individual users who have toggled the feature flag to on.
-
-This page describes the process of defining, setting and reading a feature flag. If you are looking for using feature flags specifically with software templates please see [Writing Templates](https://backstage.io/docs/features/software-templates/writing-templates#remove-sections-or-fields-based-on-feature-flags).
+This page describes the process of defining, setting and reading a feature flag.
+If you are looking for using feature flags specifically with software templates
+please see
+[Writing Templates](https://backstage.io/docs/features/software-templates/writing-templates#remove-sections-or-fields-based-on-feature-flags).
 
 ## Defining a Feature Flag
 
 ### In a plugin
 
-Defining a feature flag in a plugin is done by passing the name of the feature flag into the `featureFlags` array:
+Feature flags are declared via the `featureFlags` option in
+`createFrontendPlugin`:
 
 ```ts title="src/plugin.ts"
-import { createPlugin } from '@backstage/core-plugin-api';
+import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
 
-export const examplePlugin = createPlugin({
-  // ...
+export const examplePlugin = createFrontendPlugin({
+  pluginId: 'example',
   featureFlags: [
     {
       name: 'show-example-feature',
       description: 'Enables the new beta dashboard view',
     },
   ],
-  // ...
+  extensions: [
+    // ...
+  ],
 });
 ```
 
-Note that the `description` property is optional. If not provided, the default "Registered in {pluginId} plugin" message is shown.
+Note that the `description` property is optional. If not provided, the default
+"Registered in {pluginId} plugin" message is shown.
 
 ### In the application
 
-Defining a feature flag in the application is done by adding feature flags in `featureFlags` array in the
-`createApp()` function call:
+Defining a feature flag in the application is done by adding feature flags in
+the `featureFlags` array in the `createApp()` function call:
 
 ```ts title="packages/app/src/App.tsx"
-import { createApp } from '@backstage/app-defaults';
+import { createApp } from '@backstage/frontend-defaults';
 
 const app = createApp({
   // ...
   featureFlags: [
     {
-      // pluginId is required for feature flags used in plugins.
-      // pluginId can be left blank for a feature flag used in the application and not in plugins.
-      pluginId: '',
       name: 'tech-radar',
       description: 'Enables the tech radar plugin',
     },
@@ -62,35 +69,54 @@ const app = createApp({
 
 ## Enabling Feature Flags
 
-Feature flags are defaulted to off and can be updated by individual users in the backstage interface. These are set by navigating to the page under `Settings` > `Feature Flags`.
+Feature flags are defaulted to off and can be updated by individual users in the
+backstage interface. These are set by navigating to the page under **Settings** >
+**Feature Flags**.
 
-The user's selection is saved in the user's browser local storage. Once a feature flag is toggled it may be required for a user to refresh the page to see the change.
-
-## FeatureFlagged Component
-
-The easiest way to control content based on the state of a feature flag is to use the [FeatureFlagged](https://backstage.io/api/stable/functions/_backstage_core-app-api.FeatureFlagged.html) component.
-
-```ts
-import { FeatureFlagged } from '@backstage/core-app-api';
-
-...
-
-<FeatureFlagged with="show-example-feature">
-  <NewFeatureComponent />
-</FeatureFlagged>
-
-<FeatureFlagged without="show-example-feature">
-  <PreviousFeatureComponent />
-</FeatureFlagged>
-```
+The user's selection is saved in the user's browser local storage. Once a
+feature flag is toggled it may be required for a user to refresh the page to see
+the change.
 
 ## Evaluating Feature Flag State
 
-It is also possible to query a feature flag using the [FeatureFlags Api](https://backstage.io/api/stable/interfaces/_backstage_core-plugin-api.index.FeatureFlagsApi.html).
+You can query a feature flag using the
+[FeatureFlagsApi](https://backstage.io/api/stable/interfaces/_backstage_frontend-plugin-api.index.FeatureFlagsApi.html):
 
-```ts
-import { useApi, featureFlagsApiRef } from '@backstage/core-plugin-api';
+```tsx
+import { useApi, featureFlagsApiRef } from '@backstage/frontend-plugin-api';
 
-const featureFlagsApi = useApi(featureFlagsApiRef);
-const isOn = featureFlagsApi.isActive('show-example-feature');
+function MyComponent() {
+  const featureFlagsApi = useApi(featureFlagsApiRef);
+
+  if (featureFlagsApi.isActive('show-example-feature')) {
+    return <NewFeatureComponent />;
+  }
+  return <PreviousFeatureComponent />;
+}
 ```
+
+## Conditionally Enabling Extensions
+
+The new frontend system also allows you to conditionally enable entire
+extensions based on feature flags, without needing to check the flag at runtime
+in your component code:
+
+```tsx
+import { PageBlueprint } from '@backstage/frontend-plugin-api';
+
+const experimentalPage = PageBlueprint.make({
+  params: {
+    path: '/experimental',
+    loader: () =>
+      import('./ExperimentalPage').then(m => <m.ExperimentalPage />),
+  },
+  if: { featureFlags: { $contains: 'experimental-features' } },
+});
+```
+
+When using the `if` option, the extension is only installed if the specified
+feature flag is active. This is evaluated when the app extension tree is
+assembled, so changes to the flag require a page reload to take effect.
+
+For more details, see
+[Feature Flags](../frontend-system/building-plugins/09-feature-flags.md).

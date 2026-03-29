@@ -4,27 +4,29 @@ title: Integrate into the Software Catalog
 description: How to integrate a plugin into software catalog
 ---
 
-:::caution Legacy Documentation
+::::info
+This documentation is written for the new frontend system, which is the default
+in new Backstage apps. If your Backstage app still uses the old frontend system,
+read the [old frontend system version of this guide](./integrating-plugin-into-software-catalog--old.md)
+instead.
+::::
 
-This page describes integrating plugins into the Software Catalog using the **old frontend system** patterns (`EntitySwitch`, `EntityLayout`, `EntityLayout.Route`). For the new frontend system, entity page integrations are done using `EntityCardBlueprint` and `EntityContentBlueprint` — see [Common Extension Blueprints](../frontend-system/building-plugins/03-common-extension-blueprints.md).
-
-:::
-
-> This is an advanced use case and currently is an experimental feature. Expect
-> API to change over time
+The Software Catalog in Backstage provides entity pages that can be extended
+with content from plugins. In the new frontend system, plugins contribute to
+entity pages through extensions created with blueprints from
+`@backstage/plugin-catalog-react/alpha`.
 
 ## Steps
 
 1. [Create a plugin](#create-a-plugin)
-1. [Reading entities from within your plugin](#reading-entities-from-within-your-plugin)
-1. [Import your plugin and embed in the entities page](#import-your-plugin-and-embed-in-the-entities-page)
+2. [Reading entities from within your plugin](#reading-entities-from-within-your-plugin)
+3. [Add entity content or cards via extensions](#add-entity-content-or-cards-via-extensions)
+4. [Configuring where extensions appear](#configuring-where-extensions-appear)
 
 ### Create a plugin
 
-Follow the [same process](create-a-plugin.md) as for standalone plugin. You
-should have a separate package in a folder, which represents your plugin.
-
-Example:
+Follow the [same process](create-a-plugin.md) as for any plugin. You should
+have a separate package in a folder that represents your plugin.
 
 ```
 $ yarn new
@@ -37,90 +39,107 @@ Creating the plugin...
 
 ### Reading entities from within your plugin
 
-You can access the currently selected entity using the backstage api
-[`useEntity`](https://backstage.io/api/stable/functions/_backstage_plugin-catalog-react.index.useEntity.html). For example,
+You can access the currently selected entity using
+[`useEntity`](https://backstage.io/api/stable/functions/_backstage_plugin-catalog-react.index.useEntity.html)
+from `@backstage/plugin-catalog-react`:
 
 ```tsx
 import { useEntity } from '@backstage/plugin-catalog-react';
 
 export const MyPluginEntityContent = () => {
   const entity = useEntity();
-
   // Do something with the entity data...
 };
 ```
 
-Internally `useEntity` makes use of
-[react `Contexts`](https://18.react.dev/learn/passing-data-deeply-with-context). The entity context is
-provided by the entity page into which your plugin will be embedded.
+The entity context is provided by the catalog entity page, into which your
+plugin's extensions are embedded.
 
-### Import your plugin and embed in the entities page
+### Add entity content or cards via extensions
 
-To begin, you will need to import your plugin in the entities page. Located at
-`packages/app/src/components/Catalog/EntityPage.tsx` from the root package of
-your backstage app.
+In the new frontend system, you don't manually wire your component into an
+`EntityPage.tsx` file. Instead, you create extensions using blueprints that the
+catalog plugin automatically discovers and renders.
 
-```tsx
-import { MyPluginEntityContent } from '@backstage/plugin-my-plugin';
+#### Entity content (tab pages)
+
+Use `EntityContentBlueprint` to create a new tab on entity pages:
+
+```tsx title="src/plugin.ts"
+import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
+
+const myPluginEntityContent = EntityContentBlueprint.make({
+  params: {
+    path: 'my-plugin',
+    title: 'My Plugin',
+    loader: () =>
+      import('./components/MyPluginEntityContent').then(m => (
+        <m.MyPluginEntityContent />
+      )),
+  },
+});
+
+export const myPlugin = createFrontendPlugin({
+  pluginId: 'my-plugin',
+  extensions: [myPluginEntityContent],
+});
 ```
 
-To add your component to the Entity view, you will need to modify the
-`packages/app/src/components/Catalog/EntityPage.tsx`. Depending on the needs of
-your plugin, you may only care about certain kinds of
-[entities](https://backstage.io/docs/features/software-catalog/descriptor-format),
-each of which has its own
-element for rendering. This
-functionality is handled by the `EntitySwitch` component:
+The `path` determines the URL segment under the entity page, and the `title` is
+shown as the tab label.
 
-```tsx
-export const entityPage = (
-  <EntitySwitch>
-    <EntitySwitch.Case if={isKind('component')} children={componentPage} />
-    <EntitySwitch.Case if={isKind('api')} children={apiPage} />
-    <EntitySwitch.Case if={isKind('group')} children={groupPage} />
-    <EntitySwitch.Case if={isKind('user')} children={userPage} />
-    <EntitySwitch.Case if={isKind('system')} children={systemPage} />
-    <EntitySwitch.Case if={isKind('domain')} children={domainPage} />
+#### Entity cards (overview cards)
 
-    <EntitySwitch.Case>{defaultEntityPage}</EntitySwitch.Case>
-  </EntitySwitch>
-);
+Use `EntityCardBlueprint` to create a card that can appear on entity overview
+pages:
+
+```tsx title="src/plugin.ts"
+import { EntityCardBlueprint } from '@backstage/plugin-catalog-react/alpha';
+
+const myPluginEntityCard = EntityCardBlueprint.make({
+  params: {
+    loader: () =>
+      import('./components/MyPluginCard').then(m => <m.MyPluginCard />),
+  },
+});
 ```
 
-At this point, you will need to modify the specific page where you want your
-component to appear. If you are extending the Software Catalog model you will
-need to add a new case to the `EntitySwitch`. For adding a plugin to an existing
-component type, you modify the existing page. For example, if you want to add
-your plugin to the `systemPage`, you can add a new tab by adding an
-`EntityLayout.Route` such as below:
+Add the card extension to your plugin's `extensions` array alongside any other
+extensions.
+
+### Configuring where extensions appear
+
+By default, entity content and cards are available on all entity pages. App
+integrators can control where extensions appear and their ordering through
+`app-config.yaml`.
+
+For example, to enable a content tab only for components:
+
+```yaml title="app-config.yaml"
+app:
+  extensions:
+    - entity-content:my-plugin:
+        config:
+          filter: kind:component
+```
+
+Entity content also supports an optional `group` parameter to associate the tab
+with a tab group on the entity page:
 
 ```tsx
-const systemPage = (
-  <EntityLayout>
-    <EntityLayout.Route path="/" title="Overview">
-      <Grid container spacing={3} alignItems="stretch">
-        <Grid item md={6}>
-          <EntityAboutCard />
-        </Grid>
-        <Grid item md={6}>
-          <EntityHasComponentsCard variant="gridItem" />
-        </Grid>
-        <Grid item md={6}>
-          <EntityHasApisCard variant="gridItem" />
-        </Grid>
-        <Grid item md={6}>
-          <EntityHasResourcesCard variant="gridItem" />
-        </Grid>
-      </Grid>
-    </EntityLayout.Route>
-    <EntityLayout.Route path="/diagram" title="Diagram">
-      <EntityCatalogGraphCard variant="gridItem" height={400} />
-    </EntityLayout.Route>
-
-    {/* Adding a new tab to the system view */}
-    <EntityLayout.Route path="/your-custom-route" title="CustomTitle">
-      <MyPluginEntityContent />
-    </EntityLayout.Route>
-  </EntityLayout>
-);
+const myPluginEntityContent = EntityContentBlueprint.make({
+  params: {
+    path: 'my-plugin',
+    title: 'My Plugin',
+    group: 'quality',
+    loader: () =>
+      import('./components/MyPluginEntityContent').then(m => (
+        <m.MyPluginEntityContent />
+      )),
+  },
+});
 ```
+
+For a full list of available blueprints and configuration options, see
+[Common Extension Blueprints](../frontend-system/building-plugins/03-common-extension-blueprints.md).
