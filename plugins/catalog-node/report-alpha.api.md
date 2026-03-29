@@ -6,6 +6,7 @@
 import { CatalogAnalysisExtensionPoint as CatalogAnalysisExtensionPoint_2 } from '@backstage/plugin-catalog-node';
 import { CatalogApi } from '@backstage/catalog-client';
 import { CatalogLocationsExtensionPoint as CatalogLocationsExtensionPoint_2 } from '@backstage/plugin-catalog-node';
+import { CatalogModelFragment } from '@backstage/catalog-model/alpha';
 import { CatalogProcessingExtensionPoint as CatalogProcessingExtensionPoint_2 } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorParser } from '@backstage/plugin-catalog-node';
 import { EntitiesSearchFilter } from '@backstage/plugin-catalog-node';
@@ -40,12 +41,26 @@ export const catalogLocationsExtensionPoint: ExtensionPoint<CatalogLocationsExte
 
 // @alpha (undocumented)
 export interface CatalogModelExtensionPoint {
+  addModelFragment(fragment: CatalogModelFragment): void;
   setEntityDataParser(parser: CatalogProcessorParser): void;
   setFieldValidators(validators: Partial<Validators>): void;
 }
 
 // @alpha (undocumented)
 export const catalogModelExtensionPoint: ExtensionPoint<CatalogModelExtensionPoint>;
+
+// @alpha
+export interface CatalogModelRegistryService {
+  // (undocumented)
+  register(fragment: CatalogModelFragment): void;
+}
+
+// @alpha
+export const catalogModelRegistryServiceRef: ServiceRef<
+  CatalogModelRegistryService,
+  'plugin',
+  'singleton'
+>;
 
 // @alpha @deprecated (undocumented)
 export interface CatalogPermissionExtensionPoint {

@@ -14,9 +14,41 @@
  * limitations under the License.
  */
 
+import { createCatalogModelFragment } from './fragments/createCatalogModelFragment';
+import { apiEntityModel } from './kinds/ApiEntityV1alpha1';
+import { componentEntityModel } from './kinds/ComponentEntityV1alpha1';
+import { domainEntityModel } from './kinds/DomainEntityV1alpha1';
+import { groupEntityModel } from './kinds/GroupEntityV1alpha1';
+import { locationEntityModel } from './kinds/LocationEntityV1alpha1';
+import { resourceEntityModel } from './kinds/ResourceEntityV1alpha1';
+import { systemEntityModel } from './kinds/SystemEntityV1alpha1';
+import { userEntityModel } from './kinds/UserEntityV1alpha1';
+import { wellKnownAnnotationsModel } from './kinds/annotations';
+import { wellKnownRelationsModel } from './kinds/relations';
+
+export type { AlphaEntity } from './entity/AlphaEntity';
 export type {
   EntityStatus,
   EntityStatusItem,
   EntityStatusLevel,
 } from './entity/EntityStatus';
-export type { AlphaEntity } from './entity/AlphaEntity';
+export * from './fragments';
+
+/**
+ * @alpha
+ */
+export const defaultCatalogEntityModel = createCatalogModelFragment(
+  'Backstage Default Entity Model',
+  builder => {
+    builder.import(apiEntityModel);
+    builder.import(componentEntityModel);
+    builder.import(domainEntityModel);
+    builder.import(groupEntityModel);
+    builder.import(locationEntityModel);
+    builder.import(resourceEntityModel);
+    builder.import(systemEntityModel);
+    builder.import(userEntityModel);
+    builder.import(wellKnownRelationsModel);
+    builder.import(wellKnownAnnotationsModel);
+  },
+);
