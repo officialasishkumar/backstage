@@ -1,0 +1,51 @@
+import{j as o,U as r,a2 as l,h as e}from"./iframe-v6zF9Gaf.js";import{c as t,D as c,a as p,b as d}from"./DialogTitle-BUd0NaHM.js";import{m}from"./makeStyles-CnXLcFSM.js";import{B as a}from"./Button-DpKR-H_M.js";import{c as y}from"./createStyles-Bp4GwXob.js";import"./preload-helper-PPVm8Dsz.js";import"./Modal-8auFf5gZ.js";import"./Portal-D_MLevm5.js";import"./Backdrop-qllrtTxR.js";import"./createStyles-yD3y8ldD.js";const S={title:"Layout/Dialog",component:t,tags:["!manifest"]},h=m(n=>y({closeButton:{position:"absolute",right:n.spacing(1),top:n.spacing(1),color:n.palette.grey[500]}})),s={args:{open:!0},render:({open:n})=>{const i=h();return o.jsxs(t,{"aria-labelledby":"dialog-title","aria-describedby":"dialog-description",open:n,children:[o.jsxs(c,{id:"dialog-title",children:["Dialog Box Title",o.jsx(r,{"aria-label":"close",className:i.closeButton,children:o.jsx(l,{})})]}),o.jsxs(p,{children:[o.jsx(e,{children:"This component is used whenever confirmation of some sort is needed, such as:"}),o.jsxs("ul",{children:[o.jsx("li",{children:o.jsx(e,{children:"Consent to sensitive matters like GDPR, access, etc;"})}),o.jsx("li",{children:o.jsx(e,{children:"Save, submit, cancel after a form is completed;"})}),o.jsx("li",{children:o.jsx(e,{children:"Alert message;"})}),o.jsx("li",{children:o.jsx(e,{children:"Buttons are optional."})})]}),o.jsx(e,{children:"The color for the secondary button is the same as the primary."})]}),o.jsxs(d,{children:[o.jsx(a,{color:"primary",children:"Secondary action"}),o.jsx(a,{color:"primary",children:"Primary action"})]})]})}};s.parameters={...s.parameters,docs:{...s.parameters?.docs,source:{originalSource:`{
+  args: {
+    open: true
+  },
+  render: ({
+    open
+  }: {
+    open: boolean;
+  }) => {
+    const classes = styles();
+    return <Dialog aria-labelledby="dialog-title" aria-describedby="dialog-description" open={open}>
+        <DialogTitle id="dialog-title">
+          Dialog Box Title
+          <IconButton aria-label="close" className={classes.closeButton}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            This component is used whenever confirmation of some sort is needed,
+            such as:
+          </Typography>
+          <ul>
+            <li>
+              <Typography>
+                Consent to sensitive matters like GDPR, access, etc;
+              </Typography>
+            </li>
+            <li>
+              <Typography>
+                Save, submit, cancel after a form is completed;
+              </Typography>
+            </li>
+            <li>
+              <Typography>Alert message;</Typography>
+            </li>
+            <li>
+              <Typography>Buttons are optional.</Typography>
+            </li>
+          </ul>
+          <Typography>
+            The color for the secondary button is the same as the primary.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary">Secondary action</Button>
+          <Button color="primary">Primary action</Button>
+        </DialogActions>
+      </Dialog>;
+  }
+}`,...s.parameters?.docs?.source}}};const v=["Default"];export{s as Default,v as __namedExportsOrder,S as default};

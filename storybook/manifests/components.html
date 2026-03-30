@@ -576,13 +576,13 @@
 <header>
   <div class="wrap">
     <h1>Manifest Debugger</h1>
-    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">47 components ok</span><span class="filter-pill ok" aria-disabled="true">430 stories ok</span></div>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">47 components ok</span><span class="filter-pill ok" aria-disabled="true">431 stories ok</span></div>
   </div>
 </header>
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>2.9s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>3.0s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -13041,13 +13041,13 @@ import { RiEyeLine, RiSparklingLine } from "@remixicon/react";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> ToastContainer</h2>
       <div class="badges">
-        <label for="c-41-plugins-app-toast-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-41-app-toast-props" class="badge ok as-toggle">2 prop types</label>
         
-        <label for="c-41-plugins-app-toast-stories" class="badge ok as-toggle">10 stories</label>
+        <label for="c-41-app-toast-stories" class="badge ok as-toggle">11 stories</label>
         
       </div>
     </div>
-    <div class="meta" title="./plugins/app/src/components/Toast/Toast.stories.tsx">plugins-app-toast · ./plugins/app/src/components/Toast/Toast.stories.tsx</div>
+    <div class="meta" title="./plugins/app/src/components/Toast/Toast.stories.tsx">app-toast · ./plugins/app/src/components/Toast/Toast.stories.tsx</div>
     
     <div class="hint">A ToastContainer displays one or more toast notifications in the bottom-center of the screen.</div>
     <div class="kv"><span class="chip">remarks:  The ToastContainer component should typically be placed once at the root of your application. It manages the display and stacking of all toast notifications added to its queue. Toasts appear in the bottom-center with deep stacking when multiple are visible. Toast containers are ARIA landmark regions that can be navigated using F6 (forward) and Shift+F6 (backward) for keyboard accessibility.</span><span class="chip">internal:  </span></div>
@@ -13056,9 +13056,9 @@ import { RiEyeLine, RiSparklingLine } from "@remixicon/react";</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-41-plugins-app-toast-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-41-app-toast-stories" class="tg tg-stories" type="checkbox" hidden />
   
-  <input id="c-41-plugins-app-toast-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-41-app-toast-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -13128,6 +13128,24 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
     &lt;/Flex&gt;
   &lt;/&gt;
 );</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Preview Toast</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const PreviewToast = () =&gt; &lt;ToastContainer queue={previewQueue} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Preview Toast With Timer</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const PreviewToastWithTimer = () =&gt; &lt;ToastContainer queue={timerQueue} /&gt;;</code></pre>
             </div>
             <div class="note ok">
               <div class="row">
@@ -13536,15 +13554,6 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
     &lt;/&gt;
   );
 };</code></pre>
-            </div>
-            <div class="note ok">
-              <div class="row">
-                <span class="ex-name">Real AlertApi Test</span>
-                <span class="badge ok">story ok</span>
-              </div>
-              
-              
-              <pre><code>const RealAlertApi = () =&gt; &lt;RealAlertApiStory /&gt;;</code></pre>
             </div>
         </div>
     
