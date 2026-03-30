@@ -22,38 +22,38 @@ import {
   ANNOTATION_SOURCE_LOCATION,
 } from '../location';
 
-export const wellKnownAnnotationsModel = createCatalogModelFragment(
-  'Well-Known Annotations',
-  builder => {
-    builder.addAnnotation({
+export const wellKnownAnnotationsModel = createCatalogModelFragment({
+  name: 'Well-Known Annotations',
+  builder: model => {
+    model.addAnnotation({
       name: ANNOTATION_LOCATION,
       description:
         'The location reference that the catalog uses to manage and update the entity.',
     });
-    builder.addAnnotation({
+    model.addAnnotation({
       name: ANNOTATION_ORIGIN_LOCATION,
       description:
         'The original location reference that first discovered the entity.',
     });
-    builder.addAnnotation({
+    model.addAnnotation({
       name: ANNOTATION_SOURCE_LOCATION,
       description:
         'The location reference of the source data for the entity, e.g. a file in a repository.',
     });
-    builder.addAnnotation({
+    model.addAnnotation({
       name: 'backstage.io/orphan',
       description:
         'Set to "true" when the entity is not referenced by any location and is scheduled for deletion.',
     });
-    builder.addAnnotation({
+    model.addAnnotation({
       name: ANNOTATION_VIEW_URL,
       description:
         'A URL to view the entity in an external tool, e.g. a source code repository.',
     });
-    builder.addAnnotation({
+    model.addAnnotation({
       name: ANNOTATION_EDIT_URL,
       description:
         'A URL to edit the entity in an external tool, e.g. a source code repository.',
     });
   },
-);
+});

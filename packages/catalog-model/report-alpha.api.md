@@ -297,10 +297,10 @@ export function compileCatalogModel(
 ): CatalogModel;
 
 // @alpha
-export function createCatalogModelFragment(
-  modelName: string,
-  model: (model: CatalogModelFragmentBuilder) => void,
-): CatalogModelFragment;
+export function createCatalogModelFragment(options: {
+  name: string;
+  builder: (model: CatalogModelFragmentBuilder) => void;
+}): CatalogModelFragment;
 
 // @alpha
 export function createCatalogModelFragmentBuilder(options: {

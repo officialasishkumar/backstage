@@ -22,10 +22,10 @@ import schema from './Template.v1beta3.schema.json';
  *
  * @alpha
  */
-export const templateModelFragment = createCatalogModelFragment(
-  'Template',
-  builder => {
-    builder.addKind({
+export const templateModelFragment = createCatalogModelFragment({
+  name: 'Template',
+  builder: model => {
+    model.addKind({
       group: 'scaffolder.backstage.io',
       names: {
         kind: 'Template',
@@ -53,4 +53,4 @@ export const templateModelFragment = createCatalogModelFragment(
       ],
     });
   },
-);
+});

@@ -52,46 +52,49 @@ export const groupEntityV1alpha1Validator =
  *
  * @alpha
  */
-export const groupEntityModel = createCatalogModelFragment('Group', builder => {
-  builder.addKind({
-    group: 'backstage.io',
-    names: {
-      kind: 'Group',
-      singular: 'group',
-      plural: 'groups',
-    },
-    description:
-      'A Group describes an organizational entity, such as a team, a business unit, or a loose collection of people.',
-    versions: [
-      {
-        name: ['v1alpha1', 'v1beta1'],
-        relationFields: [
-          {
-            selector: { path: 'spec.parent' },
-            relation: 'childOf',
-            defaultKind: 'Group',
-            defaultNamespace: 'inherit',
-            allowedKinds: ['Group'],
-          },
-          {
-            selector: { path: 'spec.children' },
-            relation: 'parentOf',
-            defaultKind: 'Group',
-            defaultNamespace: 'inherit',
-            allowedKinds: ['Group'],
-          },
-          {
-            selector: { path: 'spec.members' },
-            relation: 'hasMember',
-            defaultKind: 'User',
-            defaultNamespace: 'inherit',
-            allowedKinds: ['User'],
-          },
-        ],
-        schema: {
-          jsonSchema: schema,
-        },
+export const groupEntityModel = createCatalogModelFragment({
+  name: 'Group',
+  builder: model => {
+    model.addKind({
+      group: 'backstage.io',
+      names: {
+        kind: 'Group',
+        singular: 'group',
+        plural: 'groups',
       },
-    ],
-  });
+      description:
+        'A Group describes an organizational entity, such as a team, a business unit, or a loose collection of people.',
+      versions: [
+        {
+          name: ['v1alpha1', 'v1beta1'],
+          relationFields: [
+            {
+              selector: { path: 'spec.parent' },
+              relation: 'childOf',
+              defaultKind: 'Group',
+              defaultNamespace: 'inherit',
+              allowedKinds: ['Group'],
+            },
+            {
+              selector: { path: 'spec.children' },
+              relation: 'parentOf',
+              defaultKind: 'Group',
+              defaultNamespace: 'inherit',
+              allowedKinds: ['Group'],
+            },
+            {
+              selector: { path: 'spec.members' },
+              relation: 'hasMember',
+              defaultKind: 'User',
+              defaultNamespace: 'inherit',
+              allowedKinds: ['User'],
+            },
+          ],
+          schema: {
+            jsonSchema: schema,
+          },
+        },
+      ],
+    });
+  },
 });

@@ -53,10 +53,10 @@ export const resourceEntityV1alpha1Validator =
  *
  * @alpha
  */
-export const resourceEntityModel = createCatalogModelFragment(
-  'Resource',
-  builder => {
-    builder.addKind({
+export const resourceEntityModel = createCatalogModelFragment({
+  name: 'Resource',
+  builder: model => {
+    model.addKind({
       group: 'backstage.io',
       names: {
         kind: 'Resource',
@@ -100,4 +100,4 @@ export const resourceEntityModel = createCatalogModelFragment(
       ],
     });
   },
-);
+});

@@ -142,10 +142,10 @@ export const RELATION_HAS_PART = 'hasPart';
 /**
  * Extends the catalog model with the well-known Backstage relation pairs.
  */
-export const wellKnownRelationsModel = createCatalogModelFragment(
-  'Well-Known Relations',
-  builder => {
-    builder.addRelationPair({
+export const wellKnownRelationsModel = createCatalogModelFragment({
+  name: 'Well-Known Relations',
+  builder: model => {
+    model.addRelationPair({
       fromKind: [
         'API',
         'Component',
@@ -163,7 +163,7 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'ownerOf', title: 'owner of' },
     });
 
-    builder.addRelationPair({
+    model.addRelationPair({
       fromKind: 'Component',
       toKind: 'API',
       description:
@@ -172,7 +172,7 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'apiProvidedBy', title: 'API provided by' },
     });
 
-    builder.addRelationPair({
+    model.addRelationPair({
       fromKind: 'Component',
       toKind: 'API',
       description: 'A relation from a component to an API it consumes.',
@@ -180,7 +180,7 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'apiConsumedBy', title: 'API consumed by' },
     });
 
-    builder.addRelationPair({
+    model.addRelationPair({
       fromKind: ['Component', 'Resource'],
       toKind: ['Component', 'Resource'],
       description:
@@ -189,7 +189,7 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'dependencyOf', title: 'dependency of' },
     });
 
-    builder.addRelationPair({
+    model.addRelationPair({
       fromKind: 'Group',
       toKind: 'Group',
       description:
@@ -198,7 +198,7 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'childOf', title: 'child of' },
     });
 
-    builder.addRelationPair({
+    model.addRelationPair({
       fromKind: 'User',
       toKind: 'Group',
       description: 'A membership relation, typically for users in a group.',
@@ -206,7 +206,7 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'hasMember', title: 'has member' },
     });
 
-    builder.addRelationPair({
+    model.addRelationPair({
       fromKind: ['Component', 'API', 'Resource'],
       toKind: ['Component', 'System'],
       description:
@@ -215,7 +215,7 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'hasPart', title: 'has part' },
     });
 
-    builder.addRelationPair({
+    model.addRelationPair({
       fromKind: 'System',
       toKind: 'Domain',
       description: 'A part/whole relation where a system belongs to a domain.',
@@ -223,7 +223,7 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'hasPart', title: 'has part' },
     });
 
-    builder.addRelationPair({
+    model.addRelationPair({
       fromKind: 'Domain',
       toKind: 'Domain',
       description:
@@ -232,4 +232,4 @@ export const wellKnownRelationsModel = createCatalogModelFragment(
       reverse: { type: 'hasPart', title: 'has part' },
     });
   },
-);
+});

@@ -37,18 +37,18 @@ export * from './fragments';
 /**
  * @alpha
  */
-export const defaultCatalogEntityModel = createCatalogModelFragment(
-  'Backstage Default Entity Model',
-  builder => {
-    builder.import(apiEntityModel);
-    builder.import(componentEntityModel);
-    builder.import(domainEntityModel);
-    builder.import(groupEntityModel);
-    builder.import(locationEntityModel);
-    builder.import(resourceEntityModel);
-    builder.import(systemEntityModel);
-    builder.import(userEntityModel);
-    builder.import(wellKnownRelationsModel);
-    builder.import(wellKnownAnnotationsModel);
+export const defaultCatalogEntityModel = createCatalogModelFragment({
+  name: 'Backstage Default Entity Model',
+  builder: model => {
+    model.import(apiEntityModel);
+    model.import(componentEntityModel);
+    model.import(domainEntityModel);
+    model.import(groupEntityModel);
+    model.import(locationEntityModel);
+    model.import(resourceEntityModel);
+    model.import(systemEntityModel);
+    model.import(userEntityModel);
+    model.import(wellKnownRelationsModel);
+    model.import(wellKnownAnnotationsModel);
   },
-);
+});

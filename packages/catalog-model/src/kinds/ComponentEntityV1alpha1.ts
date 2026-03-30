@@ -57,10 +57,10 @@ export const componentEntityV1alpha1Validator =
  *
  * @alpha
  */
-export const componentEntityModel = createCatalogModelFragment(
-  'Component',
-  builder => {
-    builder.addKind({
+export const componentEntityModel = createCatalogModelFragment({
+  name: 'Component',
+  builder: model => {
+    model.addKind({
       group: 'backstage.io',
       names: {
         kind: 'Component',
@@ -122,4 +122,4 @@ export const componentEntityModel = createCatalogModelFragment(
       ],
     });
   },
-);
+});

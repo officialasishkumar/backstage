@@ -30,7 +30,7 @@ import { CatalogModelFragment } from './types';
  * contributions to the overall catalog model, and registering them with the
  * catalog which then forms a complete picture out of them.
  */
-export function createCatalogModelFragment(
+export function createCatalogModelFragment(options: {
   /**
    * The name of the model fragment.
    *
@@ -39,10 +39,10 @@ export function createCatalogModelFragment(
    * This is a human-readable identifier that may be used in error reporting and
    * similar.
    */
-  modelName: string,
-  model: (model: CatalogModelFragmentBuilder) => void,
-): CatalogModelFragment {
-  const builder = createCatalogModelFragmentBuilder({ modelName });
-  model(builder);
-  return builder.build();
+  name: string;
+  builder: (model: CatalogModelFragmentBuilder) => void;
+}): CatalogModelFragment {
+  const b = createCatalogModelFragmentBuilder({ modelName: options.name });
+  options.builder(b);
+  return b.build();
 }

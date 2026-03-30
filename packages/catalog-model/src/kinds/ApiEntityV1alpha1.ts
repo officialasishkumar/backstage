@@ -53,38 +53,41 @@ export const apiEntityV1alpha1Validator =
  *
  * @alpha
  */
-export const apiEntityModel = createCatalogModelFragment('API', builder => {
-  builder.addKind({
-    group: 'backstage.io',
-    names: {
-      kind: 'API',
-      singular: 'api',
-      plural: 'apis',
-    },
-    description:
-      'An API describes an interface that can be exposed by a component.',
-    versions: [
-      {
-        name: ['v1alpha1', 'v1beta1'],
-        relationFields: [
-          {
-            selector: { path: 'spec.owner' },
-            relation: 'ownedBy',
-            defaultKind: 'Group',
-            defaultNamespace: 'inherit',
-            allowedKinds: ['Group', 'User'],
-          },
-          {
-            selector: { path: 'spec.system' },
-            relation: 'partOf',
-            defaultKind: 'System',
-            defaultNamespace: 'inherit',
-          },
-        ],
-        schema: {
-          jsonSchema: schema,
-        },
+export const apiEntityModel = createCatalogModelFragment({
+  name: 'API',
+  builder: model => {
+    model.addKind({
+      group: 'backstage.io',
+      names: {
+        kind: 'API',
+        singular: 'api',
+        plural: 'apis',
       },
-    ],
-  });
+      description:
+        'An API describes an interface that can be exposed by a component.',
+      versions: [
+        {
+          name: ['v1alpha1', 'v1beta1'],
+          relationFields: [
+            {
+              selector: { path: 'spec.owner' },
+              relation: 'ownedBy',
+              defaultKind: 'Group',
+              defaultNamespace: 'inherit',
+              allowedKinds: ['Group', 'User'],
+            },
+            {
+              selector: { path: 'spec.system' },
+              relation: 'partOf',
+              defaultKind: 'System',
+              defaultNamespace: 'inherit',
+            },
+          ],
+          schema: {
+            jsonSchema: schema,
+          },
+        },
+      ],
+    });
+  },
 });
