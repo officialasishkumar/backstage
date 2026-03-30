@@ -45,24 +45,27 @@ describe('catalogModelRegistryServiceRef', () => {
           },
           async init({ modelRegistry }) {
             modelRegistry.register(
-              createCatalogModelFragment('my-model', model => {
-                model.addKind({
-                  group: 'example.com',
-                  names: {
-                    kind: 'MyKind',
-                    singular: 'mykind',
-                    plural: 'mykinds',
-                  },
-                  description: 'A test kind',
-                  versions: [
-                    {
-                      name: 'v1alpha1',
-                      schema: {
-                        jsonSchema: { type: 'object', properties: {} },
-                      },
+              createCatalogModelFragment({
+                name: 'my-model',
+                builder: model => {
+                  model.addKind({
+                    group: 'example.com',
+                    names: {
+                      kind: 'MyKind',
+                      singular: 'mykind',
+                      plural: 'mykinds',
                     },
-                  ],
-                });
+                    description: 'A test kind',
+                    versions: [
+                      {
+                        name: 'v1alpha1',
+                        schema: {
+                          jsonSchema: { type: 'object', properties: {} },
+                        },
+                      },
+                    ],
+                  });
+                },
               }),
             );
           },

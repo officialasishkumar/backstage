@@ -51,10 +51,10 @@ export const domainEntityV1alpha1Validator =
  *
  * @alpha
  */
-export const domainEntityModel = createCatalogModelFragment(
-  'Domain',
-  builder => {
-    builder.addKind({
+export const domainEntityModel = createCatalogModelFragment({
+  name: 'Domain',
+  builder: model => {
+    model.addKind({
       group: 'backstage.io',
       names: {
         kind: 'Domain',
@@ -88,4 +88,4 @@ export const domainEntityModel = createCatalogModelFragment(
       ],
     });
   },
-);
+});

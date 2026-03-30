@@ -48,10 +48,10 @@ export const locationEntityV1alpha1Validator =
  *
  * @alpha
  */
-export const locationEntityModel = createCatalogModelFragment(
-  'Location',
-  builder => {
-    builder.addKind({
+export const locationEntityModel = createCatalogModelFragment({
+  name: 'Location',
+  builder: model => {
+    model.addKind({
       group: 'backstage.io',
       names: {
         kind: 'Location',
@@ -70,4 +70,4 @@ export const locationEntityModel = createCatalogModelFragment(
       ],
     });
   },
-);
+});

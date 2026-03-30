@@ -18,32 +18,35 @@ import Ajv from 'ajv';
 import { createCatalogModelFragment } from './createCatalogModelFragment';
 import { compileCatalogModel } from './compileCatalogModel';
 
-const fragment = createCatalogModelFragment('Test', builder => {
-  builder.addKind({
-    group: 'example.com',
-    names: { kind: 'Widget', singular: 'widget', plural: 'widgets' },
-    description: 'A test widget kind',
-    versions: [
-      {
-        name: 'v1alpha1',
-        schema: {
-          jsonSchema: {
-            type: 'object',
-            required: ['spec'],
-            properties: {
-              spec: {
-                type: 'object',
-                required: ['size'],
-                properties: {
-                  size: { type: 'number' },
+const fragment = createCatalogModelFragment({
+  name: 'Test',
+  builder: model => {
+    model.addKind({
+      group: 'example.com',
+      names: { kind: 'Widget', singular: 'widget', plural: 'widgets' },
+      description: 'A test widget kind',
+      versions: [
+        {
+          name: 'v1alpha1',
+          schema: {
+            jsonSchema: {
+              type: 'object',
+              required: ['spec'],
+              properties: {
+                spec: {
+                  type: 'object',
+                  required: ['size'],
+                  properties: {
+                    size: { type: 'number' },
+                  },
                 },
               },
             },
           },
         },
-      },
-    ],
-  });
+      ],
+    });
+  },
 });
 
 function compileAndValidate(entity: unknown): boolean {
@@ -136,53 +139,60 @@ describe('compileCatalogModel', () => {
 });
 
 describe('compileCatalogModel specType', () => {
-  const specTypeFragment = createCatalogModelFragment('SpecType', builder => {
-    builder.addKind({
-      group: 'example.com',
-      names: { kind: 'Component', singular: 'component', plural: 'components' },
-      description: 'A component',
-      versions: [
-        {
-          name: 'v1alpha1',
-          schema: {
-            jsonSchema: {
-              type: 'object',
-              required: ['spec'],
-              properties: {
-                spec: {
-                  type: 'object',
-                  required: ['lifecycle'],
-                  properties: {
-                    lifecycle: { type: 'string' },
+  const specTypeFragment = createCatalogModelFragment({
+    name: 'SpecType',
+    builder: model => {
+      model.addKind({
+        group: 'example.com',
+        names: {
+          kind: 'Component',
+          singular: 'component',
+          plural: 'components',
+        },
+        description: 'A component',
+        versions: [
+          {
+            name: 'v1alpha1',
+            schema: {
+              jsonSchema: {
+                type: 'object',
+                required: ['spec'],
+                properties: {
+                  spec: {
+                    type: 'object',
+                    required: ['lifecycle'],
+                    properties: {
+                      lifecycle: { type: 'string' },
+                    },
                   },
                 },
               },
             },
           },
-        },
-        {
-          name: 'v1alpha1',
-          specType: 'service',
-          description: 'A service component',
-          schema: {
-            jsonSchema: {
-              type: 'object',
-              required: ['spec'],
-              properties: {
-                spec: {
-                  type: 'object',
-                  required: ['lifecycle', 'port'],
-                  properties: {
-                    lifecycle: { type: 'string' },
-                    port: { type: 'number' },
+          {
+            name: 'v1alpha1',
+            specType: 'service',
+            description: 'A service component',
+            schema: {
+              jsonSchema: {
+                type: 'object',
+                required: ['spec'],
+                properties: {
+                  spec: {
+                    type: 'object',
+                    required: ['lifecycle', 'port'],
+                    properties: {
+                      lifecycle: { type: 'string' },
+                      port: { type: 'number' },
+                    },
                   },
                 },
               },
             },
           },
-        },
-      ],
-    });
+        ],
+      });
+    },
   });
 
   it('should return the default version when no spec type is given', () => {
@@ -230,69 +240,72 @@ describe('compileCatalogModel specType', () => {
 describe('compileCatalogModel integration', () => {
   it('should support the full add/update/remove lifecycle', () => {
     // Step 1: Add one of everything
-    const base = createCatalogModelFragment('Base', builder => {
-      builder.addKind({
-        group: 'example.com',
-        names: { kind: 'Widget', singular: 'widget', plural: 'widgets' },
-        description: 'A widget',
-        versions: [
-          {
-            name: 'v1alpha1',
-            relationFields: [
-              {
-                selector: { path: 'spec.owner' },
-                relation: 'ownedBy',
-                defaultKind: 'Group',
-                defaultNamespace: 'inherit',
-                allowedKinds: ['Group', 'User'],
-              },
-            ],
-            schema: {
-              jsonSchema: {
-                type: 'object',
-                required: ['spec'],
-                properties: {
-                  spec: {
-                    type: 'object',
-                    required: ['size'],
-                    properties: {
-                      size: { type: 'number' },
+    const base = createCatalogModelFragment({
+      name: 'Base',
+      builder: model => {
+        model.addKind({
+          group: 'example.com',
+          names: { kind: 'Widget', singular: 'widget', plural: 'widgets' },
+          description: 'A widget',
+          versions: [
+            {
+              name: 'v1alpha1',
+              relationFields: [
+                {
+                  selector: { path: 'spec.owner' },
+                  relation: 'ownedBy',
+                  defaultKind: 'Group',
+                  defaultNamespace: 'inherit',
+                  allowedKinds: ['Group', 'User'],
+                },
+              ],
+              schema: {
+                jsonSchema: {
+                  type: 'object',
+                  required: ['spec'],
+                  properties: {
+                    spec: {
+                      type: 'object',
+                      required: ['size'],
+                      properties: {
+                        size: { type: 'number' },
+                      },
                     },
                   },
                 },
               },
             },
-          },
-        ],
-      });
+          ],
+        });
 
-      builder.addRelationPair({
-        fromKind: 'Widget',
-        toKind: ['Group', 'User'],
-        description: 'Ownership',
-        forward: { type: 'ownedBy', title: 'owned by' },
-        reverse: { type: 'ownerOf', title: 'owner of' },
-      });
+        model.addRelationPair({
+          fromKind: 'Widget',
+          toKind: ['Group', 'User'],
+          description: 'Ownership',
+          forward: { type: 'ownedBy', title: 'owned by' },
+          reverse: { type: 'ownerOf', title: 'owner of' },
+        });
 
-      builder.addAnnotation({
-        name: 'example.com/docs-url',
-        title: 'Docs URL',
-        description: 'Link to docs',
-        schema: { jsonSchema: { type: 'string', minLength: 1 } },
-      });
+        model.addAnnotation({
+          name: 'example.com/docs-url',
+          title: 'Docs URL',
+          description: 'Link to docs',
+          schema: { jsonSchema: { type: 'string', minLength: 1 } },
+        });
 
-      builder.addLabel({
-        name: 'example.com/tier',
-        title: 'Tier',
-        description: 'Service tier',
-        schema: { jsonSchema: { type: 'string', enum: ['gold', 'silver'] } },
-      });
+        model.addLabel({
+          name: 'example.com/tier',
+          title: 'Tier',
+          description: 'Service tier',
+          schema: { jsonSchema: { type: 'string', enum: ['gold', 'silver'] } },
+        });
 
-      builder.addTag({
-        name: 'production',
-        title: 'Production',
-        description: 'Production-ready',
-      });
+        model.addTag({
+          name: 'production',
+          title: 'Production',
+          description: 'Production-ready',
+        });
+      },
     });
 
     // Verify base state
@@ -426,45 +439,48 @@ describe('compileCatalogModel integration', () => {
     ]);
 
     // Step 2: Update everything
-    const updates = createCatalogModelFragment('Updates', builder => {
-      builder.updateKind({
-        names: { kind: 'Widget', singular: 'gizmo', plural: 'gizmos' },
-        description: 'An updated widget',
-        versions: [
-          {
-            name: 'v1alpha1',
-            schema: {
-              jsonSchema: {
-                type: 'object',
-                properties: {
-                  spec: {
-                    type: 'object',
-                    properties: {
-                      color: { type: 'string' },
+    const updates = createCatalogModelFragment({
+      name: 'Updates',
+      builder: model => {
+        model.updateKind({
+          names: { kind: 'Widget', singular: 'gizmo', plural: 'gizmos' },
+          description: 'An updated widget',
+          versions: [
+            {
+              name: 'v1alpha1',
+              schema: {
+                jsonSchema: {
+                  type: 'object',
+                  properties: {
+                    spec: {
+                      type: 'object',
+                      properties: {
+                        color: { type: 'string' },
+                      },
                     },
                   },
                 },
               },
             },
-          },
-        ],
-      });
+          ],
+        });
 
-      builder.updateAnnotation({
-        name: 'example.com/docs-url',
-        title: 'Documentation URL',
-        description: 'Updated link to docs',
-      });
+        model.updateAnnotation({
+          name: 'example.com/docs-url',
+          title: 'Documentation URL',
+          description: 'Updated link to docs',
+        });
 
-      builder.updateLabel({
-        name: 'example.com/tier',
-        description: 'Updated tier',
-      });
+        model.updateLabel({
+          name: 'example.com/tier',
+          description: 'Updated tier',
+        });
 
-      builder.updateTag({
-        name: 'production',
-        description: 'Updated production tag',
-      });
+        model.updateTag({
+          name: 'production',
+          description: 'Updated production tag',
+        });
+      },
     });
 
     const model2 = compileCatalogModel([base, updates]);
@@ -598,10 +614,13 @@ describe('compileCatalogModel integration', () => {
     ]);
 
     // Step 3: Remove things
-    const removals = createCatalogModelFragment('Removals', builder => {
-      builder.removeAnnotation({ name: 'example.com/docs-url' });
-      builder.removeLabel({ name: 'example.com/tier' });
-      builder.removeTag({ name: 'production' });
+    const removals = createCatalogModelFragment({
+      name: 'Removals',
+      builder: model => {
+        model.removeAnnotation({ name: 'example.com/docs-url' });
+        model.removeLabel({ name: 'example.com/tier' });
+        model.removeTag({ name: 'production' });
+      },
     });
 
     const model3 = compileCatalogModel([base, updates, removals]);
@@ -718,8 +737,11 @@ describe('compileCatalogModel integration', () => {
     });
 
     // Step 4: Remove the kind entirely
-    const kindRemoval = createCatalogModelFragment('KindRemoval', builder => {
-      builder.removeKind({ kind: 'Widget' });
+    const kindRemoval = createCatalogModelFragment({
+      name: 'KindRemoval',
+      builder: model => {
+        model.removeKind({ kind: 'Widget' });
+      },
     });
 
     const model4 = compileCatalogModel([base, updates, removals, kindRemoval]);

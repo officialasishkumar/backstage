@@ -50,32 +50,35 @@ export const userEntityV1alpha1Validator =
  *
  * @alpha
  */
-export const userEntityModel = createCatalogModelFragment('User', builder => {
-  builder.addKind({
-    group: 'backstage.io',
-    names: {
-      kind: 'User',
-      singular: 'user',
-      plural: 'users',
-    },
-    description:
-      'A User describes a person, such as an employee or a contractor.',
-    versions: [
-      {
-        name: ['v1alpha1', 'v1beta1'],
-        relationFields: [
-          {
-            selector: { path: 'spec.memberOf' },
-            relation: 'memberOf',
-            defaultKind: 'Group',
-            defaultNamespace: 'inherit',
-            allowedKinds: ['Group'],
-          },
-        ],
-        schema: {
-          jsonSchema: schema,
-        },
+export const userEntityModel = createCatalogModelFragment({
+  name: 'User',
+  builder: model => {
+    model.addKind({
+      group: 'backstage.io',
+      names: {
+        kind: 'User',
+        singular: 'user',
+        plural: 'users',
       },
-    ],
-  });
+      description:
+        'A User describes a person, such as an employee or a contractor.',
+      versions: [
+        {
+          name: ['v1alpha1', 'v1beta1'],
+          relationFields: [
+            {
+              selector: { path: 'spec.memberOf' },
+              relation: 'memberOf',
+              defaultKind: 'Group',
+              defaultNamespace: 'inherit',
+              allowedKinds: ['Group'],
+            },
+          ],
+          schema: {
+            jsonSchema: schema,
+          },
+        },
+      ],
+    });
+  },
 });
