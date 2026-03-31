@@ -7,9 +7,8 @@ description: How to scaffold a new Backstage frontend plugin using the CLI
 
 # Scaffolding a new plugin
 
-A new, bare-bones frontend plugin package can be created by running the
-following command in your Backstage repository's root directory and selecting
-`frontend-plugin`:
+Create a new frontend plugin package by running the following command in your
+Backstage repository's root directory:
 
 ```sh
 yarn new --select frontend-plugin --option pluginId=todo --option owner=
@@ -21,32 +20,23 @@ depending on the flags passed to the `new` command and your settings in the root
 [the CLI docs](../../../tooling/cli/03-commands.md#new).
 
 Creating the plugin takes a moment. Once the command finishes, you should see a
-new folder `plugins/todo` with a structure like this:
+new folder at `plugins/todo` (the path depends on the plugin ID you chose) with
+a structure like this:
 
 ```
-/ <- your Backstage app's root directory
-    /plugins/
-        /todo/
-            package.json
-            README.md
-            .eslintrc.js
-            /dev/
-                index.tsx
-            /src/
-                plugin.tsx
-                plugin.test.ts
-                index.ts
-                routes.ts
-                setupTests.ts
-                /components/
-                    /TodoList/
-                        TodoList.tsx
-                        TodoList.test.tsx
-                        index.ts
-                    /TodoPage/
-                        TodoPage.tsx
-                        TodoPage.test.tsx
-                        index.ts
+plugins/todo/
+├── dev/
+├── src/
+│   ├── components/
+│   │   ├── TodoList/
+│   │   └── TodoPage/
+│   ├── plugin.tsx
+│   ├── plugin.test.ts
+│   ├── index.ts
+│   ├── routes.ts
+│   └── setupTests.ts
+├── package.json
+└── README.md
 ```
 
 ## What did we create?
@@ -57,7 +47,8 @@ Here is a quick overview of the key files:
   is created using `createFrontendPlugin` and where page extensions are
   registered using `PageBlueprint`.
 
-- **`src/plugin.test.ts`** — Tests for the plugin definition. Verifies that the plugin and its extensions are created correctly.
+- **`src/plugin.test.ts`** — Tests for the plugin definition. Verifies that
+  the plugin and its extensions are created correctly.
 
 - **`src/routes.ts`** — Route reference definitions used for navigation between plugins.
 
@@ -80,7 +71,10 @@ Here is a quick overview of the key files:
 ## Verifying the plugin
 
 If your app has feature discovery enabled (the default), your plugin is
-automatically picked up. Start the full app from the repository root:
+automatically picked up. If you are not using feature discovery, see the
+[installation docs](../../../frontend-system/building-apps/05-installing-plugins.md)
+for how to manually add the plugin to your app. Start the full app from the
+repository root:
 
 ```sh
 yarn start

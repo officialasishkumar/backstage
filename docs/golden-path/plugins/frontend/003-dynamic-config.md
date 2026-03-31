@@ -18,7 +18,7 @@ configuration. To disable the todo page entirely, add the following to your
 ```yaml title="app-config.yaml"
 app:
   extensions:
-    - page:todo: false
+    - 'page:todo': false
 ```
 
 Start the app and try navigating to `/todo` — you get a "page not found"
