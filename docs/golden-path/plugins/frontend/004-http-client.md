@@ -16,11 +16,11 @@ Open `plugins/todo/src/components/TodoPage/TodoPage.tsx` and look at the
 ```tsx
 function useTodos() {
   const discoveryApi = useApi(discoveryApiRef);
-  const { fetch } = useApi(fetchApiRef);
+  const fetchApi = useApi(fetchApiRef);
 
   return useAsync(async (): Promise<TodoItem[]> => {
     const baseUrl = await discoveryApi.getBaseUrl('todo');
-    const response = await fetch(`${baseUrl}/todos`);
+    const response = await fetchApi.fetch(`${baseUrl}/todos`);
 
     if (!response.ok) {
       throw new Error(
@@ -30,7 +30,7 @@ function useTodos() {
 
     const data = await response.json();
     return data.items;
-  }, []);
+  }, [discoveryApi, fetchApi]);
 }
 ```
 
