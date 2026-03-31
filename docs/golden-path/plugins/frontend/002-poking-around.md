@@ -5,7 +5,7 @@ title: 002 - Poking around
 description: Exploring the default frontend plugin structure and components
 ---
 
-Let's walk through the code that `yarn new --select frontend-plugin --option pluginId=todo --option owner=` generated for us.
+Walk through the code that `yarn new --select frontend-plugin --option pluginId=todo --option owner=` generated.
 
 ## Plugin definition
 
@@ -58,8 +58,8 @@ The `useTodos` hook uses two Backstage APIs:
 - **`fetchApiRef`** wraps the browser `fetch` and automatically injects
   authentication credentials.
 
-If the backend is not running, the page shows a `ResponseErrorPanel` with
-the error details.
+If the backend is not running, the page falls back to example data so that
+the plugin still renders correctly out of the box.
 
 ## The TodoList component
 
@@ -84,11 +84,10 @@ The scaffolded plugin uses components from `@backstage/ui` and
 `@backstage/core-components` to give the page a consistent look and feel
 across all Backstage plugins:
 
-- `HeaderPage` renders the top bar with a title (from `@backstage/ui`).
+- `Header` renders the top bar with a title (from `@backstage/ui`).
 - `Container` is the main content area below the header (from `@backstage/ui`).
 - `Table` renders a data table with column configuration (from `@backstage/ui`).
 - `Progress` shows a loading indicator (from `@backstage/core-components`).
-- `ResponseErrorPanel` displays errors in a user-friendly way (from `@backstage/core-components`).
 
 Keeping your plugin visually consistent with the rest of Backstage is important
 — users should feel at home regardless of which plugin they are interacting

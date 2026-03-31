@@ -50,7 +50,7 @@ const pageTitle = config.getOptionalString('todo.pageTitle') ?? 'Todo List';
 Then pass `pageTitle` to the `Header`:
 
 ```tsx
-<Header title={pageTitle} subtitle="Your plugin for managing todos" />
+<Header title={pageTitle} />
 ```
 
 Restart the app and you should see "My Custom Todo List" as the page title.

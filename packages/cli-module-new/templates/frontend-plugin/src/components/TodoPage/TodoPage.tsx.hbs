@@ -4,7 +4,7 @@ import {
   discoveryApiRef,
   fetchApiRef,
 } from '@backstage/frontend-plugin-api';
-import { HeaderPage, Container } from '@backstage/ui';
+import { Header, Container } from '@backstage/ui';
 import useAsync from 'react-use/esm/useAsync';
 import { TodoList } from '../TodoList';
 import type { TodoItem } from '../TodoList';
@@ -46,7 +46,7 @@ export const TodoPage = () => {
 
   return (
     <>
-      <HeaderPage title="Welcome to {{pluginId}}!" />
+      <Header title="Welcome to {{pluginId}}!" />
       <Container>
         <TodoList todos={error ? exampleTodos : (todos ?? [])} />
       </Container>

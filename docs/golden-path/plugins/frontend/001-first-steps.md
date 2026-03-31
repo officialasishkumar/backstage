@@ -19,24 +19,19 @@ depending on the flags passed to the `new` command and your settings in the root
 `package.json`. For more options, see
 [the CLI docs](../../../tooling/cli/03-commands.md#new).
 
-Creating the plugin takes a moment. Once the command finishes, you should see a
-new folder at `plugins/todo` (the path depends on the plugin ID you chose) with
+Creating the plugin takes a moment. Once the command finishes, a new folder
+appears at `plugins/todo` (the path depends on the plugin ID you chose) with
 a structure like this:
 
 ```
 plugins/todo/
-├── dev/
+├── dev/          # Standalone dev server setup
 ├── src/
 │   ├── components/
 │   │   ├── TodoList/
 │   │   └── TodoPage/
-│   ├── plugin.tsx
-│   ├── plugin.test.ts
-│   ├── index.ts
-│   ├── routes.ts
-│   └── setupTests.ts
-├── package.json
-└── README.md
+│   └── ...       # Plugin definition, routes, tests
+└── package.json
 ```
 
 ## What did we create?
@@ -59,7 +54,7 @@ Here is a quick overview of the key files:
   items from the backend and renders them using the `TodoList` component.
 
 - **`src/components/TodoList/`** — A presentational component that renders a
-  table of todo items using `@backstage/core-components`.
+  table of todo items using `@backstage/ui`.
 
 - **`dev/index.tsx`** — A standalone development app that loads only your
   plugin. Run `yarn start` from the plugin directory to launch it.
@@ -80,13 +75,12 @@ repository root:
 yarn start
 ```
 
-Then navigate to `http://localhost:3000/todo` in your browser. You should see
-the todo page with a header. If you also have the backend todo plugin running,
-the page displays your todo items. If not, you see an error panel — that's
-expected, and we cover the backend connection in a later section.
+Then navigate to `http://localhost:3000/todo` in your browser (the path
+matches the plugin ID you chose). You see the todo page with a header and
+example data. If you also have the backend todo plugin running, the page
+displays your real todo items instead.
 
-You can also run the plugin in isolation using its standalone development
-server:
+Run the plugin in isolation using its standalone development server:
 
 ```sh
 yarn workspace @internal/plugin-todo start

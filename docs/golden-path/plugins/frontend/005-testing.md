@@ -68,7 +68,8 @@ A few things to note:
   keeps the test independent of the discovery API's resolved base URL.
 
 The tests also cover the error case — when the backend returns a 500 status,
-the component shows an error panel.
+the component falls back to rendering example todo items instead of
+displaying an error panel.
 
 ### Running the tests
 
@@ -101,7 +102,7 @@ import { test, expect } from '@playwright/test';
 
 test('todo page shows the todo list', async ({ page }) => {
   await page.goto('/todo');
-  await expect(page.getByText('Todo List')).toBeVisible();
+  await expect(page.getByText('Welcome to todo!')).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
 });
 ```
