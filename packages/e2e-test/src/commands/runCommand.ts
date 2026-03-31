@@ -394,20 +394,13 @@ async function createPlugin(options: {
         print(`Running 'yarn ${cmd.join(' ')}' in newly created plugin`);
         await runOutput(['yarn', ...cmd], { cwd: pluginDir });
       } catch (error) {
-        if (error && typeof error === 'object') {
-          if ('stdout' in error) {
-            const errStdout = (error as { stdout?: unknown }).stdout;
-            if (typeof errStdout === 'string') {
-              process.stderr.write(errStdout);
-            }
-          }
-          if ('stderr' in error) {
-            const errStderr = (error as { stderr?: unknown }).stderr;
-            if (typeof errStderr === 'string') {
-              process.stderr.write(errStderr);
-              process.stderr.write('\n');
-            }
-          }
+        if (error && 'stdout' in error && typeof error.stdout === 'string') {
+          process.stdout.write(error.stdout);
+          process.stdout.write('\n');
+        }
+        if (error && 'stderr' in error && typeof error.stderr === 'string') {
+          process.stderr.write(error.stderr);
+          process.stderr.write('\n');
         }
         throw error;
       }
