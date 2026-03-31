@@ -1,7 +1,4 @@
-import {
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
+import { Progress } from '@backstage/core-components';
 import {
   useApi,
   discoveryApiRef,
@@ -11,6 +8,11 @@ import { HeaderPage, Container } from '@backstage/ui';
 import useAsync from 'react-use/esm/useAsync';
 import { TodoList } from '../TodoList';
 import type { TodoItem } from '../TodoList';
+
+const exampleTodos: TodoItem[] = [
+  { id: '1', title: 'Install the backend plugin', createdBy: 'user:default/guest', createdAt: new Date().toISOString() },
+  { id: '2', title: 'Connect the frontend to real data', createdBy: 'user:default/guest', createdAt: new Date().toISOString() },
+];
 
 // TEMPLATE NOTE:
 // This is a simple example of fetching data from the backend plugin.
@@ -42,15 +44,11 @@ export const TodoPage = () => {
     return <Progress />;
   }
 
-  if (error) {
-    return <ResponseErrorPanel error={error} />;
-  }
-
   return (
     <>
       <HeaderPage title="Welcome to {{pluginId}}!" />
       <Container>
-        <TodoList todos={todos ?? []} />
+        <TodoList todos={error ? exampleTodos : (todos ?? [])} />
       </Container>
     </>
   );

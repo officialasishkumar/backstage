@@ -29,7 +29,7 @@ describe('TodoPage', () => {
     expect(await screen.findByText('Mocked task')).toBeInTheDocument();
   });
 
-  it('renders an error when the backend fails', async () => {
+  it('falls back to example data when the backend fails', async () => {
     server.use(
       rest.get('*/api/{{pluginId}}/todos', (_, res, ctx) =>
         res(ctx.status(500), ctx.json({ message: 'Internal Server Error' })),
@@ -38,6 +38,6 @@ describe('TodoPage', () => {
 
     await renderInTestApp(<TodoPage />);
 
-    expect(await screen.findByText(/Failed to fetch todos/)).toBeInTheDocument();
+    expect(await screen.findByText('Install the backend plugin')).toBeInTheDocument();
   });
 });
