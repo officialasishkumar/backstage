@@ -21,11 +21,11 @@ import type { TodoItem } from '../TodoList';
 // generated client from an OpenAPI schema.
 function useTodos() {
   const discoveryApi = useApi(discoveryApiRef);
-  const fetchApi = useApi(fetchApiRef);
+  const { fetch } = useApi(fetchApiRef);
 
   return useAsync(async (): Promise<TodoItem[]> => {
     const baseUrl = await discoveryApi.getBaseUrl('{{pluginId}}');
-    const response = await fetchApi.fetch(`${baseUrl}/todos`);
+    const response = await fetch(`${baseUrl}/todos`);
 
     if (!response.ok) {
       throw new Error(
@@ -35,7 +35,7 @@ function useTodos() {
 
     const data = await response.json();
     return data.items;
-  }, [discoveryApi, fetchApi]);
+  }, [discoveryApi, fetch]);
 }
 
 export const TodoPage = () => {
