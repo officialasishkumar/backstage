@@ -24,37 +24,82 @@ app:
 Start the app and try navigating to `/todo` — you get a "page not found"
 response. Remove the line (or set it to `true`) to bring it back.
 
-## Reading configuration in a component
+## Configuring an extension
 
-You can also read arbitrary configuration values from within your components
-using `configApiRef`. This is useful for controlling behavior without
-redeploying code.
-
-For example, let's make the page title configurable. Add the following to
-`app-config.yaml`:
+Every extension blueprint supports its own set of configuration options that
+adopters can set through `app-config.yaml`. `PageBlueprint` supports `path`
+and `title` out of the box. To change the page title, add the following:
 
 ```yaml title="app-config.yaml"
-todo:
-  pageTitle: My Custom Todo List
-```
-
-Then update the `Header` in `TodoPage.tsx` to read from config. Add
-`configApiRef` to the existing imports from `@backstage/frontend-plugin-api`
-and use it at the top of the component:
-
-```tsx
-const config = useApi(configApiRef);
-const pageTitle = config.getOptionalString('todo.pageTitle') ?? 'Todo List';
-```
-
-Then pass `pageTitle` to the `Header`:
-
-```tsx
-<Header title={pageTitle} />
+app:
+  extensions:
+    - page:todo:
+        config:
+          title: My Custom Todo List
 ```
 
 Restart the app and you should see "My Custom Todo List" as the page title.
-Change the value in `app-config.yaml` and restart to see it update.
+No code changes needed — the `PageBlueprint` reads the `title` config and
+passes it to the page header automatically.
+
+## Adding custom configuration
+
+When the built-in config options are not enough, you can define your own
+config schema. Values are validated automatically and passed to your
+extension factory so that your components never need to read raw
+configuration directly.
+
+For example, let's add a configurable subtitle. In `plugin.tsx`, switch
+from `PageBlueprint.make` to `PageBlueprint.makeWithOverrides` and declare
+a config schema:
+
+```tsx
+export const page = PageBlueprint.makeWithOverrides({
+  config: {
+    schema: {
+      subtitle: z => z.string().optional(),
+    },
+  },
+  factory(origFactory, { config }) {
+    return origFactory({
+      path: '/todo',
+      routeRef: rootRouteRef,
+      loader: () =>
+        import('./components/TodoPage').then(m => (
+          <m.TodoPage subtitle={config.subtitle} />
+        )),
+    });
+  },
+});
+```
+
+Then update `TodoPage` to accept the new prop and render it:
+
+```tsx
+export function TodoPage({ subtitle }: { subtitle?: string }) {
+  // ... existing component code
+  return (
+    <Container>
+      {subtitle && <Typography variant="subtitle1">{subtitle}</Typography>}
+      {/* rest of the page */}
+    </Container>
+  );
+}
+```
+
+Adopters can now set the subtitle in their `app-config.yaml`:
+
+```yaml title="app-config.yaml"
+app:
+  extensions:
+    - page:todo:
+        config:
+          subtitle: Things to get done today
+```
+
+The value flows from configuration, through the schema validation, into the
+factory function, and finally into the component as a prop — no `configApiRef`
+needed.
 
 ## Why does this work?
 
@@ -63,10 +108,12 @@ Each extension is registered with the app under a unique ID (for example,
 `page:todo`). The app reads the `app.extensions` section of the configuration
 to decide which extensions to enable, disable, or reconfigure.
 
-Meanwhile, `configApiRef` provides access to the full merged configuration
-from all `app-config.yaml` files. Calling `useApi(configApiRef)` in any
-component gives you a `Config` object with methods like `getString`,
-`getOptionalString`, `getNumber`, and more.
+Extension blueprints declare a `config.schema` using
+[Zod](https://zod.dev/) validators. When the app starts, the framework
+parses and validates the configuration against the schema, then passes the
+result to the extension's factory function. This means your components
+receive typed, validated values instead of reading raw configuration
+strings at runtime.
 
 This config-first approach means that adopters of your plugin can customize
 its behavior without forking the code — they only need to adjust their
