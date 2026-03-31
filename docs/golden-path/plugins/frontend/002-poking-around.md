@@ -65,7 +65,7 @@ the error details.
 
 Open `plugins/todo/src/components/TodoList/TodoList.tsx`. This is a
 presentational component that receives a list of todos as props and renders
-them in a `Table` from `@backstage/core-components`.
+them in a `Table` from `@backstage/ui`.
 
 The `TodoItem` type matches the shape returned by the backend plugin:
 
@@ -80,16 +80,15 @@ export type TodoItem = {
 
 ## Understanding the page structure
 
-The components from `@backstage/core-components` give the page a consistent
-look and feel across all Backstage plugins:
+The scaffolded plugin uses components from `@backstage/ui` and
+`@backstage/core-components` to give the page a consistent look and feel
+across all Backstage plugins:
 
-- `Page` wraps the entire page and provides a theme context.
-- `Header` renders the top bar with a title and subtitle.
-- `Content` is the main scrollable area below the header.
-- `ContentHeader` adds a section title inside the content area.
-- `Table` renders a sortable, searchable data table.
-- `Progress` shows a loading indicator.
-- `ResponseErrorPanel` displays errors in a user-friendly way.
+- `HeaderPage` renders the top bar with a title (from `@backstage/ui`).
+- `Container` is the main content area below the header (from `@backstage/ui`).
+- `Table` renders a data table with column configuration (from `@backstage/ui`).
+- `Progress` shows a loading indicator (from `@backstage/core-components`).
+- `ResponseErrorPanel` displays errors in a user-friendly way (from `@backstage/core-components`).
 
 Keeping your plugin visually consistent with the rest of Backstage is important
 — users should feel at home regardless of which plugin they are interacting

@@ -1,4 +1,4 @@
-import { Table, TableColumn, InfoCard } from '@backstage/core-components';
+import { Table, useTable, CellText, type ColumnConfig } from '@backstage/ui';
 
 export type TodoItem = {
   title: string;
@@ -7,22 +7,36 @@ export type TodoItem = {
   createdAt: string;
 };
 
-const columns: TableColumn<TodoItem>[] = [
-  { title: 'Title', field: 'title' },
-  { title: 'Created by', field: 'createdBy' },
+const columns: ColumnConfig<TodoItem>[] = [
   {
-    title: 'Created at',
-    field: 'createdAt',
-    render: row => new Date(row.createdAt).toLocaleString(),
+    id: 'title',
+    label: 'Title',
+    cell: item => <CellText title={item.title} />,
+  },
+  {
+    id: 'createdBy',
+    label: 'Created by',
+    cell: item => <CellText title={item.createdBy} />,
+  },
+  {
+    id: 'createdAt',
+    label: 'Created at',
+    cell: item => <CellText title={new Date(item.createdAt).toLocaleString()} />,
   },
 ];
 
-export const TodoList = ({ todos }: { todos: TodoItem[] }) => (
-  <InfoCard title="Todo List">
+export const TodoList = ({ todos }: { todos: TodoItem[] }) => {
+  const { tableProps } = useTable({
+    mode: 'complete',
+    data: todos,
+    paginationOptions: { pageSize: todos.length || 1 },
+  });
+
+  return (
     <Table
-      options={{ search: false, paging: false }}
-      columns={columns}
-      data={todos}
+      columnConfig={columns}
+      {...tableProps}
+      pagination={{ type: 'none' }}
     />
-  </InfoCard>
-);
+  );
+};
