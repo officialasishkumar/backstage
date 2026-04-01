@@ -106,3 +106,4 @@ export {
   catalogModelRegistryServiceRef,
   type CatalogModelRegistryService,
 } from './catalogModelRegistryService';
+export { provideStaticCatalogModel } from './provideStaticCatalogModel';

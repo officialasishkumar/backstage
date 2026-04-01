@@ -15,31 +15,12 @@
  */
 
 import { createBackend } from '@backstage/backend-defaults';
-import { createBackendModule } from '@backstage/backend-plugin-api';
-import { defaultCatalogEntityModel } from '@backstage/catalog-model/alpha';
-import { catalogModelExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
+import { provideStaticCatalogModel } from '@backstage/plugin-catalog-node/alpha';
 import { templateModelFragment } from '@backstage/plugin-scaffolder-common/alpha';
 
 const backend = createBackend();
 backend.add(import('../src'));
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
-
-backend.add(
-  createBackendModule({
-    pluginId: 'catalog',
-    moduleId: 'my-model',
-    register(reg) {
-      reg.registerInit({
-        deps: {
-          catalog: catalogModelExtensionPoint,
-        },
-        async init({ catalog }) {
-          catalog.addModelFragment(defaultCatalogEntityModel);
-          catalog.addModelFragment(templateModelFragment);
-        },
-      });
-    },
-  }),
-);
+backend.add(provideStaticCatalogModel({ fragments: [templateModelFragment] }));
 
 backend.start();
