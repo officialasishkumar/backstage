@@ -131,6 +131,29 @@ connections:
 
 This is the simplest possible structure: just a list. The `type` field is the discriminator.
 
+**Plugin scoping.** Each connection entry can optionally specify which plugins it is available to using the `plugins` field. When omitted, the connection is available to all plugins. When specified, the connection is only visible to the listed plugin IDs:
+
+```yaml
+connections:
+  # Only the catalog plugin sees this connection (e.g. a read-only token)
+  - type: github
+    host: github.com
+    token: ${GITHUB_CATALOG_TOKEN}
+    plugins: [catalog]
+
+  # All other plugins use this connection for github.com
+  - type: github
+    host: github.com
+    token: ${GITHUB_TOKEN}
+    apps:
+      - appId: 12345
+        privateKey: ${GH_APP_KEY}
+        clientId: ${GH_APP_CLIENT_ID}
+        clientSecret: ${GH_APP_CLIENT_SECRET}
+```
+
+When a plugin queries for a connection, the service first considers connections scoped to that plugin, then falls back to connections without a scope. This allows adopters to give different plugins different credentials or permission levels for the same host without any code changes — for example, giving the catalog a read-only token while the scaffolder uses a GitHub App with write access.
+
 **Config merging.** Arrays in Backstage's config system are replaced wholesale when merging across config sources — they do not merge element-by-element. This means that if `connections` is defined in multiple config files, the last source wins. In practice this is acceptable because different environments (local dev, staging, production) typically define entirely different sets of connections. For the case where base config and secrets need to be split, the recommended approach is to use environment variable substitution within a single config file, or to use the `$include` directive.
 
 ### Connection Service
@@ -143,13 +166,20 @@ export const connectionsServiceRef = createServiceRef<ConnectionsService>({
   defaultFactory: async service =>
     createServiceFactory({
       service,
-      deps: { config: coreServices.rootConfig },
-      factory({ config }) {
-        return ConnectionsRegistry.fromConfig(config);
+      deps: {
+        config: coreServices.rootConfig,
+        plugin: coreServices.pluginMetadata,
+      },
+      factory({ config, plugin }) {
+        return ConnectionsRegistry.fromConfig(config, {
+          pluginId: plugin.getId(),
+        });
       },
     }),
 });
 ```
+
+The service depends on `coreServices.pluginMetadata` so that each plugin receives a view of connections filtered to those available to it. Connections with a `plugins` scope that does not include the requesting plugin are excluded. Connections without a `plugins` scope are always included.
 
 Added to `coreServices`:
 
@@ -377,7 +407,7 @@ GET /api/connections
 
 ### Override Capability
 
-The connection service can be overridden at the app level:
+Plugin scoping via the `plugins` field covers the common case of giving different plugins different connections. For more advanced customization, the entire connection service can be overridden at the app level:
 
 ```typescript
 const backend = createBackend();
@@ -390,10 +420,11 @@ backend.add(
       plugin: coreServices.pluginMetadata,
     },
     factory({ config, plugin }) {
-      const all = ConnectionsRegistry.fromConfig(config);
-      return all.scoped(connection =>
-        isAllowedForPlugin(connection, plugin.getId()),
-      );
+      const registry = ConnectionsRegistry.fromConfig(config, {
+        pluginId: plugin.getId(),
+      });
+      // Add dynamic connections, enforce additional policies, etc.
+      return registry;
     },
   }),
 );
@@ -459,10 +490,11 @@ The `match` method returns the best matching connection. The `list` method retur
 interface Connection {
   readonly type: string;
   readonly host: string;
+  readonly plugins?: readonly string[];
 }
 ```
 
-The base interface is minimal — just type identification and host. Each built-in connection type extends this with its own typed properties that reflect the static config:
+The base interface is minimal. The `plugins` field reflects the configured scope — when present, it lists the plugin IDs this connection is available to. When absent, the connection is available to all plugins. By the time a plugin receives a connection through the service, scoping has already been applied — a plugin only sees connections it is allowed to access. Each built-in connection type extends this with its own typed properties that reflect the static config:
 
 ```typescript
 interface GithubConnection extends Connection {
@@ -533,13 +565,15 @@ type ConnectionOfType<T extends string> = T extends 'github'
 
 ### URL Matching and Indexing
 
-The `ConnectionsRegistry` maintains a `Map<string, Connection[]>` indexed by hostname. When `match` is called with a URL:
+The `ConnectionsRegistry` maintains a `Map<string, Connection[]>` indexed by hostname. The connection set is already filtered by plugin scope at construction time — a plugin only sees connections that either have no `plugins` restriction or are explicitly scoped to it.
+
+When `match` is called with a URL:
 
 1. Parse the URL and extract the hostname.
 2. Look up all connections for that host — O(1).
 3. If `type` is specified, filter to that type.
 4. If one candidate remains, return it.
-5. If multiple candidates remain, ask each to score the URL.
+5. If multiple candidates remain, ask each to score the URL. Plugin-scoped connections are preferred over broadly available ones at the same specificity level.
 6. Return the candidate with the highest score.
 
 Each connection type implements an internal `matchScore(url: URL): number` scoring method:
@@ -588,6 +622,7 @@ interface GithubConnectionConfig {
   apiBaseUrl?: string;
   /** @visibility frontend */
   rawBaseUrl?: string;
+  plugins?: string[];
   apps?: Array<{
     appId: number | string;
     /** @visibility secret */
@@ -602,6 +637,8 @@ interface GithubConnectionConfig {
   }>;
 }
 ```
+
+The `plugins` field is common to all connection config types. When present, the connection is only visible to the listed plugin IDs.
 
 ### Entity Annotation Resolution
 
