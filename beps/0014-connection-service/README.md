@@ -20,8 +20,8 @@ creation-date: 2026-03-30
   - [Configuration Format](#configuration-format)
   - [Connection Service](#connection-service)
   - [Querying Connections](#querying-connections)
-  - [Credential Resolution](#credential-resolution)
   - [Connection Type Versioning](#connection-type-versioning)
+  - [Credential APIs](#credential-apis)
   - [Frontend Discovery](#frontend-discovery)
   - [Override Capability](#override-capability)
   - [Custom Connection Types](#custom-connection-types)
@@ -29,9 +29,8 @@ creation-date: 2026-03-30
   - [ConnectionsService Interface](#connectionsservice-interface)
   - [Connection Interface](#connection-interface)
   - [ConnectionResult](#connectionresult)
-  - [ConnectionCredentials](#connectioncredentials)
   - [URL Matching and Indexing](#url-matching-and-indexing)
-  - [GitHub App Credential Resolution](#github-app-credential-resolution)
+  - [Credential API Pattern](#credential-api-pattern)
   - [Configuration Schema](#configuration-schema)
   - [Backward Compatibility](#backward-compatibility)
 - [Release Plan](#release-plan)
@@ -40,13 +39,13 @@ creation-date: 2026-03-30
 
 ## Summary
 
-This BEP proposes a **Connection Service** for Backstage — a centralized system for identifying, authenticating, and authorizing access to external services. It replaces the current `integrations` configuration and the `ScmIntegrations` API with a new `connections` configuration and `coreServices.connections` backend service.
+This BEP proposes a two-layer system for how Backstage connects to external services, replacing the current `integrations` configuration and `ScmIntegrations` API.
 
-Connections are the answer to "how does Backstage talk to external system X?" — they encapsulate host identification, credential management, and authentication strategy for each configured external service. The system supports heterogeneous authentication methods (tokens, OAuth, GitHub Apps with per-org routing, managed identities, etc.) behind a uniform query interface.
+**Layer 1 — Connections.** A new `connections` configuration key and `coreServices.connections` backend service that provides static, typed data about configured external services: what they are, where they live (hosts, API endpoints, regions), and what authentication material is available (tokens, app credentials, service account keys). Connections are pure configuration data — they do not perform any dynamic operations like token exchange or credential refresh.
 
-Querying is always safe: asking for a connection that doesn't exist returns a result indicating absence rather than throwing an error. Queries can be made by URL, by type, or with additional type-specific context, and always return a standardized result. The connection service can be overridden at the app level, allowing adopters to customize, filter, or replace how connections are provided to plugins.
+**Layer 2 — Credential APIs.** Type-specific APIs built on top of connections that handle the dynamic side of authentication. For example, a `GithubCredentials` API reads the static GitHub App configuration from connections and handles installation token exchange, caching, and refresh. An `AwsCredentials` API reads static keys and role configurations and provides SDK credential provider chains. These are separate services that plugins depend on alongside or instead of raw connections, depending on their needs.
 
-The configuration format is designed to support clean merging across multiple config sources, and the system leaves room for connection type definitions to evolve over time.
+This separation keeps the connection abstraction simple and predictable while allowing each external service's authentication complexity to be handled by dedicated, independently overridable APIs.
 
 ## Motivation
 
@@ -56,200 +55,80 @@ The current integrations system in Backstage has served the project well, but se
 
 **No override capability.** Adopters cannot customize how connections are provided to different plugins. For example, there is no way to restrict which GitHub organizations a particular plugin can access, or to inject additional credentials per plugin without forking the plugin itself.
 
-**Primitive lookup.** The current `byHost` lookup is insufficient for real-world scenarios. When multiple GitHub Apps are configured for different organizations on the same host, or when different credentials should be used for different paths on the same GitLab instance, host-based matching cannot express the routing. Plugins end up re-implementing credential selection logic.
+**Primitive lookup.** The current `byHost` lookup is insufficient for real-world scenarios. When multiple GitHub Apps are configured for different organizations on the same host, or when different credentials should be used for different paths on the same GitLab instance, host-based matching alone cannot express the routing.
 
-**Complex credential management is not abstracted.** GitHub App authentication is particularly complex — an adopter may have different apps installed for different organizations, each with different permissions, and the system needs to select the right app installation based on the target repository. Today this logic lives in `DefaultGithubCredentialsProvider` and is separate from the integrations abstraction. Other providers have their own credential complexities (Azure managed identity, AWS role assumption) that are similarly not unified.
+**Tangled static and dynamic concerns.** The current `ScmIntegrations` class mixes static configuration access with dynamic operations. `DefaultGithubCredentialsProvider` handles installation token exchange separately from the integration object but must be instantiated from the same config. `DefaultAzureDevOpsCredentialsProvider` does the same for Azure OAuth/managed identity flows. `DefaultAwsCredentialsManager` reads from a separate `aws` config key entirely. There is no consistent pattern for where static config ends and dynamic credential resolution begins.
 
-**No path for evolution.** When an external service makes breaking changes to its API or authentication, or when Backstage wants to introduce a fundamentally better configuration format for a connection type, there is no mechanism to roll out a new format alongside the old one. Every change must be backward-compatible within the same config shape.
+**No path for evolution.** When an external service makes breaking changes to its API or authentication, there is no mechanism to roll out a new connection format alongside the old one.
 
-**Poor config merging.** The current array-based configuration (`integrations.github: [{...}, {...}]`) does not merge across configuration sources — Backstage's config system replaces arrays wholesale. This forces adopters to define all connections of a type in a single config file, preventing clean separation of concerns (e.g. base config in the repo, secrets in a separate source, environment-specific overrides in another).
-
-**Misleading naming and scope.** The `ScmIntegrations` class includes non-SCM connections such as AWS S3, Google GCS, and Azure Blob Storage. The system has outgrown the "SCM" label and mixes connection concerns (authentication, host identification) with content concerns (URL resolution, edit URLs) that should be handled at a higher level.
+**Misleading naming and scope.** The `ScmIntegrations` class includes non-SCM connections such as AWS S3, Google GCS, and Azure Blob Storage.
 
 ### Goals
 
-- Introduce a backend core service (`coreServices.connections`) that provides centralized access to all configured connections.
-- Focus the connection abstraction on identification, authentication, and authorization of external services — not on content-level operations like URL resolution.
-- Design a configuration format that merges cleanly across multiple config sources.
-- Provide a query API where connections can be looked up by URL, by type, or with additional type-specific context, always returning a standardized result.
+- Introduce a backend core service (`coreServices.connections`) that provides centralized access to static connection configuration.
+- Focus connections on identification and authentication material — hosts, API endpoints, resource identifiers, regions, tokens, app credentials, keys — as static data.
+- Keep credential resolution (token exchange, caching, refresh, SDK chains) in a separate layer of type-specific credential APIs built on top of connections.
+- Provide a query API where connections can be looked up by URL (with specificity beyond host matching), by type, or with additional type-specific context.
 - Ensure querying is always safe — a missing connection returns a result indicating absence, never an error.
-- Abstract credential resolution so that each connection type handles its own authentication complexity behind a uniform async interface.
-- Allow connection type definitions to evolve over time — supporting new config formats alongside old ones.
-- Allow adopters to override the connection service with a custom implementation at the app level.
+- Allow connection type definitions to evolve over time.
+- Allow adopters to override the connection service at the app level.
 - Provide a backend API endpoint for frontend discovery of configured connection metadata.
-- Maintain a global registry of built-in connection types in the Backstage project, documented on backstage.io.
-- Allow adopters to register custom internal connection types at the app level.
+- Allow adopters to register custom connection types at the app level.
 
 ### Non-Goals
 
+- This BEP does not define the implementation of type-specific credential APIs in detail — it establishes the pattern and boundary between Layer 1 and Layer 2.
 - This BEP does not cover content-level operations like URL resolution or edit URL generation — those are higher-level concerns that build on top of connections.
 - This BEP does not propose changes to the URL reader service, though it will be updated to consume connections.
 - This BEP does not cover dynamic credential rotation or external secrets management.
-- This BEP does not aim to make the connection system arbitrarily extensible through a plugin mechanism — custom types are limited to app-level registration.
-- This BEP does not prescribe the internal implementation of any specific connection type's credential logic.
 
 ## Proposal
 
 ### Configuration Format
 
-The configuration format needs to support three key properties: clean merging across config sources, logical grouping of related connections, and the ability to define multiple connections of the same type. Below are three options under consideration.
-
-#### Option A: Grouped by Type
-
-Connections are nested under their type key, with user-chosen names as the second level:
+Connections are configured as a flat array under the `connections` key in `app-config.yaml`. Each entry has a `type` field that identifies the kind of external service:
 
 ```yaml
 connections:
-  github:
-    public:
-      host: github.com
-      token: ${GITHUB_TOKEN}
-      apps:
-        - appId: 12345
-          privateKey: ${GH_APP_KEY}
-          clientId: ${GH_APP_CLIENT_ID}
-          clientSecret: ${GH_APP_CLIENT_SECRET}
-          allowedOwners: [my-org, partner-org]
-    enterprise:
-      host: ghe.example.com
-      token: ${GHE_TOKEN}
-  gitlab:
-    main:
-      host: gitlab.com
-      token: ${GITLAB_TOKEN}
-  azure:
-    devops:
-      host: dev.azure.com
-      credentials:
-        - personalAccessToken: ${AZURE_TOKEN}
-```
-
-**Merging example** — base config and secrets can be split across files:
-
-```yaml
-# app-config.yaml
-connections:
-  github:
-    public:
-      host: github.com
-      apiBaseUrl: https://api.github.com
-
-# app-config.local.yaml
-connections:
-  github:
-    public:
-      token: ${GITHUB_TOKEN}
-```
-
-These merge deeply into a single `connections.github.public` entry with both `host` and `token`.
-
-**Pros:**
-
-- Visual grouping by type — easy to scan all GitHub connections together.
-- The type is implicit from the parent key, no redundant `type` field on each entry.
-- Three levels of object keys (`connections` → type → name), all merge cleanly.
-
-**Cons:**
-
-- The set of valid type keys must be known to the config schema. Custom types added at the app level won't have schema validation unless the schema is extended.
-- No cross-type grouping (e.g. you can't group "all production connections" together).
-
-#### Option B: Flat Named Entries
-
-All connections are direct children of `connections`, each with an explicit `type` field:
-
-```yaml
-connections:
-  github-public:
-    type: github
+  - type: github
     host: github.com
+    apiBaseUrl: https://api.github.com
+    rawBaseUrl: https://raw.githubusercontent.com
     token: ${GITHUB_TOKEN}
     apps:
       - appId: 12345
-        privateKey: ${GH_APP_KEY}
+        privateKey: ${GH_APP_PRIVATE_KEY}
         clientId: ${GH_APP_CLIENT_ID}
         clientSecret: ${GH_APP_CLIENT_SECRET}
-        allowedOwners: [my-org, partner-org]
-  github-enterprise:
-    type: github
+        allowedOwners:
+          - my-org
+          - partner-org
+      - appId: 67890
+        privateKey: ${GH_APP_2_KEY}
+        clientId: ${GH_APP_2_CLIENT_ID}
+        clientSecret: ${GH_APP_2_CLIENT_SECRET}
+        allowedOwners:
+          - internal-org
+  - type: github
     host: ghe.example.com
+    apiBaseUrl: https://ghe.example.com/api/v3
     token: ${GHE_TOKEN}
-  gitlab-main:
-    type: gitlab
+  - type: gitlab
     host: gitlab.com
     token: ${GITLAB_TOKEN}
-  azure-devops:
-    type: azure
+  - type: azure
     host: dev.azure.com
     credentials:
       - personalAccessToken: ${AZURE_TOKEN}
+  - type: aws-s3
+    endpoint: ${AWS_S3_ENDPOINT}
+    accessKeyId: ${AWS_ACCESS_KEY_ID}
+    secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
 ```
 
-**Merging example:**
+This is the simplest possible structure: just a list. The `type` field is the discriminator.
 
-```yaml
-# app-config.yaml
-connections:
-  github-public:
-    type: github
-    host: github.com
-
-# app-config.local.yaml
-connections:
-  github-public:
-    token: ${GITHUB_TOKEN}
-```
-
-**Pros:**
-
-- Simpler structure — only two levels of keys.
-- Custom types work naturally since `type` is an explicit field, not a schema-validated parent key.
-- Connection names are globally unique and immediately visible.
-
-**Cons:**
-
-- Connections of the same type are not visually grouped — they're interleaved with other types.
-- The `type` field is redundant on every entry and must stay consistent (can't be overridden by a different config source without care).
-
-#### Option C: User-Defined Groups
-
-Connections are organized into user-defined groups, with an explicit `type` field:
-
-```yaml
-connections:
-  code-hosting:
-    github-public:
-      type: github
-      host: github.com
-      token: ${GITHUB_TOKEN}
-    gitlab-main:
-      type: gitlab
-      host: gitlab.com
-      token: ${GITLAB_TOKEN}
-  storage:
-    s3-main:
-      type: aws-s3
-      endpoint: ${AWS_S3_ENDPOINT}
-      accessKeyId: ${AWS_ACCESS_KEY_ID}
-      secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
-  ci:
-    jenkins-internal:
-      type: jenkins
-      host: jenkins.example.com
-      token: ${JENKINS_TOKEN}
-```
-
-**Pros:**
-
-- Adopters can organize connections however they see fit (by purpose, environment, team, etc.).
-- Still merges cleanly — three levels of object keys.
-- Groups can align with organizational boundaries or config source ownership.
-
-**Cons:**
-
-- Group names are arbitrary and not standardized — different adopters will use different groupings, making documentation and tooling harder.
-- Querying must search across all groups, adding complexity.
-- Connection names are only unique within their group, not globally.
+**Config merging.** Arrays in Backstage's config system are replaced wholesale when merging across config sources — they do not merge element-by-element. This means that if `connections` is defined in multiple config files, the last source wins. In practice this is acceptable because different environments (local dev, staging, production) typically define entirely different sets of connections. For the case where base config and secrets need to be split, the recommended approach is to use environment variable substitution within a single config file, or to use the `$include` directive.
 
 ### Connection Service
 
@@ -295,10 +174,9 @@ export const myPlugin = createBackendPlugin({
         });
 
         if (result.connection) {
-          const credentials = await result.connection.getCredentials({
-            url: 'https://github.com/my-org/my-repo',
-          });
-          // Use credentials...
+          // result.connection is a GithubConnection — static config data
+          const { host, apiBaseUrl, token, apps } = result.connection;
+          // Use directly or pass to a credential API
         }
       },
     });
@@ -308,7 +186,7 @@ export const myPlugin = createBackendPlugin({
 
 ### Querying Connections
 
-The query API is designed around these principles: lookups are always safe (never throw for missing connections), results are standardized, and callers can provide additional context to refine the match.
+The query API is designed around these principles: lookups are always safe, results are standardized, and callers can provide additional context to refine the match.
 
 **By URL with expected type:**
 
@@ -320,7 +198,7 @@ const result = connections.match({
 // result.connection is GithubConnection | undefined
 ```
 
-Providing a `type` narrows the return type and excludes connections of other types that might also match the host.
+Providing `type` narrows the return type and excludes connections of other types that might also match the host.
 
 **By URL without type (best match):**
 
@@ -328,19 +206,19 @@ Providing a `type` narrows the return type and excludes connections of other typ
 const result = connections.match({
   url: 'https://github.com/my-org/my-repo',
 });
-// result.connection is Connection | undefined — the best match across all types
+// result.connection is Connection | undefined — best match across all types
 ```
 
 **List all connections of a type:**
 
 ```typescript
-const githubConnections = connections.list({ type: 'github' });
+const all = connections.list({ type: 'github' });
 // GithubConnection[]
 ```
 
-**With additional context:**
+**With type-specific context:**
 
-Some queries benefit from type-specific hints that help select the right connection or credentials without requiring a full URL:
+Some queries benefit from hints beyond a URL. The set of extra query parameters is defined per connection type:
 
 ```typescript
 const result = connections.match({
@@ -350,11 +228,9 @@ const result = connections.match({
 });
 ```
 
-The set of additional query parameters is defined per connection type. For types that don't support extra parameters, only `url` and `type` are available.
-
 **Always-optional results:**
 
-The `match` method never throws because a connection is missing. It returns a `ConnectionResult` that clearly indicates whether a connection was found:
+The `match` method never throws for a missing connection. It returns a `ConnectionResult`:
 
 ```typescript
 const result = connections.match({
@@ -363,59 +239,151 @@ const result = connections.match({
 });
 
 if (!result.connection) {
-  // No connection configured for this URL/type combination.
-  // The caller decides whether this is an error or not.
   logger.info('No GitHub connection configured, skipping sync');
+  return;
 }
 ```
-
-### Credential Resolution
-
-Each connection provides an async method for obtaining credentials:
-
-```typescript
-const result = connections.match({
-  url: 'https://github.com/my-org/my-repo',
-  type: 'github',
-});
-
-if (result.connection) {
-  const credentials = await result.connection.getCredentials({
-    url: 'https://github.com/my-org/my-repo',
-  });
-  // credentials.token, credentials.headers, etc.
-}
-```
-
-The `getCredentials` method is URL-aware because different URLs within the same connection may require different credentials. For GitHub, this is where app installation selection happens: given a URL containing `my-org`, the connection selects the app that has `my-org` in its `allowedOwners` and obtains an installation token.
-
-The method is async because credentials may need to be fetched or refreshed (e.g. GitHub App installation tokens expire and must be periodically renewed, Azure managed identity tokens need to be obtained from the metadata service).
-
-When a connection has multiple credential sources (e.g. both a token and apps configured), the connection type defines the precedence.
 
 ### Connection Type Versioning
 
-Connection type definitions can evolve over time. Each type's factory function inspects the configuration of each entry and determines how to instantiate it. This enables two forms of evolution:
+Connection types can evolve over time. Each type's factory inspects the configuration and determines how to instantiate it.
 
-**Additive changes.** New optional fields can be added to an existing configuration format without affecting existing configs.
+**Additive changes.** New optional fields can be added to an existing format without affecting existing configs.
 
-**Breaking changes.** When a fundamentally new configuration format is needed, a new format can be introduced alongside the old one. The type factory detects the format from the fields present and creates the appropriate connection instance. Using config format Option A as an example:
+**Breaking changes.** When a new configuration format is needed, it can be introduced alongside the old one. The factory detects the format from the fields present:
 
 ```yaml
 connections:
-  github:
-    legacy:
-      host: github.com
-      token: ${GITHUB_TOKEN}
-    modern:
-      host: github.com
-      auth:
-        method: fine-grained-pat
-        token: ${GITHUB_FG_PAT}
-        repositories: [my-org/repo-a, my-org/repo-b]
+  - type: github
+    host: github.com
+    token: ${GITHUB_TOKEN}
+  - type: github
+    host: github.com
+    # Hypothetical future format
+    auth:
+      method: fine-grained-pat
+      token: ${GITHUB_FG_PAT}
+      repositories: [my-org/repo-a, my-org/repo-b]
 ```
 
-Both entries are valid `github` connections with different config shapes. The factory handles both, allowing incremental migration. An explicit `version` field can be added to disambiguate when auto-detection is insufficient.
+Both entries are valid `github` connections with different config shapes. The factory handles both, allowing incremental migration. An explicit `version` field can be added to disambiguate when auto-detection from config shape alone is insufficient.
+
+### Credential APIs
+
+Connections provide static configuration data. The dynamic side of authentication — token exchange, credential caching, refresh, SDK credential chains — is handled by **type-specific credential APIs** that are built on top of connections. This separation mirrors the existing pattern in the codebase, where `DefaultGithubCredentialsProvider`, `DefaultAzureDevOpsCredentialsProvider`, and `DefaultAwsCredentialsManager` already exist as distinct APIs.
+
+The difference from today is that these credential APIs read from `coreServices.connections` instead of `ScmIntegrations.fromConfig(config)`, and they are wired as backend services, making them independently overridable.
+
+#### Pattern: Credential Services
+
+Each major connection type that requires dynamic credential resolution gets a corresponding service ref:
+
+```typescript
+// Defined in @backstage/plugin-github-node (or similar)
+export const githubCredentialsServiceRef = createServiceRef<GithubCredentials>({
+  id: 'github.credentials',
+  defaultFactory: async service =>
+    createServiceFactory({
+      service,
+      deps: { connections: coreServices.connections },
+      factory({ connections }) {
+        return DefaultGithubCredentials.fromConnections(
+          connections.list({ type: 'github' }),
+        );
+      },
+    }),
+});
+
+// Defined in @backstage/plugin-azure-node (or similar)
+export const azureCredentialsServiceRef = createServiceRef<AzureCredentials>({
+  id: 'azure.credentials',
+  defaultFactory: async service =>
+    createServiceFactory({
+      service,
+      deps: { connections: coreServices.connections },
+      factory({ connections }) {
+        return DefaultAzureCredentials.fromConnections(
+          connections.list({ type: 'azure' }),
+        );
+      },
+    }),
+});
+
+// Defined in @backstage/integration-aws-node (or similar)
+export const awsCredentialsServiceRef = createServiceRef<AwsCredentials>({
+  id: 'aws.credentials',
+  defaultFactory: async service =>
+    createServiceFactory({
+      service,
+      deps: { connections: coreServices.connections },
+      factory({ connections }) {
+        return DefaultAwsCredentials.fromConnections(
+          connections.list({ type: 'aws-s3' }),
+        );
+      },
+    }),
+});
+```
+
+Plugins that need dynamic credentials depend on the credential service rather than (or in addition to) raw connections:
+
+```typescript
+export const catalogModuleGithub = createBackendModule({
+  pluginId: 'catalog',
+  moduleId: 'github',
+  register(env) {
+    env.registerInit({
+      deps: {
+        connections: coreServices.connections,
+        githubCredentials: githubCredentialsServiceRef,
+      },
+      async init({ connections, githubCredentials }) {
+        // Use connections for static config (hosts, API URLs)
+        const githubConnections = connections.list({ type: 'github' });
+
+        // Use the credential API for dynamic auth
+        const credentials = await githubCredentials.getCredentials({
+          url: 'https://github.com/my-org/my-repo',
+        });
+        // credentials.token, credentials.headers, etc.
+      },
+    });
+  },
+});
+```
+
+#### Why Separate Services?
+
+Making credential APIs their own services (rather than methods on `Connection`) has several benefits:
+
+- **Independent override.** Adopters can override how GitHub credentials are resolved without affecting the connection config or other credential types. For example, an adopter using HashiCorp Vault for GitHub tokens could replace `githubCredentialsServiceRef` while keeping the standard connection service.
+- **Clean separation of concerns.** Connections are pure data. Credential APIs handle caching, refresh timers, SDK initialization, and other stateful operations. Mixing these in a single object makes testing and reasoning harder.
+- **Per-type complexity budget.** GitHub's installation token dance, Azure's OAuth/managed identity paths, and AWS's STS assume-role chains are all fundamentally different. Unifying them behind a single `getCredentials` method on `Connection` would produce an interface too generic to be useful.
+- **Simpler connections.** Plugins that only need static config (e.g. "which GitHub hosts are configured?" or "what's the API base URL for this GitLab instance?") can depend only on `coreServices.connections` without pulling in credential resolution dependencies.
+
+#### GitHub Credentials Example
+
+The `GithubCredentials` API mirrors the existing `GithubCredentialsProvider` interface but reads from connections:
+
+```typescript
+interface GithubCredentials {
+  getCredentials(opts: { url: string }): Promise<{
+    type: 'app' | 'token';
+    token?: string;
+    headers?: Record<string, string>;
+  }>;
+}
+```
+
+Given a `GithubConnection` with both `token` and `apps` configured, `DefaultGithubCredentials` does what `SingleInstanceGithubCredentialsProvider` does today:
+
+1. Parse the URL to extract the owner and optional repo.
+2. For each configured app, check if `allowedOwners` includes the owner.
+3. If a matching app is found, obtain an installation access token (cached, refreshed ~10 minutes before expiry).
+4. If no app matches, fall back to the static `token`.
+5. If neither is available, return `{ type: 'token', token: undefined }`.
+
+The key difference is that the connection itself does not do any of this. It simply exposes the `apps` array and `token` as static data. The credential API reads that data and handles the dynamic parts.
 
 ### Frontend Discovery
 
@@ -428,18 +396,16 @@ GET /api/connections
 ```json
 {
   "connections": [
-    { "type": "github", "id": "public", "host": "github.com" },
-    { "type": "github", "id": "enterprise", "host": "ghe.example.com" },
-    { "type": "gitlab", "id": "main", "host": "gitlab.com" }
+    { "type": "github", "host": "github.com" },
+    { "type": "github", "host": "ghe.example.com" },
+    { "type": "gitlab", "host": "gitlab.com" }
   ]
 }
 ```
 
-Frontend code queries this endpoint instead of reading config directly. A corresponding frontend API replaces the current `scmIntegrationsApiRef` from `@backstage/integration-react`.
-
 ### Override Capability
 
-The connection service can be overridden at the app level with a custom implementation:
+The connection service can be overridden at the app level:
 
 ```typescript
 const backend = createBackend();
@@ -461,7 +427,19 @@ backend.add(
 );
 ```
 
-This enables use cases like restricting which connections a particular plugin can see, injecting additional credentials, or replacing the entire connection resolution strategy.
+Credential APIs can be overridden independently:
+
+```typescript
+backend.add(
+  createServiceFactory({
+    service: githubCredentialsServiceRef,
+    deps: { vault: vaultServiceRef },
+    factory({ vault }) {
+      return new VaultGithubCredentials(vault);
+    },
+  }),
+);
+```
 
 ### Custom Connection Types
 
@@ -479,8 +457,7 @@ backend.add(
         extraTypes: [
           {
             type: 'artifactory',
-            factory: (id, entryConfig) =>
-              new ArtifactoryConnection(id, entryConfig),
+            factory: entryConfig => new ArtifactoryConnection(entryConfig),
           },
         ],
       });
@@ -489,7 +466,14 @@ backend.add(
 );
 ```
 
-The custom type can then be configured like any built-in type. This is intentionally limited to the app level.
+Configured as:
+
+```yaml
+connections:
+  - type: artifactory
+    host: artifactory.example.com
+    token: ${ARTIFACTORY_TOKEN}
+```
 
 ## Design Details
 
@@ -509,26 +493,63 @@ interface ConnectionsService {
 }
 ```
 
-The `match` method returns a single `ConnectionResult` for the best matching connection. The `list` method returns all connections, optionally filtered by type. Both methods use the type parameter to narrow the return type when a known connection type is specified.
+The `match` method returns the best matching connection. The `list` method returns all connections, optionally filtered by type.
 
 ### `Connection` Interface
 
 ```typescript
 interface Connection {
   readonly type: string;
-  readonly id: string;
-  readonly title: string;
   readonly host: string;
-
-  getCredentials(options?: {
-    url?: string | URL;
-  }): Promise<ConnectionCredentials>;
 }
 ```
 
-The interface is focused on identification and authentication. Content-level operations like URL resolution and edit URL generation are not part of the connection abstraction — they belong to higher-level utilities that consume connections.
+The base interface is minimal — just type identification and host. Each built-in connection type extends this with its own typed properties that reflect the static config:
 
-Each built-in connection type provides a more specific subtype (e.g. `GithubConnection`) with additional type-specific accessors such as `apiBaseUrl` or methods for listing installed apps.
+```typescript
+interface GithubConnection extends Connection {
+  readonly type: 'github';
+  readonly host: string;
+  readonly apiBaseUrl: string;
+  readonly rawBaseUrl: string;
+  readonly token?: string;
+  readonly apps?: ReadonlyArray<{
+    readonly appId: number | string;
+    readonly privateKey: string;
+    readonly clientId: string;
+    readonly clientSecret: string;
+    readonly webhookSecret?: string;
+    readonly allowedOwners?: readonly string[];
+    readonly publicAccess?: boolean;
+  }>;
+}
+
+interface AzureConnection extends Connection {
+  readonly type: 'azure';
+  readonly host: string;
+  readonly credentials?: ReadonlyArray<{
+    readonly organizations?: readonly string[];
+    readonly personalAccessToken?: string;
+    readonly clientId?: string;
+    readonly clientSecret?: string;
+    readonly tenantId?: string;
+    readonly managedIdentityClientId?: string;
+  }>;
+}
+
+interface AwsS3Connection extends Connection {
+  readonly type: 'aws-s3';
+  readonly host: string;
+  readonly endpoint?: string;
+  readonly accessKeyId?: string;
+  readonly secretAccessKey?: string;
+  readonly roleArn?: string;
+  readonly externalId?: string;
+  readonly region?: string;
+}
+```
+
+All properties are `readonly`. Connections are immutable snapshots of configuration.
 
 ### `ConnectionResult`
 
@@ -538,9 +559,9 @@ interface ConnectionResult<T extends string = string> {
 }
 ```
 
-The result is intentionally simple — it either contains a connection or doesn't. Callers check for the presence of `connection` and decide how to handle the absence themselves. This keeps the API minimal while ensuring that missing connections never cause unexpected exceptions.
+Simple presence/absence. The caller decides how to handle a missing connection.
 
-The `ConnectionOfType<T>` type maps known type strings to their specific connection subtypes:
+`ConnectionOfType<T>` maps known type strings to their specific subtypes:
 
 ```typescript
 type ConnectionOfType<T extends string> = T extends 'github'
@@ -552,104 +573,141 @@ type ConnectionOfType<T extends string> = T extends 'github'
   : Connection;
 ```
 
-### `ConnectionCredentials`
-
-```typescript
-interface ConnectionCredentials {
-  type: string;
-  token?: string;
-  headers?: Record<string, string>;
-}
-```
-
-The `type` field indicates the credential kind (e.g. `"token"`, `"app-installation"`, `"basic"`, `"bearer"`, `"anonymous"`). The `token` and `headers` fields provide credentials in the most commonly needed forms. Connection types can return more specific credential types when needed.
-
 ### URL Matching and Indexing
 
 The `ConnectionsRegistry` maintains a `Map<string, Connection[]>` indexed by hostname. When `match` is called with a URL:
 
 1. Parse the URL and extract the hostname.
 2. Look up all connections for that host — O(1).
-3. If a `type` is specified, filter to that type.
+3. If `type` is specified, filter to that type.
 4. If one candidate remains, return it.
 5. If multiple candidates remain, ask each to score the URL.
 6. Return the candidate with the highest score.
 
-Each connection type implements a `matchScore(url: URL): number` method (internal, not part of the public interface). The scoring contract:
+Each connection type implements an internal `matchScore(url: URL): number` scoring method:
 
 - `0` — matches only by host (fallback)
 - `1-99` — partial path match (e.g. group-level GitLab matching)
-- `100+` — specific resource match (e.g. GitHub App for a specific owner)
-- `-1` — explicitly does not match this URL despite sharing the host
+- `100+` — specific resource match (e.g. GitHub connection whose `apps[].allowedOwners` includes the URL's owner segment)
+- `-1` — does not match this URL despite sharing the host
 
 For the common case of a single connection per host, no scoring is needed.
 
-When `match` is called with type-specific query parameters (e.g. `{ type: 'github', host: 'github.com', owner: 'my-org' }`) instead of a URL, the connection type handles the matching directly.
+When `match` is called with type-specific parameters (e.g. `{ type: 'github', host: 'github.com', owner: 'my-org' }`) instead of a URL, the connection type handles the matching directly.
 
-### GitHub App Credential Resolution
+### Credential API Pattern
 
-GitHub connections demonstrate the credential resolution design at its most complex:
-
-```yaml
-connections:
-  github:
-    public:
-      host: github.com
-      token: ${GITHUB_TOKEN}
-      apps:
-        - appId: 111
-          privateKey: ${KEY_1}
-          clientId: ${CID_1}
-          clientSecret: ${CS_1}
-          allowedOwners: [org-a, org-b]
-        - appId: 222
-          privateKey: ${KEY_2}
-          clientId: ${CID_2}
-          clientSecret: ${CS_2}
-          allowedOwners: [org-c]
-```
-
-When `getCredentials({ url: 'https://github.com/org-a/my-repo' })` is called:
-
-1. Extract the owner from the URL path (`org-a`).
-2. Find the app whose `allowedOwners` includes `org-a` (app 111).
-3. Obtain an installation access token for that app's installation in `org-a`.
-4. Return `{ type: 'app-installation', token: '<installation-token>', headers: { authorization: 'token <installation-token>' } }`.
-
-If no app matches the owner, fall back to the configured `token`. If neither is available, return `{ type: 'anonymous' }`.
-
-The `matchScore` for this connection against `https://github.com/org-a/my-repo` returns `100` (owner-level match via app), while against `https://github.com/random-org/something` it returns `0` (host-only match via fallback token).
-
-### Configuration Schema
-
-Using Option A as an example, the schema uses objects of named entries at every level:
+Credential APIs follow a consistent pattern across connection types:
 
 ```typescript
-export interface Config {
-  connections?: {
-    github?: { [name: string]: GithubConnectionConfig };
-    gitlab?: { [name: string]: GitlabConnectionConfig };
-    azure?: { [name: string]: AzureConnectionConfig };
-    bitbucketCloud?: { [name: string]: BitbucketCloudConnectionConfig };
-    bitbucketServer?: { [name: string]: BitbucketServerConnectionConfig };
-    gerrit?: { [name: string]: GerritConnectionConfig };
-    gitea?: { [name: string]: GiteaConnectionConfig };
-    harness?: { [name: string]: HarnessConnectionConfig };
-    awsS3?: { [name: string]: AwsS3ConnectionConfig };
-    awsCodeCommit?: { [name: string]: AwsCodeCommitConnectionConfig };
-    azureBlobStorage?: {
-      [name: string]: AzureBlobStorageConnectionConfig;
-    };
-    googleGcs?: { [name: string]: GoogleGcsConnectionConfig };
-  };
+// Interface — what plugins depend on
+interface GithubCredentials {
+  getCredentials(opts: {
+    url: string;
+  }): Promise<{
+    type: 'app' | 'token';
+    token?: string;
+    headers?: Record<string, string>;
+  }>;
+}
+
+// Default implementation — reads from connections
+class DefaultGithubCredentials implements GithubCredentials {
+  static fromConnections(
+    connections: GithubConnection[],
+  ): GithubCredentials;
+
+  async getCredentials(opts: {
+    url: string;
+  }): Promise<{ ... }> {
+    // 1. Find connection matching the URL host
+    // 2. If connection has apps, try to match owner to an app
+    // 3. If matched, exchange private key for installation token (cached)
+    // 4. Otherwise fall back to static token
+  }
 }
 ```
 
-Unlike the old format, all types use the same structural pattern — an object of named entries. The inconsistency where `googleGcs` was a single object while everything else was an array is gone.
+For AWS, the pattern maps to SDK credential providers:
+
+```typescript
+interface AwsCredentials {
+  getCredentialProvider(opts?: { accountId?: string; arn?: string }): Promise<{
+    sdkCredentialProvider: AwsCredentialIdentityProvider;
+    accountId?: string;
+  }>;
+}
+```
+
+For Azure, it maps to the existing multi-credential model:
+
+```typescript
+interface AzureCredentials {
+  getCredentials(opts: {
+    url: string;
+  }): Promise<
+    | { type: 'pat'; token: string; headers: Record<string, string> }
+    | { type: 'bearer'; token: string; headers: Record<string, string> }
+    | undefined
+  >;
+}
+```
+
+Each credential API is wired as a service ref with a default factory, making it independently overridable.
+
+### Configuration Schema
+
+```typescript
+export interface Config {
+  connections?: Array<
+    | GithubConnectionConfig
+    | GitlabConnectionConfig
+    | AzureConnectionConfig
+    | BitbucketCloudConnectionConfig
+    | BitbucketServerConnectionConfig
+    | GerritConnectionConfig
+    | GiteaConnectionConfig
+    | HarnessConnectionConfig
+    | AwsS3ConnectionConfig
+    | AwsCodeCommitConnectionConfig
+    | AzureBlobStorageConnectionConfig
+    | GoogleGcsConnectionConfig
+  >;
+}
+```
+
+Each config type includes the `type` discriminator:
+
+```typescript
+interface GithubConnectionConfig {
+  /** @visibility frontend */
+  type: 'github';
+  /** @visibility frontend */
+  host: string;
+  /** @visibility secret */
+  token?: string;
+  /** @visibility frontend */
+  apiBaseUrl?: string;
+  /** @visibility frontend */
+  rawBaseUrl?: string;
+  apps?: Array<{
+    appId: number | string;
+    /** @visibility secret */
+    privateKey: string;
+    /** @visibility secret */
+    webhookSecret?: string;
+    clientId: string;
+    /** @visibility secret */
+    clientSecret: string;
+    allowedOwners?: string[];
+    publicAccess?: boolean;
+  }>;
+}
+```
 
 ### Backward Compatibility
 
-The old `integrations` configuration format is still supported during a deprecation period. The `ConnectionsRegistry.fromConfig` method reads from both `connections` (new) and `integrations` (old), with `connections` taking precedence when both are present.
+The old `integrations` configuration is still supported during a deprecation period. `ConnectionsRegistry.fromConfig` reads from `connections` when present, falling back to `integrations` when `connections` is absent.
 
 ```yaml
 # Old format (deprecated, still supported)
@@ -660,25 +718,28 @@ integrations:
 
 # New format
 connections:
-  github:
-    public:
-      host: github.com
-      token: ${GITHUB_TOKEN}
+  - type: github
+    host: github.com
+    token: ${GITHUB_TOKEN}
 ```
 
-The existing `ScmIntegrations` and `ScmIntegrationRegistry` types are preserved as deprecated wrappers that delegate to `ConnectionsService`. Plugins that haven't migrated continue to work.
+Since the two formats use different top-level keys, they never conflict. When `integrations` is detected without a corresponding `connections` key, a deprecation warning is logged at startup.
+
+The existing `ScmIntegrations` and `ScmIntegrationRegistry` types are preserved as deprecated wrappers that delegate to `ConnectionsService`. The existing credential providers (`DefaultGithubCredentialsProvider`, `DefaultAzureDevOpsCredentialsProvider`, `DefaultAwsCredentialsManager`) are preserved as deprecated wrappers that delegate to the new credential services.
 
 ## Release Plan
 
 The rollout is split into phases:
 
-**Phase 1: New service and registry (non-breaking).** Introduce `ConnectionsRegistry`, `ConnectionsService`, `Connection`, and `coreServices.connections` with full backward compatibility for the old config format. `ScmIntegrations` is updated to delegate to the new service internally.
+**Phase 1: Connection service (non-breaking).** Introduce `ConnectionsRegistry`, `ConnectionsService`, `Connection`, and `coreServices.connections` with full backward compatibility for the old config format. `ScmIntegrations` is updated to delegate to the new service internally.
 
-**Phase 2: Plugin migration.** Core plugins are migrated to use `coreServices.connections`. The URL reader service is updated to consume connections. `@backstage/integration-react` is updated to use the new frontend API.
+**Phase 2: Credential services.** Introduce `githubCredentialsServiceRef`, `azureCredentialsServiceRef`, `awsCredentialsServiceRef`, and their default implementations that read from connections. Existing credential providers are updated to delegate to the new services.
 
-**Phase 3: Deprecation.** `ScmIntegrations`, `ScmIntegrationRegistry`, and the old `integrations` config key are formally deprecated.
+**Phase 3: Plugin migration.** Core plugins are migrated to use `coreServices.connections` and the new credential services. The URL reader service is updated to consume connections.
 
-**Phase 4: Removal.** The deprecated APIs and old config format support are removed.
+**Phase 4: Deprecation.** `ScmIntegrations`, the old credential providers, and the `integrations` config key are formally deprecated.
+
+**Phase 5: Removal.** Deprecated APIs and old config format support are removed.
 
 ## Dependencies
 
@@ -686,18 +747,38 @@ None.
 
 ## Alternatives
 
-### Keep `ScmIntegrations` and Add a Service Wrapper
+### Single-Layer Design with `getCredentials` on `Connection`
 
-Wrap `ScmIntegrations` in a service without changing the config format or type system. Simpler to implement but misses the opportunity to fix config merging, improve lookup, abstract credential resolution, and support type evolution.
+Each connection object could include a `getCredentials()` method directly, combining static config and dynamic credential resolution in one interface:
 
-### Per-Provider Service Refs
+```typescript
+interface Connection {
+  type: string;
+  host: string;
+  getCredentials(opts?: { url?: string }): Promise<ConnectionCredentials>;
+}
+```
 
-One service ref per connection type (`coreServices.githubConnections`, etc.). Better type safety per provider but leads to a proliferation of service refs, makes generic code harder to write, and complicates overrides.
+Simpler API surface — one object to work with instead of two. But this mixes static data with stateful operations (caching, refresh timers, SDK initialization), makes the connection object harder to serialize and test, and provides no way to override credential resolution independently of connection config.
 
-### Extensible Plugin-Based Registry
+### Named Entries Instead of Array
 
-Making the registry fully extensible through backend modules. More flexible but harder to maintain a predictable set of connection types, increases risk of conflicts, and makes centralized documentation harder. App-level registration provides sufficient flexibility.
+Using an object with named keys instead of an array:
 
-### Flat List with `type` Discriminator
+```yaml
+connections:
+  github:
+    public:
+      host: github.com
+      token: ${GITHUB_TOKEN}
+```
 
-All connections in a single flat array. Suffers from the same config merging problem as the current format — arrays are replaced wholesale when merging across config sources.
+Better config merging across sources — objects merge deeply while arrays replace. But adds structural complexity, and in practice different environments define entirely different sets of connections, making the merging benefit less important than the simplicity of a flat list.
+
+### Keep `ScmIntegrations` and Add Service Wrappers
+
+Wrap existing types in services without changing config format. Simpler to implement but misses the opportunity to separate static config from dynamic auth, fix the naming, and support config evolution.
+
+### Per-Provider Service Refs for Connections
+
+One connection service per type (`coreServices.githubConnections`, etc.). Better type safety but leads to service ref proliferation and makes generic code harder to write. The single `coreServices.connections` with typed `match` and `list` methods provides sufficient type safety through the type parameter.
