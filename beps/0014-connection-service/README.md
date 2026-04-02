@@ -21,6 +21,7 @@ creation-date: 2026-03-30
   - [Connection Service](#connection-service)
   - [Querying Connections](#querying-connections)
   - [Connection Type Versioning](#connection-type-versioning)
+  - [Catalog Entity Annotations](#catalog-entity-annotations)
   - [Frontend Discovery](#frontend-discovery)
   - [Override Capability](#override-capability)
   - [Custom Connection Types](#custom-connection-types)
@@ -30,6 +31,7 @@ creation-date: 2026-03-30
   - [ConnectionResult](#connectionresult)
   - [URL Matching and Indexing](#url-matching-and-indexing)
   - [Configuration Schema](#configuration-schema)
+  - [Entity Annotation Resolution](#entity-annotation-resolution)
   - [Credential APIs on Top of Connections](#credential-apis-on-top-of-connections)
   - [Backward Compatibility](#backward-compatibility)
 - [Release Plan](#release-plan)
@@ -58,6 +60,10 @@ The current integrations system in Backstage has served the project well, but se
 
 **No path for evolution.** When an external service makes breaking changes to its API or authentication, there is no mechanism to roll out a new connection format alongside the old one.
 
+**Ecosystem fragmentation.** The current integrations system only covers a handful of SCM and storage providers. The vast majority of plugins in the Backstage ecosystem that connect to external services — Jira, PagerDuty, Datadog, SonarQube, Jenkins, Sentry, and many others — each define their own connection configuration in their plugin-specific config schema. A Jira plugin has `jira.host` and `jira.token`, a PagerDuty plugin has `pagerduty.apiUrl` and `pagerduty.eventsBaseUrl`, and so on. There is no shared connection registry that these plugins can draw from, no way for an adopter to see all configured external connections in one place, and no opportunity for connection reuse across plugins that talk to the same service.
+
+**No catalog integration.** There is no standardized way for catalog entities to declare which external services they are associated with in a connection-agnostic manner. Annotations like `github.com/project-slug` and `jenkins.io/job-full-name` are provider-specific — each plugin defines its own annotation conventions, and there is no common pattern for plugins to discover the right connection for a given entity.
+
 **Misleading naming and scope.** The `ScmIntegrations` class includes non-SCM connections such as AWS S3, Google GCS, and Azure Blob Storage.
 
 ### Goals
@@ -70,6 +76,7 @@ The current integrations system in Backstage has served the project well, but se
 - Allow adopters to override the connection service at the app level.
 - Provide a backend API endpoint for frontend discovery of configured connection metadata.
 - Allow adopters to register custom connection types at the app level.
+- Define standardized catalog entity annotations that link entities to external services in a connection-agnostic way, enabling plugins to discover the right connection for a given entity.
 
 ### Non-Goals
 
@@ -263,6 +270,92 @@ connections:
 ```
 
 Both entries are valid `github` connections with different config shapes. The factory handles both, allowing incremental migration. An explicit `version` field can be added to disambiguate when auto-detection from config shape alone is insufficient.
+
+### Catalog Entity Annotations
+
+A set of standardized annotations allows catalog entities to declare their associations with external services in a connection-agnostic way. Any plugin can read these annotations and resolve them through `connections.match()` to find the right connection — without needing to know whether the entity lives on GitHub, GitLab, or a self-hosted Gitea instance.
+
+#### Well-Known Annotations
+
+Annotations use the `connection.backstage.io/` prefix followed by a purpose identifier. The value is a URL that can be resolved through the connection service:
+
+```yaml
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: my-service
+  annotations:
+    # Source code repository
+    connection.backstage.io/source: https://github.com/my-org/my-repo
+
+    # CI/CD pipeline
+    connection.backstage.io/ci: https://jenkins.example.com/job/my-service
+
+    # Issue tracker
+    connection.backstage.io/issues: https://jira.example.com/project/MYPROJ
+
+    # Monitoring
+    connection.backstage.io/monitoring: https://sentry.io/organizations/my-org/projects/my-service
+
+    # Artifact registry
+    connection.backstage.io/artifacts: https://artifactory.example.com/libs-release/my-service
+```
+
+The set of purpose identifiers is open-ended — plugins can define and document their own. The initial set of recommended purposes:
+
+| Purpose       | Annotation                           | Typical use                                    |
+| ------------- | ------------------------------------ | ---------------------------------------------- |
+| Source code   | `connection.backstage.io/source`     | SCM repository where the entity's source lives |
+| CI/CD         | `connection.backstage.io/ci`         | Build/deployment pipeline                      |
+| Issues        | `connection.backstage.io/issues`     | Issue or work tracker                          |
+| Monitoring    | `connection.backstage.io/monitoring` | Observability, error tracking                  |
+| Artifacts     | `connection.backstage.io/artifacts`  | Package registry, container registry           |
+| Documentation | `connection.backstage.io/docs`       | External documentation host                    |
+
+#### Plugin Usage Pattern
+
+A plugin that operates on an entity uses the annotation URL to find the right connection:
+
+```typescript
+function getSourceConnection(
+  entity: Entity,
+  connections: ConnectionsService,
+): GithubConnection | GitlabConnection | undefined {
+  const sourceUrl =
+    entity.metadata.annotations?.['connection.backstage.io/source'];
+  if (!sourceUrl) {
+    return undefined;
+  }
+  return connections.match({ url: sourceUrl }).connection;
+}
+```
+
+This decouples the plugin from any specific provider. A "show recent commits" widget works the same whether the entity's source is on GitHub, GitLab, or Bitbucket — as long as there's a matching connection configured.
+
+#### Relationship to Existing Annotations
+
+Today, provider-specific annotations serve a similar role but with tighter coupling:
+
+| Current annotation                        | Connection annotation equivalent                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `github.com/project-slug: my-org/my-repo` | `connection.backstage.io/source: https://github.com/my-org/my-repo`                              |
+| `gitlab.com/project-slug: group/project`  | `connection.backstage.io/source: https://gitlab.com/group/project`                               |
+| `jenkins.io/job-full-name: folder/job`    | `connection.backstage.io/ci: https://jenkins.example.com/job/folder/job`                         |
+| `sentry.io/project-slug: my-project`      | `connection.backstage.io/monitoring: https://sentry.io/organizations/my-org/projects/my-project` |
+
+The existing provider-specific annotations are not deprecated — they remain useful for provider-specific plugins that need the exact slug or ID format. The connection annotations complement them by providing a uniform lookup path for plugins that need a connection but don't care about the provider.
+
+#### Automatic Annotation from Entity Providers
+
+Catalog entity providers (e.g. the GitHub entity provider, GitLab discovery) can automatically populate connection annotations on discovered entities. When the GitHub entity provider discovers a component at `https://github.com/my-org/my-repo`, it sets:
+
+```yaml
+annotations:
+  connection.backstage.io/source: https://github.com/my-org/my-repo
+  github.com/project-slug: my-org/my-repo
+```
+
+Both annotations are set — the connection annotation for generic plugin consumption, and the provider-specific annotation for GitHub-specific plugins.
 
 ### Frontend Discovery
 
@@ -507,6 +600,72 @@ interface GithubConnectionConfig {
     allowedOwners?: string[];
     publicAccess?: boolean;
   }>;
+}
+```
+
+### Entity Annotation Resolution
+
+The `@backstage/catalog-model` package (or a companion package) exports constants for the well-known connection annotations:
+
+```typescript
+export const ANNOTATION_CONNECTION_SOURCE = 'connection.backstage.io/source';
+export const ANNOTATION_CONNECTION_CI = 'connection.backstage.io/ci';
+export const ANNOTATION_CONNECTION_ISSUES = 'connection.backstage.io/issues';
+export const ANNOTATION_CONNECTION_MONITORING =
+  'connection.backstage.io/monitoring';
+export const ANNOTATION_CONNECTION_ARTIFACTS =
+  'connection.backstage.io/artifacts';
+export const ANNOTATION_CONNECTION_DOCS = 'connection.backstage.io/docs';
+```
+
+A utility function simplifies the common pattern of resolving an entity's annotation to a connection:
+
+```typescript
+import { ANNOTATION_CONNECTION_SOURCE } from '@backstage/catalog-model';
+
+function getEntityConnection<T extends string>(
+  entity: Entity,
+  connections: ConnectionsService,
+  options: {
+    annotation: string;
+    type?: T;
+  },
+): ConnectionResult<T> {
+  const url = entity.metadata.annotations?.[options.annotation];
+  if (!url) {
+    return { connection: undefined };
+  }
+  return connections.match({ url, type: options.type });
+}
+
+// Usage
+const result = getEntityConnection(entity, connections, {
+  annotation: ANNOTATION_CONNECTION_SOURCE,
+  type: 'github',
+});
+```
+
+For backward compatibility with existing provider-specific annotations, a mapping utility can resolve legacy annotations to connection URLs:
+
+```typescript
+function resolveSourceUrl(entity: Entity): string | undefined {
+  const connectionUrl =
+    entity.metadata.annotations?.[ANNOTATION_CONNECTION_SOURCE];
+  if (connectionUrl) {
+    return connectionUrl;
+  }
+
+  const githubSlug = entity.metadata.annotations?.['github.com/project-slug'];
+  if (githubSlug) {
+    return `https://github.com/${githubSlug}`;
+  }
+
+  const gitlabSlug = entity.metadata.annotations?.['gitlab.com/project-slug'];
+  if (gitlabSlug) {
+    return `https://gitlab.com/${gitlabSlug}`;
+  }
+
+  return undefined;
 }
 ```
 
