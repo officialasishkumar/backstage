@@ -386,36 +386,12 @@ async function createPlugin(options: {
       select === 'backend-plugin' ? `${pluginId}-backend` : pluginId,
     );
 
-    const pluginDirExists = await fs.pathExists(pluginDir);
-    print(`Plugin directory: ${pluginDir} (exists: ${pluginDirExists})`);
-    if (!pluginDirExists) {
-      const pluginsDir = resolvePath(appDir, 'plugins');
-      const pluginsDirContents = (await fs.pathExists(pluginsDir))
-        ? await fs.readdir(pluginsDir)
-        : '(plugins dir does not exist)';
-      print(`Contents of plugins/: ${JSON.stringify(pluginsDirContents)}`);
-      print(`stdout from yarn new: ${stdout}`);
-      print(`stderr from yarn new: ${stderr}`);
-    }
-
     print(`Running 'yarn tsc' in root for newly created plugin`);
     await runOutput(['yarn', 'tsc'], { cwd: appDir });
 
     for (const cmd of [['lint'], ['test', '--no-watch']]) {
-      try {
-        print(`Running 'yarn ${cmd.join(' ')}' in newly created plugin`);
-        await runOutput(['yarn', ...cmd], { cwd: pluginDir });
-      } catch (error) {
-        if (error && 'stdout' in error && typeof error.stdout === 'string') {
-          process.stdout.write(error.stdout);
-          process.stdout.write('\n');
-        }
-        if (error && 'stderr' in error && typeof error.stderr === 'string') {
-          process.stderr.write(error.stderr);
-          process.stderr.write('\n');
-        }
-        throw error;
-      }
+      print(`Running 'yarn ${cmd.join(' ')}' in newly created plugin`);
+      await runOutput(['yarn', ...cmd], { cwd: pluginDir });
     }
   } finally {
     child.kill();
