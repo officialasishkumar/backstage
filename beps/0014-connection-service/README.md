@@ -21,7 +21,6 @@ creation-date: 2026-03-30
   - [Connection Service](#connection-service)
   - [Querying Connections](#querying-connections)
   - [Connection Type Versioning](#connection-type-versioning)
-  - [Credential APIs](#credential-apis)
   - [Frontend Discovery](#frontend-discovery)
   - [Override Capability](#override-capability)
   - [Custom Connection Types](#custom-connection-types)
@@ -30,8 +29,8 @@ creation-date: 2026-03-30
   - [Connection Interface](#connection-interface)
   - [ConnectionResult](#connectionresult)
   - [URL Matching and Indexing](#url-matching-and-indexing)
-  - [Credential API Pattern](#credential-api-pattern)
   - [Configuration Schema](#configuration-schema)
+  - [Credential APIs on Top of Connections](#credential-apis-on-top-of-connections)
   - [Backward Compatibility](#backward-compatibility)
 - [Release Plan](#release-plan)
 - [Dependencies](#dependencies)
@@ -39,13 +38,11 @@ creation-date: 2026-03-30
 
 ## Summary
 
-This BEP proposes a two-layer system for how Backstage connects to external services, replacing the current `integrations` configuration and `ScmIntegrations` API.
+This BEP proposes a **Connection Service** for Backstage — a centralized system for configuring and querying connections to external services. It replaces the current `integrations` configuration and `ScmIntegrations` API with a new `connections` configuration key and `coreServices.connections` backend service.
 
-**Layer 1 — Connections.** A new `connections` configuration key and `coreServices.connections` backend service that provides static, typed data about configured external services: what they are, where they live (hosts, API endpoints, regions), and what authentication material is available (tokens, app credentials, service account keys). Connections are pure configuration data — they do not perform any dynamic operations like token exchange or credential refresh.
+Connections provide static, typed data about configured external services: what they are, where they live (hosts, API endpoints, regions), and what authentication material is available (tokens, app credentials, service account keys). Connections are pure configuration data — they do not perform dynamic operations like token exchange or credential refresh. Dynamic credential resolution (e.g. GitHub App installation tokens, Azure OAuth flows) is left to type-specific APIs that can be built on top of connections separately.
 
-**Layer 2 — Credential APIs.** Type-specific APIs built on top of connections that handle the dynamic side of authentication. For example, a `GithubCredentials` API reads the static GitHub App configuration from connections and handles installation token exchange, caching, and refresh. An `AwsCredentials` API reads static keys and role configurations and provides SDK credential provider chains. These are separate services that plugins depend on alongside or instead of raw connections, depending on their needs.
-
-This separation keeps the connection abstraction simple and predictable while allowing each external service's authentication complexity to be handled by dedicated, independently overridable APIs.
+The connection service supports querying by URL with specificity beyond host matching, querying by type with optional type-specific context, and always returns a standardized result — a missing connection is never an error. The service can be overridden at the app level, and adopters can register custom connection types.
 
 ## Motivation
 
@@ -67,7 +64,6 @@ The current integrations system in Backstage has served the project well, but se
 
 - Introduce a backend core service (`coreServices.connections`) that provides centralized access to static connection configuration.
 - Focus connections on identification and authentication material — hosts, API endpoints, resource identifiers, regions, tokens, app credentials, keys — as static data.
-- Keep credential resolution (token exchange, caching, refresh, SDK chains) in a separate layer of type-specific credential APIs built on top of connections.
 - Provide a query API where connections can be looked up by URL (with specificity beyond host matching), by type, or with additional type-specific context.
 - Ensure querying is always safe — a missing connection returns a result indicating absence, never an error.
 - Allow connection type definitions to evolve over time.
@@ -77,7 +73,7 @@ The current integrations system in Backstage has served the project well, but se
 
 ### Non-Goals
 
-- This BEP does not define the implementation of type-specific credential APIs in detail — it establishes the pattern and boundary between Layer 1 and Layer 2.
+- This BEP does not define type-specific credential APIs (e.g. GitHub App token exchange, Azure OAuth flows). Those are built on top of connections and are outside the scope of this proposal.
 - This BEP does not cover content-level operations like URL resolution or edit URL generation — those are higher-level concerns that build on top of connections.
 - This BEP does not propose changes to the URL reader service, though it will be updated to consume connections.
 - This BEP does not cover dynamic credential rotation or external secrets management.
@@ -268,123 +264,6 @@ connections:
 
 Both entries are valid `github` connections with different config shapes. The factory handles both, allowing incremental migration. An explicit `version` field can be added to disambiguate when auto-detection from config shape alone is insufficient.
 
-### Credential APIs
-
-Connections provide static configuration data. The dynamic side of authentication — token exchange, credential caching, refresh, SDK credential chains — is handled by **type-specific credential APIs** that are built on top of connections. This separation mirrors the existing pattern in the codebase, where `DefaultGithubCredentialsProvider`, `DefaultAzureDevOpsCredentialsProvider`, and `DefaultAwsCredentialsManager` already exist as distinct APIs.
-
-The difference from today is that these credential APIs read from `coreServices.connections` instead of `ScmIntegrations.fromConfig(config)`, and they are wired as backend services, making them independently overridable.
-
-#### Pattern: Credential Services
-
-Each major connection type that requires dynamic credential resolution gets a corresponding service ref:
-
-```typescript
-// Defined in @backstage/plugin-github-node (or similar)
-export const githubCredentialsServiceRef = createServiceRef<GithubCredentials>({
-  id: 'github.credentials',
-  defaultFactory: async service =>
-    createServiceFactory({
-      service,
-      deps: { connections: coreServices.connections },
-      factory({ connections }) {
-        return DefaultGithubCredentials.fromConnections(
-          connections.list({ type: 'github' }),
-        );
-      },
-    }),
-});
-
-// Defined in @backstage/plugin-azure-node (or similar)
-export const azureCredentialsServiceRef = createServiceRef<AzureCredentials>({
-  id: 'azure.credentials',
-  defaultFactory: async service =>
-    createServiceFactory({
-      service,
-      deps: { connections: coreServices.connections },
-      factory({ connections }) {
-        return DefaultAzureCredentials.fromConnections(
-          connections.list({ type: 'azure' }),
-        );
-      },
-    }),
-});
-
-// Defined in @backstage/integration-aws-node (or similar)
-export const awsCredentialsServiceRef = createServiceRef<AwsCredentials>({
-  id: 'aws.credentials',
-  defaultFactory: async service =>
-    createServiceFactory({
-      service,
-      deps: { connections: coreServices.connections },
-      factory({ connections }) {
-        return DefaultAwsCredentials.fromConnections(
-          connections.list({ type: 'aws-s3' }),
-        );
-      },
-    }),
-});
-```
-
-Plugins that need dynamic credentials depend on the credential service rather than (or in addition to) raw connections:
-
-```typescript
-export const catalogModuleGithub = createBackendModule({
-  pluginId: 'catalog',
-  moduleId: 'github',
-  register(env) {
-    env.registerInit({
-      deps: {
-        connections: coreServices.connections,
-        githubCredentials: githubCredentialsServiceRef,
-      },
-      async init({ connections, githubCredentials }) {
-        // Use connections for static config (hosts, API URLs)
-        const githubConnections = connections.list({ type: 'github' });
-
-        // Use the credential API for dynamic auth
-        const credentials = await githubCredentials.getCredentials({
-          url: 'https://github.com/my-org/my-repo',
-        });
-        // credentials.token, credentials.headers, etc.
-      },
-    });
-  },
-});
-```
-
-#### Why Separate Services?
-
-Making credential APIs their own services (rather than methods on `Connection`) has several benefits:
-
-- **Independent override.** Adopters can override how GitHub credentials are resolved without affecting the connection config or other credential types. For example, an adopter using HashiCorp Vault for GitHub tokens could replace `githubCredentialsServiceRef` while keeping the standard connection service.
-- **Clean separation of concerns.** Connections are pure data. Credential APIs handle caching, refresh timers, SDK initialization, and other stateful operations. Mixing these in a single object makes testing and reasoning harder.
-- **Per-type complexity budget.** GitHub's installation token dance, Azure's OAuth/managed identity paths, and AWS's STS assume-role chains are all fundamentally different. Unifying them behind a single `getCredentials` method on `Connection` would produce an interface too generic to be useful.
-- **Simpler connections.** Plugins that only need static config (e.g. "which GitHub hosts are configured?" or "what's the API base URL for this GitLab instance?") can depend only on `coreServices.connections` without pulling in credential resolution dependencies.
-
-#### GitHub Credentials Example
-
-The `GithubCredentials` API mirrors the existing `GithubCredentialsProvider` interface but reads from connections:
-
-```typescript
-interface GithubCredentials {
-  getCredentials(opts: { url: string }): Promise<{
-    type: 'app' | 'token';
-    token?: string;
-    headers?: Record<string, string>;
-  }>;
-}
-```
-
-Given a `GithubConnection` with both `token` and `apps` configured, `DefaultGithubCredentials` does what `SingleInstanceGithubCredentialsProvider` does today:
-
-1. Parse the URL to extract the owner and optional repo.
-2. For each configured app, check if `allowedOwners` includes the owner.
-3. If a matching app is found, obtain an installation access token (cached, refreshed ~10 minutes before expiry).
-4. If no app matches, fall back to the static `token`.
-5. If neither is available, return `{ type: 'token', token: undefined }`.
-
-The key difference is that the connection itself does not do any of this. It simply exposes the `apps` array and `token` as static data. The credential API reads that data and handles the dynamic parts.
-
 ### Frontend Discovery
 
 A backend API endpoint exposes non-secret connection metadata:
@@ -422,20 +301,6 @@ backend.add(
       return all.scoped(connection =>
         isAllowedForPlugin(connection, plugin.getId()),
       );
-    },
-  }),
-);
-```
-
-Credential APIs can be overridden independently:
-
-```typescript
-backend.add(
-  createServiceFactory({
-    service: githubCredentialsServiceRef,
-    deps: { vault: vaultServiceRef },
-    factory({ vault }) {
-      return new VaultGithubCredentials(vault);
     },
   }),
 );
@@ -595,66 +460,6 @@ For the common case of a single connection per host, no scoring is needed.
 
 When `match` is called with type-specific parameters (e.g. `{ type: 'github', host: 'github.com', owner: 'my-org' }`) instead of a URL, the connection type handles the matching directly.
 
-### Credential API Pattern
-
-Credential APIs follow a consistent pattern across connection types:
-
-```typescript
-// Interface — what plugins depend on
-interface GithubCredentials {
-  getCredentials(opts: {
-    url: string;
-  }): Promise<{
-    type: 'app' | 'token';
-    token?: string;
-    headers?: Record<string, string>;
-  }>;
-}
-
-// Default implementation — reads from connections
-class DefaultGithubCredentials implements GithubCredentials {
-  static fromConnections(
-    connections: GithubConnection[],
-  ): GithubCredentials;
-
-  async getCredentials(opts: {
-    url: string;
-  }): Promise<{ ... }> {
-    // 1. Find connection matching the URL host
-    // 2. If connection has apps, try to match owner to an app
-    // 3. If matched, exchange private key for installation token (cached)
-    // 4. Otherwise fall back to static token
-  }
-}
-```
-
-For AWS, the pattern maps to SDK credential providers:
-
-```typescript
-interface AwsCredentials {
-  getCredentialProvider(opts?: { accountId?: string; arn?: string }): Promise<{
-    sdkCredentialProvider: AwsCredentialIdentityProvider;
-    accountId?: string;
-  }>;
-}
-```
-
-For Azure, it maps to the existing multi-credential model:
-
-```typescript
-interface AzureCredentials {
-  getCredentials(opts: {
-    url: string;
-  }): Promise<
-    | { type: 'pat'; token: string; headers: Record<string, string> }
-    | { type: 'bearer'; token: string; headers: Record<string, string> }
-    | undefined
-  >;
-}
-```
-
-Each credential API is wired as a service ref with a default factory, making it independently overridable.
-
 ### Configuration Schema
 
 ```typescript
@@ -705,6 +510,14 @@ interface GithubConnectionConfig {
 }
 ```
 
+### Credential APIs on Top of Connections
+
+Connections are intentionally limited to static configuration data. Dynamic credential resolution — token exchange, caching, refresh, SDK credential chains — is handled by separate type-specific APIs built on top of connections. This mirrors the existing pattern where `DefaultGithubCredentialsProvider`, `DefaultAzureDevOpsCredentialsProvider`, and `DefaultAwsCredentialsManager` already exist as distinct APIs separate from `ScmIntegrations`.
+
+With the connection service in place, these credential APIs would read from `coreServices.connections` instead of `ScmIntegrations.fromConfig(config)`. They could be wired as independent service refs with default factories, making each one separately overridable. For example, a GitHub credentials service would read `GithubConnection` entries from `coreServices.connections`, handle the app installation token exchange for URLs matching `allowedOwners`, and cache tokens with appropriate expiry. An AWS credentials service would read static keys and role configurations from connections and provide SDK credential provider chains.
+
+The design of these credential APIs is outside the scope of this BEP and will be addressed separately.
+
 ### Backward Compatibility
 
 The old `integrations` configuration is still supported during a deprecation period. `ConnectionsRegistry.fromConfig` reads from `connections` when present, falling back to `integrations` when `connections` is absent.
@@ -725,7 +538,7 @@ connections:
 
 Since the two formats use different top-level keys, they never conflict. When `integrations` is detected without a corresponding `connections` key, a deprecation warning is logged at startup.
 
-The existing `ScmIntegrations` and `ScmIntegrationRegistry` types are preserved as deprecated wrappers that delegate to `ConnectionsService`. The existing credential providers (`DefaultGithubCredentialsProvider`, `DefaultAzureDevOpsCredentialsProvider`, `DefaultAwsCredentialsManager`) are preserved as deprecated wrappers that delegate to the new credential services.
+The existing `ScmIntegrations` and `ScmIntegrationRegistry` types are preserved as deprecated wrappers that delegate to `ConnectionsService`.
 
 ## Release Plan
 
@@ -733,13 +546,11 @@ The rollout is split into phases:
 
 **Phase 1: Connection service (non-breaking).** Introduce `ConnectionsRegistry`, `ConnectionsService`, `Connection`, and `coreServices.connections` with full backward compatibility for the old config format. `ScmIntegrations` is updated to delegate to the new service internally.
 
-**Phase 2: Credential services.** Introduce `githubCredentialsServiceRef`, `azureCredentialsServiceRef`, `awsCredentialsServiceRef`, and their default implementations that read from connections. Existing credential providers are updated to delegate to the new services.
+**Phase 2: Plugin migration.** Core plugins are migrated to use `coreServices.connections`. The URL reader service and existing credential providers are updated to consume connections.
 
-**Phase 3: Plugin migration.** Core plugins are migrated to use `coreServices.connections` and the new credential services. The URL reader service is updated to consume connections.
+**Phase 3: Deprecation.** `ScmIntegrations`, `ScmIntegrationRegistry`, and the `integrations` config key are formally deprecated.
 
-**Phase 4: Deprecation.** `ScmIntegrations`, the old credential providers, and the `integrations` config key are formally deprecated.
-
-**Phase 5: Removal.** Deprecated APIs and old config format support are removed.
+**Phase 4: Removal.** Deprecated APIs and old config format support are removed.
 
 ## Dependencies
 
