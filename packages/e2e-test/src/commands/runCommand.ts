@@ -386,6 +386,18 @@ async function createPlugin(options: {
       select === 'backend-plugin' ? `${pluginId}-backend` : pluginId,
     );
 
+    const pluginDirExists = await fs.pathExists(pluginDir);
+    print(`Plugin directory: ${pluginDir} (exists: ${pluginDirExists})`);
+    if (!pluginDirExists) {
+      const pluginsDir = resolvePath(appDir, 'plugins');
+      const pluginsDirContents = (await fs.pathExists(pluginsDir))
+        ? await fs.readdir(pluginsDir)
+        : '(plugins dir does not exist)';
+      print(`Contents of plugins/: ${JSON.stringify(pluginsDirContents)}`);
+      print(`stdout from yarn new: ${stdout}`);
+      print(`stderr from yarn new: ${stderr}`);
+    }
+
     print(`Running 'yarn tsc' in root for newly created plugin`);
     await runOutput(['yarn', 'tsc'], { cwd: appDir });
 
