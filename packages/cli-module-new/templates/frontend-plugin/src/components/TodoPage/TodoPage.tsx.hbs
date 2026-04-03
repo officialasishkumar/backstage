@@ -31,7 +31,7 @@ function useTodos() {
 
     const data = await response.json();
     return data.items;
-  }, [discoveryApi, fetch]);
+  }, [fetch]);
 }
 
 export const TodoPage = () => {
