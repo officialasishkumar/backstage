@@ -114,7 +114,7 @@ jobs:
         run: |
           unzip -q microsite-preview-build.zip
 
-      - name: Debug: List extracted files
+      - name: List extracted files
         if: runner.debug
         run: |
           ls -la
