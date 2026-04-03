@@ -47,6 +47,7 @@ export const todoListServiceRef = createServiceRef<Expand<TodoListService>>({
 We then need to add it to our service,
 
 ```diff file="services/TodoListService.ts"
++import type { Knex } from 'knex';
 import {
   coreServices,
   createServiceFactory,
@@ -91,13 +92,12 @@ Unfortunately, without tables in our database, our `knex` client is not doing mu
 Let's get started - running this command will scaffold a file in that `migrations/` directory for us.
 
 ```bash
-npx knex migrate:make init
+yarn workspace @internal/plugin-todo-list-backend knex migrate:make init
 ```
 
 This should spit out a message like
 
 ```bash
-npx knex migrate:make init
 Created Migration: ~/Projects/backstage/backstage/plugins/example-todo-list-backend/migrations/20260323130057_init.js
 ```
 
@@ -162,7 +162,7 @@ Now, we need to actually tell our `knex` client to automatically apply these mig
 +           logger.info('Running database migrations...');
 +
 +           const migrationsDir = resolvePackagePath(
-+               '@backstage/plugin-todo-list-backend',
++               '@internal/plugin-todo-list-backend',
 +               'migrations',
 +           );
 +
@@ -284,16 +284,6 @@ We've basically just updated our service call to use `this.#database` instead of
 Now that we have things in our database, how do we actually get them back out again?
 
 ```diff title="services/TodoListService.ts"
-
-
-+  private fromDatabaseRow(todo: TodoItem) {
-+    return {
-+      id: row.id,
-+      title: row.title,
-+      createdBy: row.created_by,
-+      createdAt: row.created_at,
-+    }
-+  }
 
   async getTodo(request: { id: string }): Promise<TodoItem> {
 -    const todo = this.#storedTodos.find(item => item.id === request.id);
