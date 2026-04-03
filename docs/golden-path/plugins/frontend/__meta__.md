@@ -20,7 +20,7 @@ Walk through the generated TodoPage and TodoList components, the plugin definiti
 
 ### Controlling your component dynamically
 
-Show how to disable extensions and read config values using configApiRef.
+Show how to disable extensions and configure them dynamically using a PageBlueprint config schema and validated config passed into factories (without using configApiRef).
 
 ### HTTP API
 
