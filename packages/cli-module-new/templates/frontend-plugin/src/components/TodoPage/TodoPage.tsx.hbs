@@ -1,7 +1,6 @@
 import { Progress } from '@backstage/core-components';
 import {
   useApi,
-  discoveryApiRef,
   fetchApiRef,
 } from '@backstage/frontend-plugin-api';
 import { Header, Container } from '@backstage/ui';
@@ -19,12 +18,10 @@ const exampleTodos: TodoItem[] = [
 // You can replace this with your own data fetching logic or use a
 // generated client from an OpenAPI schema.
 function useTodos() {
-  const discoveryApi = useApi(discoveryApiRef);
   const { fetch } = useApi(fetchApiRef);
 
   return useAsync(async (): Promise<TodoItem[]> => {
-    const baseUrl = await discoveryApi.getBaseUrl('{{pluginId}}');
-    const response = await fetch(`${baseUrl}/todos`);
+    const response = await fetch(`plugin://{{pluginId}}/todos`);
 
     if (!response.ok) {
       throw new Error(

@@ -15,12 +15,10 @@ Open `plugins/todo/src/components/TodoPage/TodoPage.tsx` and look at the
 
 ```tsx
 function useTodos() {
-  const discoveryApi = useApi(discoveryApiRef);
   const { fetch } = useApi(fetchApiRef);
 
   return useAsync(async (): Promise<TodoItem[]> => {
-    const baseUrl = await discoveryApi.getBaseUrl('todo');
-    const response = await fetch(`${baseUrl}/todos`);
+    const response = await fetch(`plugin://todo/todos`);
 
     if (!response.ok) {
       throw new Error(
@@ -34,14 +32,10 @@ function useTodos() {
 }
 ```
 
-Two Backstage APIs work together here:
+Here, we're using Backstage's `fetchApi` which wraps the browser `fetch` and automatically does 2 things,
 
-- **`discoveryApiRef`** resolves the base URL for a given backend plugin.
-  For example, `discoveryApi.getBaseUrl('todo')` returns something like
-  `http://localhost:7007/api/todo`.
-- **`fetchApiRef`** wraps the browser `fetch` and automatically injects
-  authentication credentials. You do not need to manually attach
-  `Authorization` headers.
+1. Injects authentication credentials - you don't need to attach any `Authorization` headers manually.
+2. Resolves `plugin://<pluginId>` URL schemes to the real plugin URL for your instance.
 
 The `useAsync` hook from `react-use` runs the async function on mount and
 returns `{ value, loading, error }`, which the component uses to show a
@@ -61,26 +55,25 @@ frontend page to see them appear.
 
 ## Extracting a client class
 
+<!-- TODO: Update this to be a Utility API + discuss mocking in tests. -->
+
 For plugins with several endpoints, extracting a dedicated client class
 keeps your components focused on rendering. Create
 `plugins/todo/src/api/TodoClient.ts`:
 
 ```ts
-import { DiscoveryApi, FetchApi } from '@backstage/frontend-plugin-api';
+import { FetchApi } from '@backstage/frontend-plugin-api';
 import type { TodoItem } from '../components/TodoList';
 
 export class TodoClient {
-  private readonly discoveryApi: DiscoveryApi;
-  private readonly fetchApi: FetchApi;
+  readonly #fetchApi: FetchApi;
 
-  constructor(options: { discoveryApi: DiscoveryApi; fetchApi: FetchApi }) {
-    this.discoveryApi = options.discoveryApi;
-    this.fetchApi = options.fetchApi;
+  constructor(options: { fetchApi: FetchApi }) {
+    this.#fetchApi = options.fetchApi;
   }
 
   async listTodos(): Promise<TodoItem[]> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('todo');
-    const response = await this.fetchApi.fetch(`${baseUrl}/todos`);
+    const response = await this.#fetchApi.fetch(`plugin://todo/todos`);
 
     if (!response.ok) {
       throw new Error(
@@ -93,8 +86,7 @@ export class TodoClient {
   }
 
   async createTodo(title: string): Promise<TodoItem> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('todo');
-    const response = await this.fetchApi.fetch(`${baseUrl}/todos`, {
+    const response = await this.#fetchApi.fetch(`plugin://todo/todos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title }),
