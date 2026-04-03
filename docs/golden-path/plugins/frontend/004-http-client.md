@@ -28,7 +28,7 @@ function useTodos() {
 
     const data = await response.json();
     return data.items;
-  }, [discoveryApi, fetch]);
+  }, [fetch]);
 }
 ```
 
@@ -39,7 +39,8 @@ Here, we're using Backstage's `fetchApi` which wraps the browser `fetch` and aut
 
 The `useAsync` hook from `react-use` runs the async function on mount and
 returns `{ value, loading, error }`, which the component uses to show a
-loading spinner, an error panel, or the todo list.
+loading spinner, example todo items if the backend request fails, or the
+fetched todo list.
 
 ## Trying it out
 

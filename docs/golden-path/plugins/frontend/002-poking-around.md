@@ -51,12 +51,13 @@ fetches data from the backend and renders it:
 const { value: todos, loading, error } = useTodos();
 ```
 
-The `useTodos` hook uses two Backstage APIs:
+The `useTodos` hook uses Backstage's **`fetchApiRef`** to request
+`plugin://todo/todos`.
 
-- **`discoveryApiRef`** resolves the base URL of the backend plugin
-  (for example, `http://localhost:7007/api/todo`).
-- **`fetchApiRef`** wraps the browser `fetch` and automatically injects
-  authentication credentials.
+- **`fetchApiRef`** wraps the browser `fetch`, automatically injects
+  authentication credentials, and resolves the `plugin://` URL scheme to the
+  correct backend plugin endpoint (for example,
+  `http://localhost:7007/api/todo/todos`).
 
 If the backend is not running, the page falls back to example data so that
 the plugin still renders correctly out of the box.
@@ -84,8 +85,10 @@ The scaffolded plugin uses components from `@backstage/ui` and
 `@backstage/core-components` to give the page a consistent look and feel
 across all Backstage plugins:
 
-- `Header` renders the top bar with a title (from `@backstage/ui`).
-- `Container` is the main content area below the header (from `@backstage/ui`).
+- The page's top bar is typically provided by the surrounding `PageLayout`
+  (commonly `PluginHeader` in the default app), rather than by a custom
+  `Header` inside the page component.
+- `Container` is the main content area of the page (from `@backstage/ui`).
 - `Table` renders a data table with column configuration (from `@backstage/ui`).
 - `Progress` shows a loading indicator (from `@backstage/core-components`).
 

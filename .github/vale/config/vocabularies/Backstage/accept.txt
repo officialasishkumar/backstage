@@ -568,8 +568,8 @@ VMware
 Vodafone
 VPCs
 VSCode
-walkthroughs
 walkthrough
+walkthroughs
 Wayfair
 Weaveworks
 Webpack
