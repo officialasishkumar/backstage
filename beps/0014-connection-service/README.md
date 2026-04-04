@@ -292,29 +292,124 @@ if (!result.connection) {
 }
 ```
 
-### Connection Type Versioning
+### Defining Connection Types
 
-Connection types can evolve over time. Each type's factory inspects the configuration and determines how to instantiate it.
+Each connection type is defined using `createConnectionType`, which captures the full definition: config validation, parsing, URL matching, and annotation resolution. The definition uses a Zod schema as the single source of truth for the input shape, from which a JSON Schema is derived automatically for config validation and IDE support.
 
-**Additive changes.** New optional fields can be added to an existing format without affecting existing configs.
+```typescript
+import { createConnectionType } from '@backstage/backend-plugin-api';
+import { z } from 'zod';
 
-**Breaking changes.** When a new configuration format is needed, it can be introduced alongside the old one. The factory detects the format from the fields present:
+export const githubConnectionType = createConnectionType({
+  type: 'github',
 
-```yaml
-connections:
-  - type: github
-    host: github.com
-    token: ${GITHUB_TOKEN}
-  - type: github
-    host: github.com
-    # Hypothetical future format
-    auth:
-      method: fine-grained-pat
-      token: ${GITHUB_FG_PAT}
-      repositories: [my-org/repo-a, my-org/repo-b]
+  configSchema: z.object({
+    host: z.string(),
+    apiBaseUrl: z.string().optional(),
+    rawBaseUrl: z.string().optional(),
+    token: z.string().optional(),
+    apps: z
+      .array(
+        z.object({
+          appId: z.union([z.number(), z.string()]),
+          privateKey: z.string(),
+          clientId: z.string(),
+          clientSecret: z.string(),
+          webhookSecret: z.string().optional(),
+          allowedOwners: z.array(z.string()).optional(),
+        }),
+      )
+      .optional(),
+  }),
+
+  create(input) {
+    const isPublicGithub = input.host === 'github.com';
+    return {
+      type: 'github' as const,
+      host: input.host,
+      apiBaseUrl:
+        input.apiBaseUrl ??
+        (isPublicGithub
+          ? 'https://api.github.com'
+          : `https://${input.host}/api/v3`),
+      rawBaseUrl:
+        input.rawBaseUrl ??
+        (isPublicGithub
+          ? 'https://raw.githubusercontent.com'
+          : `https://${input.host}/raw`),
+      token: input.token,
+      apps: input.apps,
+    };
+  },
+
+  matchUrl(connection, url) {
+    const owner = url.pathname.split('/')[1];
+    if (!owner) {
+      return 0;
+    }
+    for (const app of connection.apps ?? []) {
+      if (app.allowedOwners?.includes(owner)) {
+        return 100;
+      }
+    }
+    return 0;
+  },
+
+  annotations: {
+    'project-slug': (value, host) => `https://${host}/${value}`,
+    'team-slug': (value, host) => {
+      const [org, team] = value.split('/');
+      return `https://${host}/orgs/${org}/teams/${team}`;
+    },
+  },
+});
 ```
 
-Both entries are valid `github` connections with different config shapes. The factory handles both, allowing incremental migration. An explicit `version` field can be added to disambiguate when auto-detection from config shape alone is insufficient.
+The `createConnectionType` function produces a `ConnectionType` object that the registry uses internally. Consumers of the connection service never interact with this object — they work with the output type returned by `create`.
+
+**What each piece does:**
+
+- **`type`** — the discriminator string used in config and queries.
+- **`configSchema`** — a Zod schema that validates the raw config entry (minus the `type` and `plugins` fields, which are handled by the framework). The inferred TypeScript type is the input type. A JSON Schema is derived automatically for config validation.
+- **`create(input)`** — takes the validated input and returns the output connection object. This is where defaults are applied, URLs are derived, and the shape is transformed into what consumers receive.
+- **`matchUrl(connection, url)`** — scores a connection against a URL for `find()` ranking. Returns a number: `0` for host-only match, higher for more specific matches, `-1` to explicitly reject. Called only among connections that already match by host.
+- **`annotations`** — declares which entity annotation suffixes this type owns. Each entry maps an annotation suffix to a function that resolves the annotation value to a URL, given the connection's host. The full annotation key is `<host>/<suffix>`.
+
+### Connection Type Versioning
+
+Because the config schema is a Zod schema, versioning is handled naturally through schema unions. When a connection type needs to support a new config format, the schema is extended with `z.union`:
+
+```typescript
+export const githubConnectionType = createConnectionType({
+  type: 'github',
+
+  configSchema: z.union([
+    z.object({
+      host: z.string(),
+      token: z.string().optional(),
+      apiBaseUrl: z.string().optional(),
+      apps: z.array(/* ... */).optional(),
+    }),
+    z.object({
+      host: z.string(),
+      auth: z.object({
+        method: z.literal('fine-grained-pat'),
+        token: z.string(),
+        repositories: z.array(z.string()),
+      }),
+    }),
+  ]),
+
+  create(input) {
+    if ('auth' in input) {
+      // New format
+    }
+    // Old format
+  },
+});
+```
+
+Both config shapes are valid. The JSON Schema derived from the union documents both formats. The `create` function handles both, allowing incremental migration.
 
 ### Catalog Entity Annotations
 
@@ -445,7 +540,31 @@ backend.add(
 
 ### Custom Connection Types
 
-Adopters can register custom connection types at the app level:
+Adopters can define and register custom connection types using the same `createConnectionType` API:
+
+```typescript
+const artifactoryConnectionType = createConnectionType({
+  type: 'artifactory',
+
+  configSchema: z.object({
+    host: z.string(),
+    token: z.string().optional(),
+    repository: z.string().optional(),
+  }),
+
+  create(input) {
+    return {
+      type: 'artifactory' as const,
+      host: input.host,
+      apiBaseUrl: `https://${input.host}/artifactory/api`,
+      token: input.token,
+      repository: input.repository,
+    };
+  },
+});
+```
+
+Custom types are registered through the connection service factory override:
 
 ```typescript
 const backend = createBackend();
@@ -453,15 +572,14 @@ const backend = createBackend();
 backend.add(
   createServiceFactory({
     service: coreServices.connections,
-    deps: { config: coreServices.rootConfig },
-    factory({ config }) {
+    deps: {
+      config: coreServices.rootConfig,
+      plugin: coreServices.pluginMetadata,
+    },
+    factory({ config, plugin }) {
       return ConnectionsRegistry.fromConfig(config, {
-        extraTypes: [
-          {
-            type: 'artifactory',
-            factory: entryConfig => new ArtifactoryConnection(entryConfig),
-          },
-        ],
+        pluginId: plugin.getId(),
+        extraTypes: [artifactoryConnectionType],
       });
     },
   }),
@@ -495,6 +613,45 @@ interface ConnectionsService {
 
 Both methods take a single options object with a required `type` field. The `find` method returns the best matching connection for the given type and optional query parameters. The `findAll` method returns all connections of the given type. Both validate the type against the module's declared connection types and throw if the type was not registered.
 
+### `ConnectionType` Interface
+
+The internal definition produced by `createConnectionType`:
+
+```typescript
+interface ConnectionType<
+  TInput = unknown,
+  TOutput extends Connection = Connection,
+> {
+  readonly type: string;
+  readonly configSchema: ZodType<TInput>;
+  readonly jsonSchema: JsonObject;
+  parse(data: unknown): TOutput;
+  matchUrl?(connection: TOutput, url: URL): number;
+  readonly annotations?: Record<
+    string,
+    (value: string, host: string) => string
+  >;
+}
+```
+
+- **`configSchema`** — the Zod schema provided by the author. Used for TypeScript type inference and as the source for JSON Schema generation.
+- **`jsonSchema`** — automatically derived from `configSchema` by `createConnectionType`. Merged into the overall config schema for validation and IDE support.
+- **`parse(data)`** — validates `data` against `configSchema`, then passes the result to the author's `create` function. Returns the output connection object. Throws on invalid input.
+- **`matchUrl(connection, url)`** — optional. Scores a connection against a URL for `find()` ranking among same-host, same-type candidates.
+- **`annotations`** — optional. Maps annotation suffixes to URL resolvers.
+
+The `createConnectionType` helper wires these together:
+
+```typescript
+function createConnectionType<TInput, TOutput extends Connection>(options: {
+  type: string;
+  configSchema: ZodType<TInput>;
+  create: (input: TInput) => TOutput;
+  matchUrl?: (connection: TOutput, url: URL) => number;
+  annotations?: Record<string, (value: string, host: string) => string>;
+}): ConnectionType<TInput, TOutput>;
+```
+
 ### `Connection` Interface
 
 ```typescript
@@ -505,7 +662,9 @@ interface Connection {
 }
 ```
 
-The base interface is minimal. The `plugins` field reflects the configured scope — when present, it lists the plugin IDs this connection is available to. When absent, the connection is available to all plugins. By the time a plugin receives a connection through the service, scoping has already been applied — a plugin only sees connections it is allowed to access. Each built-in connection type extends this with its own typed properties that reflect the static config:
+The base interface is minimal. The `plugins` field reflects the configured scope — when present, it lists the plugin IDs this connection is available to. When absent, the connection is available to all plugins. By the time a plugin receives a connection through the service, scoping has already been applied — a plugin only sees connections it is allowed to access.
+
+Each connection type's output shape is defined by its `create` function. The built-in types produce objects like:
 
 ```typescript
 interface GithubConnection extends Connection {
@@ -587,7 +746,7 @@ When `find` is called with a URL:
 5. If multiple candidates remain, ask each to score the URL. Plugin-scoped connections are preferred over broadly available ones at the same specificity level.
 6. Return the candidate with the highest score.
 
-Each connection type implements an internal `matchScore(url: URL): number` scoring method:
+Each connection type's `matchUrl` function provides the scoring:
 
 - `0` — matches only by host (fallback)
 - `1-99` — partial path match (e.g. group-level GitLab matching)
@@ -600,54 +759,15 @@ When `find` is called with type-specific parameters (e.g. `connections.find({ ty
 
 ### Configuration Schema
 
+The overall config schema for the `connections` key is assembled automatically from the registered connection types. Each type's `jsonSchema` (derived from its Zod `configSchema`) is combined into a discriminated union on the `type` field:
+
 ```typescript
 export interface Config {
-  connections?: Array<
-    | GithubConnectionConfig
-    | GitlabConnectionConfig
-    | AzureConnectionConfig
-    | BitbucketCloudConnectionConfig
-    | BitbucketServerConnectionConfig
-    | GerritConnectionConfig
-    | GiteaConnectionConfig
-    | HarnessConnectionConfig
-    | AwsS3ConnectionConfig
-    | AwsCodeCommitConnectionConfig
-    | AzureBlobStorageConnectionConfig
-    | GoogleGcsConnectionConfig
-  >;
+  connections?: Array<ConnectionConfigEntry>;
 }
 ```
 
-Each config type includes the `type` discriminator:
-
-```typescript
-interface GithubConnectionConfig {
-  /** @visibility frontend */
-  type: 'github';
-  /** @visibility frontend */
-  host: string;
-  /** @visibility secret */
-  token?: string;
-  /** @visibility frontend */
-  apiBaseUrl?: string;
-  /** @visibility frontend */
-  rawBaseUrl?: string;
-  plugins?: string[];
-  apps?: Array<{
-    appId: number | string;
-    /** @visibility secret */
-    privateKey: string;
-    /** @visibility secret */
-    webhookSecret?: string;
-    clientId: string;
-    /** @visibility secret */
-    clientSecret: string;
-    allowedOwners?: string[];
-    publicAccess?: boolean;
-  }>;
-}
-```
+The `type` and `plugins` fields are added by the framework to every entry — connection type authors only define the type-specific fields in their `configSchema`. At runtime, `ConnectionsRegistry.fromConfig` reads each entry, dispatches to the matching `ConnectionType.parse` by `type`, and collects the results.
 
 The `plugins` field is common to all connection config types. When present, the connection is only visible to the listed plugin IDs.
 
