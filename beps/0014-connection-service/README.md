@@ -76,7 +76,7 @@ The current integrations system in Backstage has served the project well, but se
 - Allow adopters to override the connection service at the app level.
 - Provide a backend API endpoint for frontend discovery of configured connection metadata.
 - Allow adopters to register custom connection types at the app level.
-- Formalize the relationship between existing catalog entity annotations (e.g. `github.com/project-slug`) and connection types, so that annotations and connections share the same host-based namespace and can be resolved together.
+- Document the relationship between existing catalog entity annotations (e.g. `github.com/project-slug`) and connection types, leveraging their shared host-based namespace.
 
 ### Non-Goals
 
@@ -354,8 +354,6 @@ export const githubConnectionType = createConnectionType({
     }
     return 0;
   },
-
-  annotations: ['project-slug', 'team-slug', 'user-login'],
 });
 ```
 
@@ -367,7 +365,6 @@ The `createConnectionType` function produces a `ConnectionType` object that the 
 - **`configSchema`** — a Zod schema that validates the raw config entry (minus the `type` and `plugins` fields, which are handled by the framework). The inferred TypeScript type is the input type. A JSON Schema is derived automatically for config validation.
 - **`create(input)`** — takes the validated input and returns the output connection object. This is where defaults are applied, URLs are derived, and the shape is transformed into what consumers receive.
 - **`matchUrl(connection, url)`** — scores a connection against a URL for `find()` ranking. Returns a number: `0` for host-only match, higher for more specific matches, `-1` to explicitly reject. Called only among connections that already match by host.
-- **`annotations`** — declares which entity annotation suffixes this type owns (e.g. `['project-slug', 'team-slug']`). Purely declarative — used for documentation and tooling, with no runtime resolution logic. The full annotation key is `<host>/<suffix>`.
 
 ### Connection Type Versioning
 
@@ -407,7 +404,7 @@ Both config shapes are valid. The JSON Schema derived from the union documents b
 
 ### Catalog Entity Annotations
 
-Connection types define a set of well-known entity annotations that follow the existing Backstage convention: annotations are prefixed with the provider's domain (e.g. `github.com/`, `gitlab.com/`, `sentry.io/`) and use a resource identifier format specific to that provider. This means existing annotations like `github.com/project-slug` are already connection annotations — the connection service formalizes the relationship between these annotations and connection types.
+Existing Backstage entity annotations already follow a convention where the prefix is the provider's domain (e.g. `github.com/`, `gitlab.com/`, `sentry.io/`) and the suffix identifies the kind of resource. This means annotations like `github.com/project-slug` naturally share a namespace with connections — the host in the annotation matches the host in the connection configuration.
 
 #### Annotation Conventions
 
@@ -426,11 +423,11 @@ metadata:
     sonarqube.org/project-key: my-service
 ```
 
-These annotations already exist today. The connection service does not introduce new annotation keys — instead, it gives each connection type a formal way to declare which annotations it owns.
+These annotations already exist today. The connection service does not introduce new annotation keys or any runtime annotation handling — the relationship between annotations and connections is purely a documentation pattern.
 
-#### Connection-Owned Annotations
+#### Documented Annotation Associations
 
-Each connection type definition includes a list of annotation suffixes it owns via the `annotations` field. This is purely declarative metadata — it serves as documentation and enables tooling to associate annotations with connections:
+The documentation for each connection type lists which annotation suffixes are conventionally associated with it:
 
 | Connection type | Annotation                  | Value format               |
 | --------------- | --------------------------- | -------------------------- |
@@ -606,7 +603,6 @@ The public type produced by `createConnectionType`:
 interface ConnectionType<TOutput extends Connection = Connection> {
   readonly type: string;
   readonly jsonSchema: JsonObject;
-  readonly annotations?: readonly string[];
   parse(data: unknown): TOutput;
   matchUrl?(connection: TOutput, url: URL): number;
 }
@@ -614,7 +610,6 @@ interface ConnectionType<TOutput extends Connection = Connection> {
 
 - **`type`** — the discriminator string.
 - **`jsonSchema`** — automatically derived from the Zod `configSchema` by `createConnectionType`. Merged into the overall config schema for validation and IDE support. The Zod schema itself is not exposed.
-- **`annotations`** — optional. A list of annotation suffixes this connection type owns (e.g. `['project-slug', 'team-slug']`). Purely declarative metadata for documentation and tooling — no runtime resolution logic.
 - **`parse(data)`** — validates `data` against the internal Zod schema, then passes the result to the author's `create` function. Returns the output connection object. Throws on invalid input.
 - **`matchUrl(connection, url)`** — optional. Scores a connection against a URL for `find()` ranking among same-host, same-type candidates.
 
@@ -626,7 +621,6 @@ function createConnectionType<TInput, TOutput extends Connection>(options: {
   configSchema: ZodType<TInput>;
   create: (input: TInput) => TOutput;
   matchUrl?: (connection: TOutput, url: URL) => number;
-  annotations?: string[];
 }): ConnectionType<TOutput>;
 ```
 
@@ -753,7 +747,7 @@ The `plugins` field is common to all connection config types. When present, the 
 
 ### Entity Annotation Resolution
 
-The `annotations` field on a connection type is purely declarative — it lists the annotation suffixes this type owns (e.g. `['project-slug', 'team-slug']`). The full annotation key is `<host>/<suffix>` (e.g. `github.com/project-slug`). This metadata enables tooling and documentation to associate annotations with connection types, but there is no built-in runtime resolution.
+The association between annotations and connection types is a documentation convention only — there is no runtime annotation handling in the connection service. The full annotation key follows the pattern `<host>/<suffix>` (e.g. `github.com/project-slug`), where the host matches the connection's host.
 
 Plugins that need to resolve annotations to connections do so explicitly. A utility function can simplify the common pattern:
 
