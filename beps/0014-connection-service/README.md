@@ -294,15 +294,14 @@ if (!result.connection) {
 
 ### Defining Connection Types
 
-Each connection type is defined using `createConnectionType`, which captures the full definition: config validation, parsing, and URL matching. The definition uses a Zod schema as the single source of truth for the input shape, from which a JSON Schema is derived automatically for config validation and IDE support.
+Each connection type is defined using `createConnectionType`, which captures the full definition: config validation, output shape, and URL matching. The definition uses a Zod schema as the single source of truth — both for the input config shape (from which a JSON Schema is derived) and for the output connection shape (via `.transform()`). There is no separate `create` function; the schema itself defines the transformation from config to connection.
 
-The `createConnectionType` function produces a `ConnectionType` object that the registry uses internally. Consumers of the connection service never interact with this object — they work with the output type returned by `create`.
+The `createConnectionType` function produces a `ConnectionType` object that the registry uses internally. Consumers of the connection service never interact with this object — they work with the output type produced by the schema.
 
 **What each piece does:**
 
-- **`type`** — the discriminator string used in config and queries.
-- **`configSchema`** — a Zod schema that validates the raw config entry (minus the `type` and `plugins` fields, which are handled by the framework). The inferred TypeScript type is the input type. A JSON Schema is derived automatically for config validation. Must include `host` as either a required field or provide a default.
-- **`create(input)`** — takes the validated input and returns the output connection object. This is where defaults are applied, URLs are derived, and the shape is transformed into what consumers receive. The returned object must include `host`.
+- **`type`** — the discriminator string used in config and queries. The framework adds `type` and `plugins` to the output automatically — the schema only defines the type-specific fields.
+- **`configSchema`** — a Zod schema that validates the raw config entry and transforms it into the output connection shape. The pre-transform shape defines the config input (from which a JSON Schema is derived for validation and IDE support). The post-transform shape is the output type that consumers receive. Must include `host` in both input and output. Use `.transform()` to apply defaults and derive computed fields.
 - **`matchUrl(connection, url)`** — optional. Scores a connection against a URL for `find()` ranking among same-host, same-type candidates. Returns a number: `0` for host-only match, higher for more specific matches, `-1` to explicitly reject. Called only among connections that already match by host. When omitted, the default implementation returns `0` (host-only matching).
 
 #### Full Example: GitHub Connection Type
@@ -311,52 +310,47 @@ The `createConnectionType` function produces a `ConnectionType` object that the 
 import { createConnectionType } from '@backstage/backend-plugin-api';
 import { z } from 'zod';
 
-const githubAppSchema = z.object({
-  appId: z.union([z.number(), z.string()]),
-  privateKey: z.string(),
-  clientId: z.string(),
-  clientSecret: z.string(),
-  webhookSecret: z.string().optional(),
-  allowedOwners: z.array(z.string()).optional(),
-});
+const githubAppSchema = z
+  .object({
+    appId: z.union([z.number(), z.string()]),
+    privateKey: z.string(),
+    clientId: z.string(),
+    clientSecret: z.string(),
+    webhookSecret: z.string().optional(),
+    allowedOwners: z.array(z.string()).optional(),
+  })
+  .transform(app => ({
+    ...app,
+    appId: typeof app.appId === 'string' ? Number(app.appId) : app.appId,
+  }));
 
 export const githubConnectionType = createConnectionType({
   type: 'github',
 
-  configSchema: z.object({
-    host: z.string(),
-    apiBaseUrl: z.string().optional(),
-    rawBaseUrl: z.string().optional(),
-    token: z.string().optional(),
-    apps: z.array(githubAppSchema).optional(),
-  }),
-
-  create(input) {
-    const isPublicGithub = input.host === 'github.com';
-    return {
-      type: 'github' as const,
-      host: input.host,
-      apiBaseUrl:
-        input.apiBaseUrl ??
-        (isPublicGithub
-          ? 'https://api.github.com'
-          : `https://${input.host}/api/v3`),
-      rawBaseUrl:
-        input.rawBaseUrl ??
-        (isPublicGithub
-          ? 'https://raw.githubusercontent.com'
-          : `https://${input.host}/raw`),
-      token: input.token,
-      apps: input.apps?.map(app => ({
-        appId: typeof app.appId === 'string' ? Number(app.appId) : app.appId,
-        privateKey: app.privateKey,
-        clientId: app.clientId,
-        clientSecret: app.clientSecret,
-        webhookSecret: app.webhookSecret,
-        allowedOwners: app.allowedOwners,
-      })),
-    };
-  },
+  configSchema: z
+    .object({
+      host: z.string(),
+      apiBaseUrl: z.string().optional(),
+      rawBaseUrl: z.string().optional(),
+      token: z.string().optional(),
+      apps: z.array(githubAppSchema).optional(),
+    })
+    .transform(input => {
+      const isPublic = input.host === 'github.com';
+      return {
+        ...input,
+        apiBaseUrl:
+          input.apiBaseUrl ??
+          (isPublic
+            ? 'https://api.github.com'
+            : `https://${input.host}/api/v3`),
+        rawBaseUrl:
+          input.rawBaseUrl ??
+          (isPublic
+            ? 'https://raw.githubusercontent.com'
+            : `https://${input.host}/raw`),
+      };
+    }),
 
   matchUrl(connection, url) {
     const owner = url.pathname.split('/')[1];
@@ -372,7 +366,7 @@ export const githubConnectionType = createConnectionType({
   },
 });
 
-// The output type that consumers receive:
+// The output type that consumers receive (inferred from the schema):
 export interface GithubConnection extends Connection {
   readonly type: 'github';
   readonly host: string;
@@ -390,9 +384,11 @@ export interface GithubConnection extends Connection {
 }
 ```
 
-The input schema accepts `host` as required, `apiBaseUrl` and `rawBaseUrl` as optional. The `create` function computes defaults for the optional URL fields based on whether the host is public GitHub or a GitHub Enterprise instance. The `matchUrl` function uses `allowedOwners` to provide more specific matching — when multiple GitHub connections exist for the same host (e.g. different apps for different organizations), the one whose app explicitly lists the URL's owner scores higher.
+The Zod schema does all the work. The pre-transform shape (`z.object(...)`) defines what config authors write — `apiBaseUrl` and `rawBaseUrl` are optional, `appId` accepts strings or numbers. The `.transform()` fills in defaults and normalizes types, producing the output shape where `apiBaseUrl` and `rawBaseUrl` are always `string` and `appId` is always `number`. The JSON Schema is derived from the pre-transform shape, so config documentation and IDE support reflect the optional inputs.
 
-Every connection output has a `matchUrl` method provided by the framework. The default implementation matches by host only (returning `0`). When a connection type provides its own `matchUrl`, it replaces the default with type-specific logic.
+The `matchUrl` function uses `allowedOwners` to provide more specific matching — when multiple GitHub connections exist for the same host (e.g. different apps for different organizations), the one whose app explicitly lists the URL's owner scores higher.
+
+Every connection output has a `matchUrl` method provided by the framework. The default implementation matches by host only. When a connection type provides its own `matchUrl`, it replaces the default with type-specific logic.
 
 ### Connection Type Versioning
 
@@ -402,33 +398,33 @@ Because the config schema is a Zod schema, versioning is handled naturally throu
 export const githubConnectionType = createConnectionType({
   type: 'github',
 
-  configSchema: z.union([
-    z.object({
-      host: z.string(),
-      token: z.string().optional(),
-      apiBaseUrl: z.string().optional(),
-      apps: z.array(/* ... */).optional(),
-    }),
-    z.object({
-      host: z.string(),
-      auth: z.object({
-        method: z.literal('fine-grained-pat'),
-        token: z.string(),
-        repositories: z.array(z.string()),
+  configSchema: z
+    .union([
+      z.object({
+        host: z.string(),
+        token: z.string().optional(),
+        apiBaseUrl: z.string().optional(),
+        apps: z.array(/* ... */).optional(),
       }),
+      z.object({
+        host: z.string(),
+        auth: z.object({
+          method: z.literal('fine-grained-pat'),
+          token: z.string(),
+          repositories: z.array(z.string()),
+        }),
+      }),
+    ])
+    .transform(input => {
+      if ('auth' in input) {
+        // New format — transform to output shape
+      }
+      // Old format — transform to output shape
     }),
-  ]),
-
-  create(input) {
-    if ('auth' in input) {
-      // New format
-    }
-    // Old format
-  },
 });
 ```
 
-Both config shapes are valid. The JSON Schema derived from the union documents both formats. The `create` function handles both, allowing incremental migration.
+Both config shapes are valid. The JSON Schema derived from the union documents both formats. The `.transform()` handles both, normalizing them into a single output shape and allowing incremental migration.
 
 ### Catalog Entity Annotations
 
@@ -556,21 +552,16 @@ Adopters can define and register custom connection types using the same `createC
 const artifactoryConnectionType = createConnectionType({
   type: 'artifactory',
 
-  configSchema: z.object({
-    host: z.string(),
-    token: z.string().optional(),
-    repository: z.string().optional(),
-  }),
-
-  create(input) {
-    return {
-      type: 'artifactory' as const,
-      host: input.host,
+  configSchema: z
+    .object({
+      host: z.string(),
+      token: z.string().optional(),
+      repository: z.string().optional(),
+    })
+    .transform(input => ({
+      ...input,
       apiBaseUrl: `https://${input.host}/artifactory/api`,
-      token: input.token,
-      repository: input.repository,
-    };
-  },
+    })),
 });
 ```
 
@@ -637,22 +628,21 @@ interface ConnectionType<TOutput extends Connection = Connection> {
 ```
 
 - **`type`** — the discriminator string.
-- **`jsonSchema`** — automatically derived from the Zod `configSchema` by `createConnectionType`. Merged into the overall config schema for validation and IDE support. The Zod schema itself is not exposed.
-- **`parse(data)`** — validates `data` against the internal Zod schema, then passes the result to the author's `create` function. Returns the output connection object. Throws on invalid input.
+- **`jsonSchema`** — automatically derived from the pre-transform shape of the Zod `configSchema`. Merged into the overall config schema for validation and IDE support. The Zod schema itself is not exposed.
+- **`parse(data)`** — validates and transforms `data` through the Zod schema. Returns the output connection object (with `type` and `plugins` added by the framework). Throws on invalid input.
 - **`matchUrl(connection, url)`** — optional. Scores a connection against a URL for `find()` ranking among same-host, same-type candidates.
 
 The `createConnectionType` helper wires these together:
 
 ```typescript
-function createConnectionType<TInput, TOutput extends Connection>(options: {
+function createConnectionType<TOutput extends Connection>(options: {
   type: string;
-  configSchema: ZodType<TInput>;
-  create: (input: TInput) => TOutput;
+  configSchema: ZodType<unknown, unknown, TOutput>;
   matchUrl?: (connection: TOutput, url: URL) => number;
 }): ConnectionType<TOutput>;
 ```
 
-The Zod schema is consumed internally to derive the JSON Schema and to power `parse`, but it is not part of the public `ConnectionType` interface.
+The Zod schema is the single source of truth — its pre-transform shape produces the JSON Schema, and its full pipeline (validation + transform) powers `parse`. The Zod schema itself is not part of the public `ConnectionType` interface.
 
 ### `Connection` Interface
 
