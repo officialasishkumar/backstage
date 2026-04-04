@@ -294,11 +294,31 @@ if (!result.connection) {
 
 ### Defining Connection Types
 
-Each connection type is defined using `createConnectionType`, which captures the full definition: config validation, parsing, URL matching, and annotation resolution. The definition uses a Zod schema as the single source of truth for the input shape, from which a JSON Schema is derived automatically for config validation and IDE support.
+Each connection type is defined using `createConnectionType`, which captures the full definition: config validation, parsing, and URL matching. The definition uses a Zod schema as the single source of truth for the input shape, from which a JSON Schema is derived automatically for config validation and IDE support.
+
+The `createConnectionType` function produces a `ConnectionType` object that the registry uses internally. Consumers of the connection service never interact with this object — they work with the output type returned by `create`.
+
+**What each piece does:**
+
+- **`type`** — the discriminator string used in config and queries.
+- **`configSchema`** — a Zod schema that validates the raw config entry (minus the `type` and `plugins` fields, which are handled by the framework). The inferred TypeScript type is the input type. A JSON Schema is derived automatically for config validation. Must include `host` as either a required field or provide a default.
+- **`create(input)`** — takes the validated input and returns the output connection object. This is where defaults are applied, URLs are derived, and the shape is transformed into what consumers receive. The returned object must include `host`.
+- **`matchUrl(connection, url)`** — optional. Scores a connection against a URL for `find()` ranking among same-host, same-type candidates. Returns a number: `0` for host-only match, higher for more specific matches, `-1` to explicitly reject. Called only among connections that already match by host. When omitted, the default implementation returns `0` (host-only matching).
+
+#### Full Example: GitHub Connection Type
 
 ```typescript
 import { createConnectionType } from '@backstage/backend-plugin-api';
 import { z } from 'zod';
+
+const githubAppSchema = z.object({
+  appId: z.union([z.number(), z.string()]),
+  privateKey: z.string(),
+  clientId: z.string(),
+  clientSecret: z.string(),
+  webhookSecret: z.string().optional(),
+  allowedOwners: z.array(z.string()).optional(),
+});
 
 export const githubConnectionType = createConnectionType({
   type: 'github',
@@ -308,18 +328,7 @@ export const githubConnectionType = createConnectionType({
     apiBaseUrl: z.string().optional(),
     rawBaseUrl: z.string().optional(),
     token: z.string().optional(),
-    apps: z
-      .array(
-        z.object({
-          appId: z.union([z.number(), z.string()]),
-          privateKey: z.string(),
-          clientId: z.string(),
-          clientSecret: z.string(),
-          webhookSecret: z.string().optional(),
-          allowedOwners: z.array(z.string()).optional(),
-        }),
-      )
-      .optional(),
+    apps: z.array(githubAppSchema).optional(),
   }),
 
   create(input) {
@@ -338,7 +347,14 @@ export const githubConnectionType = createConnectionType({
           ? 'https://raw.githubusercontent.com'
           : `https://${input.host}/raw`),
       token: input.token,
-      apps: input.apps,
+      apps: input.apps?.map(app => ({
+        appId: typeof app.appId === 'string' ? Number(app.appId) : app.appId,
+        privateKey: app.privateKey,
+        clientId: app.clientId,
+        clientSecret: app.clientSecret,
+        webhookSecret: app.webhookSecret,
+        allowedOwners: app.allowedOwners,
+      })),
     };
   },
 
@@ -355,16 +371,28 @@ export const githubConnectionType = createConnectionType({
     return 0;
   },
 });
+
+// The output type that consumers receive:
+export interface GithubConnection extends Connection {
+  readonly type: 'github';
+  readonly host: string;
+  readonly apiBaseUrl: string;
+  readonly rawBaseUrl: string;
+  readonly token?: string;
+  readonly apps?: ReadonlyArray<{
+    readonly appId: number;
+    readonly privateKey: string;
+    readonly clientId: string;
+    readonly clientSecret: string;
+    readonly webhookSecret?: string;
+    readonly allowedOwners?: readonly string[];
+  }>;
+}
 ```
 
-The `createConnectionType` function produces a `ConnectionType` object that the registry uses internally. Consumers of the connection service never interact with this object — they work with the output type returned by `create`.
+The input schema accepts `host` as required, `apiBaseUrl` and `rawBaseUrl` as optional. The `create` function computes defaults for the optional URL fields based on whether the host is public GitHub or a GitHub Enterprise instance. The `matchUrl` function uses `allowedOwners` to provide more specific matching — when multiple GitHub connections exist for the same host (e.g. different apps for different organizations), the one whose app explicitly lists the URL's owner scores higher.
 
-**What each piece does:**
-
-- **`type`** — the discriminator string used in config and queries.
-- **`configSchema`** — a Zod schema that validates the raw config entry (minus the `type` and `plugins` fields, which are handled by the framework). The inferred TypeScript type is the input type. A JSON Schema is derived automatically for config validation.
-- **`create(input)`** — takes the validated input and returns the output connection object. This is where defaults are applied, URLs are derived, and the shape is transformed into what consumers receive.
-- **`matchUrl(connection, url)`** — scores a connection against a URL for `find()` ranking. Returns a number: `0` for host-only match, higher for more specific matches, `-1` to explicitly reject. Called only among connections that already match by host.
+Every connection output has a `matchUrl` method provided by the framework. The default implementation matches by host only (returning `0`). When a connection type provides its own `matchUrl`, it replaces the default with type-specific logic.
 
 ### Connection Type Versioning
 
@@ -633,57 +661,15 @@ interface Connection {
   readonly type: string;
   readonly host: string;
   readonly plugins?: readonly string[];
+  matchUrl(url: string | URL): boolean;
 }
 ```
 
-The base interface is minimal. The `plugins` field reflects the configured scope — when present, it lists the plugin IDs this connection is available to. When absent, the connection is available to all plugins. By the time a plugin receives a connection through the service, scoping has already been applied — a plugin only sees connections it is allowed to access.
+The base interface requires `type` and `host`. The `plugins` field reflects the configured scope — when present, it lists the plugin IDs this connection is available to. When absent, the connection is available to all plugins. By the time a plugin receives a connection through the service, scoping has already been applied — a plugin only sees connections it is allowed to access.
 
-Each connection type's output shape is defined by its `create` function. The built-in types produce objects like:
+The `matchUrl` method lets callers check whether a given URL is covered by this connection. The default implementation matches by host. Connection types that provide a custom `matchUrl` in their definition get more specific logic — for example, the GitHub type checks `allowedOwners` against the URL path.
 
-```typescript
-interface GithubConnection extends Connection {
-  readonly type: 'github';
-  readonly host: string;
-  readonly apiBaseUrl: string;
-  readonly rawBaseUrl: string;
-  readonly token?: string;
-  readonly apps?: ReadonlyArray<{
-    readonly appId: number | string;
-    readonly privateKey: string;
-    readonly clientId: string;
-    readonly clientSecret: string;
-    readonly webhookSecret?: string;
-    readonly allowedOwners?: readonly string[];
-    readonly publicAccess?: boolean;
-  }>;
-}
-
-interface AzureConnection extends Connection {
-  readonly type: 'azure';
-  readonly host: string;
-  readonly credentials?: ReadonlyArray<{
-    readonly organizations?: readonly string[];
-    readonly personalAccessToken?: string;
-    readonly clientId?: string;
-    readonly clientSecret?: string;
-    readonly tenantId?: string;
-    readonly managedIdentityClientId?: string;
-  }>;
-}
-
-interface AwsS3Connection extends Connection {
-  readonly type: 'aws-s3';
-  readonly host: string;
-  readonly endpoint?: string;
-  readonly accessKeyId?: string;
-  readonly secretAccessKey?: string;
-  readonly roleArn?: string;
-  readonly externalId?: string;
-  readonly region?: string;
-}
-```
-
-All properties are `readonly`. Connections are immutable snapshots of configuration.
+Each connection type's output shape is defined by its `create` function and exported as a TypeScript interface for consumers. See the full GitHub example above. All output properties are `readonly` — connections are immutable snapshots of configuration.
 
 ### `ConnectionResult`
 
@@ -711,23 +697,25 @@ type ConnectionOfType<T extends string> = T extends 'github'
 
 The `ConnectionsRegistry` maintains a `Map<string, Connection[]>` indexed by hostname. The connection set is already filtered by plugin scope at construction time — a plugin only sees connections that either have no `plugins` restriction or are explicitly scoped to it.
 
-When `find` is called with a URL:
+**Internal scoring (used by `find`).** When `find` is called with a URL:
 
 1. Parse the URL and extract the hostname.
 2. Look up all connections for that host — O(1).
 3. Filter to the requested type (always provided).
 4. If one candidate remains, return it.
-5. If multiple candidates remain, ask each to score the URL. Plugin-scoped connections are preferred over broadly available ones at the same specificity level.
+5. If multiple candidates remain, use the connection type's internal scoring function. Plugin-scoped connections are preferred over broadly available ones at the same specificity level.
 6. Return the candidate with the highest score.
 
-Each connection type's `matchUrl` function provides the scoring:
+The internal scoring function (from the `matchUrl` option in `createConnectionType`) returns:
 
-- `0` — matches only by host (fallback)
+- `0` — matches only by host (fallback, and the default when no custom `matchUrl` is provided)
 - `1-99` — partial path match (e.g. group-level GitLab matching)
 - `100+` — specific resource match (e.g. GitHub connection whose `apps[].allowedOwners` includes the URL's owner segment)
 - `-1` — does not match this URL despite sharing the host
 
 For the common case of a single connection per host, no scoring is needed.
+
+**`connection.matchUrl()` (used by callers).** Each connection object also exposes a `matchUrl(url)` method that callers can use directly to check whether a URL is covered by this connection. The default implementation matches by host. Connection types with a custom `matchUrl` in their definition get the type-specific logic — for example, a GitHub connection's `matchUrl` returns `true` only if the URL's owner matches one of its `allowedOwners` (or if no owner restriction is configured).
 
 When `find` is called with type-specific parameters (e.g. `connections.find({ type: 'github', host: 'github.com', owner: 'my-org' })`) instead of a URL, the connection type handles the matching directly.
 
