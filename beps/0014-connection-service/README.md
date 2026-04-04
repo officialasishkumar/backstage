@@ -355,13 +355,7 @@ export const githubConnectionType = createConnectionType({
     return 0;
   },
 
-  annotations: {
-    'project-slug': (value, host) => `https://${host}/${value}`,
-    'team-slug': (value, host) => {
-      const [org, team] = value.split('/');
-      return `https://${host}/orgs/${org}/teams/${team}`;
-    },
-  },
+  annotations: ['project-slug', 'team-slug', 'user-login'],
 });
 ```
 
@@ -373,7 +367,7 @@ The `createConnectionType` function produces a `ConnectionType` object that the 
 - **`configSchema`** — a Zod schema that validates the raw config entry (minus the `type` and `plugins` fields, which are handled by the framework). The inferred TypeScript type is the input type. A JSON Schema is derived automatically for config validation.
 - **`create(input)`** — takes the validated input and returns the output connection object. This is where defaults are applied, URLs are derived, and the shape is transformed into what consumers receive.
 - **`matchUrl(connection, url)`** — scores a connection against a URL for `find()` ranking. Returns a number: `0` for host-only match, higher for more specific matches, `-1` to explicitly reject. Called only among connections that already match by host.
-- **`annotations`** — declares which entity annotation suffixes this type owns. Each entry maps an annotation suffix to a function that resolves the annotation value to a URL, given the connection's host. The full annotation key is `<host>/<suffix>`.
+- **`annotations`** — declares which entity annotation suffixes this type owns (e.g. `['project-slug', 'team-slug']`). Purely declarative — used for documentation and tooling, with no runtime resolution logic. The full annotation key is `<host>/<suffix>`.
 
 ### Connection Type Versioning
 
@@ -432,11 +426,11 @@ metadata:
     sonarqube.org/project-key: my-service
 ```
 
-These annotations already exist today. The connection service does not introduce new annotation keys — instead, it gives each connection type a formal way to declare which annotations it owns and how to resolve them.
+These annotations already exist today. The connection service does not introduce new annotation keys — instead, it gives each connection type a formal way to declare which annotations it owns.
 
 #### Connection-Owned Annotations
 
-Each connection type definition includes a set of annotations it recognizes. This serves as documentation, enables tooling to associate annotations with connections, and lets the connection service provide utilities for resolving annotation values to connection instances:
+Each connection type definition includes a list of annotation suffixes it owns via the `annotations` field. This is purely declarative metadata — it serves as documentation and enables tooling to associate annotations with connections:
 
 | Connection type | Annotation                  | Value format               |
 | --------------- | --------------------------- | -------------------------- |
@@ -453,7 +447,7 @@ For self-hosted instances, the annotation prefix uses the instance's host (e.g. 
 
 #### Plugin Usage Pattern
 
-A plugin that operates on an entity reads the provider-specific annotation and resolves it through the connection service. The annotation value identifies the resource, while the connection provides authentication and API endpoints:
+A plugin that operates on an entity reads the provider-specific annotation and uses the connection service to find the right connection. The annotation value identifies the resource, while the connection provides authentication and API endpoints:
 
 ```typescript
 function getGithubRepo(
@@ -473,15 +467,6 @@ function getGithubRepo(
   }
   return { connection: result.connection, slug };
 }
-```
-
-Connection types can provide helper methods that encapsulate the annotation-to-URL resolution, so plugins don't need to construct URLs manually:
-
-```typescript
-const result = connections.find({
-  type: 'github',
-  annotation: { key: 'github.com/project-slug', value: slug },
-});
 ```
 
 #### Self-Hosted Instances and Annotation Prefixes
@@ -615,30 +600,23 @@ Both methods take a single options object with a required `type` field. The `fin
 
 ### `ConnectionType` Interface
 
-The internal definition produced by `createConnectionType`:
+The public type produced by `createConnectionType`:
 
 ```typescript
-interface ConnectionType<
-  TInput = unknown,
-  TOutput extends Connection = Connection,
-> {
+interface ConnectionType<TOutput extends Connection = Connection> {
   readonly type: string;
-  readonly configSchema: ZodType<TInput>;
   readonly jsonSchema: JsonObject;
+  readonly annotations?: readonly string[];
   parse(data: unknown): TOutput;
   matchUrl?(connection: TOutput, url: URL): number;
-  readonly annotations?: Record<
-    string,
-    (value: string, host: string) => string
-  >;
 }
 ```
 
-- **`configSchema`** — the Zod schema provided by the author. Used for TypeScript type inference and as the source for JSON Schema generation.
-- **`jsonSchema`** — automatically derived from `configSchema` by `createConnectionType`. Merged into the overall config schema for validation and IDE support.
-- **`parse(data)`** — validates `data` against `configSchema`, then passes the result to the author's `create` function. Returns the output connection object. Throws on invalid input.
+- **`type`** — the discriminator string.
+- **`jsonSchema`** — automatically derived from the Zod `configSchema` by `createConnectionType`. Merged into the overall config schema for validation and IDE support. The Zod schema itself is not exposed.
+- **`annotations`** — optional. A list of annotation suffixes this connection type owns (e.g. `['project-slug', 'team-slug']`). Purely declarative metadata for documentation and tooling — no runtime resolution logic.
+- **`parse(data)`** — validates `data` against the internal Zod schema, then passes the result to the author's `create` function. Returns the output connection object. Throws on invalid input.
 - **`matchUrl(connection, url)`** — optional. Scores a connection against a URL for `find()` ranking among same-host, same-type candidates.
-- **`annotations`** — optional. Maps annotation suffixes to URL resolvers.
 
 The `createConnectionType` helper wires these together:
 
@@ -648,9 +626,11 @@ function createConnectionType<TInput, TOutput extends Connection>(options: {
   configSchema: ZodType<TInput>;
   create: (input: TInput) => TOutput;
   matchUrl?: (connection: TOutput, url: URL) => number;
-  annotations?: Record<string, (value: string, host: string) => string>;
-}): ConnectionType<TInput, TOutput>;
+  annotations?: string[];
+}): ConnectionType<TOutput>;
 ```
+
+The Zod schema is consumed internally to derive the JSON Schema and to power `parse`, but it is not part of the public `ConnectionType` interface.
 
 ### `Connection` Interface
 
@@ -773,33 +753,9 @@ The `plugins` field is common to all connection config types. When present, the 
 
 ### Entity Annotation Resolution
 
-Each connection type defines how to resolve its owned annotations to URLs that can be used with `connections.find()`. This logic is encapsulated in the connection type definition so that plugins don't need to know the annotation-to-URL mapping:
+The `annotations` field on a connection type is purely declarative — it lists the annotation suffixes this type owns (e.g. `['project-slug', 'team-slug']`). The full annotation key is `<host>/<suffix>` (e.g. `github.com/project-slug`). This metadata enables tooling and documentation to associate annotations with connection types, but there is no built-in runtime resolution.
 
-```typescript
-interface ConnectionTypeAnnotation {
-  key: string;
-  toUrl(value: string, host: string): string;
-}
-
-// Example: github connection type declares its annotations
-const githubAnnotations: ConnectionTypeAnnotation[] = [
-  {
-    key: 'project-slug',
-    toUrl: (value, host) => `https://${host}/${value}`,
-  },
-  {
-    key: 'team-slug',
-    toUrl: (value, host) =>
-      `https://${host}/orgs/${value.split('/')[0]}/teams/${
-        value.split('/')[1]
-      }`,
-  },
-];
-```
-
-The annotation key is the suffix portion — the full annotation key is `<host>/<suffix>` (e.g. `github.com/project-slug`). The `host` parameter allows the same logic to work for self-hosted instances.
-
-A utility function simplifies resolving an entity's annotation to a connection:
+Plugins that need to resolve annotations to connections do so explicitly. A utility function can simplify the common pattern:
 
 ```typescript
 function findEntityConnection<T extends string>(
@@ -815,10 +771,7 @@ function findEntityConnection<T extends string>(
   for (const conn of connections.findAll({ type: options.type })) {
     const value = annotations[`${conn.host}/${options.annotation}`];
     if (value) {
-      return connections.find({
-        type: options.type,
-        annotation: { key: options.annotation, value },
-      });
+      return { connection: conn };
     }
   }
 
