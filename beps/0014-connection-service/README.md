@@ -204,7 +204,8 @@ export default createBackendModule({
     env.registerInit({
       deps: { connections: coreServices.connections },
       async init({ connections }) {
-        const result = connections.match('github', {
+        const result = connections.find({
+          type: 'github',
           url: 'https://github.com/my-org/my-repo',
         });
 
@@ -220,7 +221,7 @@ export default createBackendModule({
 The framework enforces declarations at two levels:
 
 - **Startup validation.** If a module depends on `coreServices.connections` but did not call `env.registerConnections`, the framework throws at startup before any init code runs.
-- **Runtime validation.** If a module calls `match` or `list` with a type that was not declared, the service throws immediately.
+- **Runtime validation.** If a module calls `find` or `findAll` with a type that was not declared, the service throws immediately.
 
 Each module declares its own connection requirements independently. The plugin's total set of declared types is the union of all its modules' declarations. This means a catalog plugin with a GitHub provider module and a GitLab provider module each declare only the types they need:
 
@@ -242,14 +243,15 @@ register(env) {
 
 ### Querying Connections
 
-The connection service exposes two methods. Both require a connection type as the first argument, which is validated against the module's declared types.
+The connection service exposes two methods. Both take a single options object with a required `type` field, which is validated against the module's declared types.
 
-**`match` — best match for a URL or query:**
+**`find` — best match:**
 
 Returns the single best-matching connection for the given criteria, or `undefined` if none matches:
 
 ```typescript
-const result = connections.match('github', {
+const result = connections.find({
+  type: 'github',
   url: 'https://github.com/my-org/my-repo',
 });
 // result.connection is GithubConnection | undefined
@@ -258,27 +260,29 @@ const result = connections.match('github', {
 Type-specific query parameters can refine the match beyond a URL. The set of extra parameters is defined per connection type:
 
 ```typescript
-const result = connections.match('github', {
+const result = connections.find({
+  type: 'github',
   host: 'github.com',
   owner: 'my-org',
 });
 ```
 
-**`list` — all connections of a type:**
+**`findAll` — all connections of a type:**
 
 Returns all connections of the given type:
 
 ```typescript
-const all = connections.list('github');
+const all = connections.findAll({ type: 'github' });
 // GithubConnection[]
 ```
 
 **Always-optional results:**
 
-The `match` method never throws for a missing connection. It returns a `ConnectionResult` with `connection` set to `undefined`:
+The `find` method never throws for a missing connection. It returns a `ConnectionResult` with `connection` set to `undefined`:
 
 ```typescript
-const result = connections.match('github', {
+const result = connections.find({
+  type: 'github',
   url: 'https://unknown-host.example.com/path',
 });
 
@@ -314,7 +318,7 @@ Both entries are valid `github` connections with different config shapes. The fa
 
 ### Catalog Entity Annotations
 
-A set of standardized annotations allows catalog entities to declare their associations with external services in a connection-agnostic way. Any plugin can read these annotations and resolve them through `connections.match()` to find the right connection — without needing to know whether the entity lives on GitHub, GitLab, or a self-hosted Gitea instance.
+A set of standardized annotations allows catalog entities to declare their associations with external services in a connection-agnostic way. Any plugin can read these annotations and resolve them through `connections.find()` to find the right connection — without needing to know whether the entity lives on GitHub, GitLab, or a self-hosted Gitea instance.
 
 #### Well-Known Annotations
 
@@ -367,11 +371,11 @@ function getSourceConnection(
   if (!sourceUrl) {
     return undefined;
   }
-  return connections.match('github', { url: sourceUrl }).connection;
+  return connections.find({ type: 'github', url: sourceUrl }).connection;
 }
 ```
 
-A plugin that needs to work across multiple provider types would have a separate code path per type, each querying its own declared connection type. A "show recent commits" widget for GitHub queries `connections.match('github', ...)`, while a GitLab variant queries `connections.match('gitlab', ...)`. Both read the same annotation URL — the connection type determines which connection (if any) matches.
+A plugin that needs to work across multiple provider types would have a separate code path per type, each querying its own declared connection type. A "show recent commits" widget for GitHub queries `connections.find({ type: 'github', ... })`, while a GitLab variant queries `connections.find({ type: 'gitlab', ... })`. Both read the same annotation URL — the connection type determines which connection (if any) matches.
 
 #### Relationship to Existing Annotations
 
@@ -481,16 +485,17 @@ connections:
 
 ```typescript
 interface ConnectionsService {
-  match<T extends string>(
-    type: T,
-    options?: { url?: string | URL; [key: string]: unknown },
-  ): ConnectionResult<T>;
+  find<T extends string>(options: {
+    type: T;
+    url?: string | URL;
+    [key: string]: unknown;
+  }): ConnectionResult<T>;
 
-  list<T extends string>(type: T): ConnectionOfType<T>[];
+  findAll<T extends string>(options: { type: T }): ConnectionOfType<T>[];
 }
 ```
 
-Both methods take the connection type as the first argument. The `match` method returns the best matching connection for the given type and optional query parameters. The `list` method returns all connections of the given type. Both validate the type against the module's declared connection types and throw if the type was not registered.
+Both methods take a single options object with a required `type` field. The `find` method returns the best matching connection for the given type and optional query parameters. The `findAll` method returns all connections of the given type. Both validate the type against the module's declared connection types and throw if the type was not registered.
 
 ### `Connection` Interface
 
@@ -575,7 +580,7 @@ type ConnectionOfType<T extends string> = T extends 'github'
 
 The `ConnectionsRegistry` maintains a `Map<string, Connection[]>` indexed by hostname. The connection set is already filtered by plugin scope at construction time — a plugin only sees connections that either have no `plugins` restriction or are explicitly scoped to it.
 
-When `match` is called with a URL:
+When `find` is called with a URL:
 
 1. Parse the URL and extract the hostname.
 2. Look up all connections for that host — O(1).
@@ -593,7 +598,7 @@ Each connection type implements an internal `matchScore(url: URL): number` scori
 
 For the common case of a single connection per host, no scoring is needed.
 
-When `match` is called with type-specific parameters (e.g. `connections.match('github', { host: 'github.com', owner: 'my-org' })`) instead of a URL, the connection type handles the matching directly.
+When `find` is called with type-specific parameters (e.g. `connections.find({ type: 'github', host: 'github.com', owner: 'my-org' })`) instead of a URL, the connection type handles the matching directly.
 
 ### Configuration Schema
 
@@ -680,7 +685,7 @@ function getEntityConnection<T extends string>(
   if (!url) {
     return { connection: undefined };
   }
-  return connections.match(options.type, { url });
+  return connections.find({ type: options.type, url });
 }
 
 // Usage
@@ -718,7 +723,7 @@ function resolveSourceUrl(entity: Entity): string | undefined {
 
 Connections are intentionally limited to static configuration data. Dynamic credential resolution — token exchange, caching, refresh, SDK credential chains — is handled by separate type-specific APIs built on top of connections. This mirrors the existing pattern where `DefaultGithubCredentialsProvider`, `DefaultAzureDevOpsCredentialsProvider`, and `DefaultAwsCredentialsManager` already exist as distinct APIs separate from `ScmIntegrations`.
 
-With the connection service in place, these credential APIs would read from `coreServices.connections` instead of `ScmIntegrations.fromConfig(config)`. They could be wired as independent service refs with default factories, making each one separately overridable. For example, a GitHub credentials service would call `connections.list('github')` to read all GitHub connection entries, handle the app installation token exchange for URLs matching `allowedOwners`, and cache tokens with appropriate expiry. An AWS credentials service would read static keys and role configurations via `connections.list('aws-s3')` and provide SDK credential provider chains.
+With the connection service in place, these credential APIs would read from `coreServices.connections` instead of `ScmIntegrations.fromConfig(config)`. They could be wired as independent service refs with default factories, making each one separately overridable. For example, a GitHub credentials service would call `connections.findAll({ type: 'github' })` to read all GitHub connection entries, handle the app installation token exchange for URLs matching `allowedOwners`, and cache tokens with appropriate expiry. An AWS credentials service would read static keys and role configurations via `connections.findAll({ type: 'aws-s3' })` and provide SDK credential provider chains.
 
 The design of these credential APIs is outside the scope of this BEP and will be addressed separately.
 
@@ -796,4 +801,4 @@ Wrap existing types in services without changing config format. Simpler to imple
 
 ### Per-Provider Service Refs for Connections
 
-One connection service per type (`coreServices.githubConnections`, etc.). Better type safety but leads to service ref proliferation and makes generic code harder to write. The single `coreServices.connections` with typed `match(type, ...)` and `list(type)` methods provides sufficient type safety through the type parameter, while `registerConnections` provides the declaration guarantee.
+One connection service per type (`coreServices.githubConnections`, etc.). Better type safety but leads to service ref proliferation and makes generic code harder to write. The single `coreServices.connections` with typed `find` and `findAll` methods provides sufficient type safety through the `type` option, while `registerConnections` provides the declaration guarantee.
