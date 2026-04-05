@@ -90,7 +90,7 @@ describe('config:schema', () => {
     expect(schema.$schema).not.toBe('http://json-schema.org/draft-07/schema#');
   });
 
-  it('should transform custom keywords to x- prefixed versions when using --strict', async () => {
+  it('should transform custom keywords to x- prefixed versions when using --strict --merge', async () => {
     mockLoadCliConfig.mockResolvedValue(
       makeSchema({
         schemas: [
@@ -109,7 +109,12 @@ describe('config:schema', () => {
       }),
     );
 
-    const output = await runSchemaCommand(['--strict', '--format', 'json']);
+    const output = await runSchemaCommand([
+      '--strict',
+      '--merge',
+      '--format',
+      'json',
+    ]);
     const schema = JSON.parse(output);
 
     expect(schema.$schema).toBe('http://json-schema.org/draft-07/schema#');
@@ -125,7 +130,53 @@ describe('config:schema', () => {
     expect(schema.properties.old['x-deprecated']).toBe('use new instead');
   });
 
-  it('should handle nested schemas with --strict', async () => {
+  it('should transform custom keywords in individual schemas when using --strict without --merge', async () => {
+    mockLoadCliConfig.mockResolvedValue(
+      makeSchema({
+        schemas: [
+          {
+            packageName: 'a',
+            value: {
+              type: 'object',
+              properties: {
+                host: { type: 'string', visibility: 'frontend' },
+                old: { type: 'string', deprecated: 'use new instead' },
+              },
+            },
+          },
+          {
+            packageName: 'b',
+            value: {
+              type: 'object',
+              properties: {
+                secret: { type: 'string', deepVisibility: 'secret' },
+              },
+            },
+          },
+        ],
+      }),
+    );
+
+    const output = await runSchemaCommand(['--strict', '--format', 'json']);
+    const result = JSON.parse(output);
+
+    expect(result.backstageConfigSchemaVersion).toBe(1);
+    expect(result.schemas).toHaveLength(2);
+
+    const schemaA = result.schemas[0].value;
+    expect(schemaA.$schema).toBe('http://json-schema.org/draft-07/schema#');
+    expect(schemaA.properties.host.visibility).toBeUndefined();
+    expect(schemaA.properties.host['x-visibility']).toBe('frontend');
+    expect(schemaA.properties.old.deprecated).toBe(true);
+    expect(schemaA.properties.old['x-deprecated']).toBe('use new instead');
+
+    const schemaB = result.schemas[1].value;
+    expect(schemaB.$schema).toBe('http://json-schema.org/draft-07/schema#');
+    expect(schemaB.properties.secret.deepVisibility).toBeUndefined();
+    expect(schemaB.properties.secret['x-deepVisibility']).toBe('secret');
+  });
+
+  it('should handle nested schemas with --strict --merge', async () => {
     mockLoadCliConfig.mockResolvedValue(
       makeSchema({
         schemas: [
@@ -154,7 +205,12 @@ describe('config:schema', () => {
       }),
     );
 
-    const output = await runSchemaCommand(['--strict', '--format', 'json']);
+    const output = await runSchemaCommand([
+      '--strict',
+      '--merge',
+      '--format',
+      'json',
+    ]);
     const schema = JSON.parse(output);
 
     expect(schema.properties.app.properties.baseUrl['x-visibility']).toBe(
@@ -174,7 +230,7 @@ describe('config:schema', () => {
     ).toBe('secret');
   });
 
-  it('should merge multiple package schemas with --strict', async () => {
+  it('should merge multiple package schemas with --strict --merge', async () => {
     mockLoadCliConfig.mockResolvedValue(
       makeSchema({
         schemas: [
@@ -210,7 +266,12 @@ describe('config:schema', () => {
       }),
     );
 
-    const output = await runSchemaCommand(['--strict', '--format', 'json']);
+    const output = await runSchemaCommand([
+      '--strict',
+      '--merge',
+      '--format',
+      'json',
+    ]);
     const schema = JSON.parse(output);
 
     expect(schema.properties.app.properties.baseUrl['x-visibility']).toBe(

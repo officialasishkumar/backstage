@@ -23,6 +23,31 @@ import { JsonObject } from '@backstage/types';
 import { mergeConfigSchemas } from '@backstage/config-loader';
 import type { CliCommandContext } from '@backstage/cli-node';
 
+/**
+ * Transforms a JSON Schema to be strictly conformant with JSON Schema Draft 7
+ * by renaming Backstage-specific keywords to x-prefixed extensions.
+ */
+function toStrictJsonSchema(schema: JSONSchema): JSONSchema {
+  schema.$schema = 'http://json-schema.org/draft-07/schema#';
+  traverse(schema, node => {
+    if ('visibility' in node) {
+      node['x-visibility'] = node.visibility;
+      delete node.visibility;
+    }
+    if ('deepVisibility' in node) {
+      node['x-deepVisibility'] = node.deepVisibility;
+      delete node.deepVisibility;
+    }
+    if ('deprecated' in node) {
+      if (typeof node.deprecated === 'string') {
+        node['x-deprecated'] = node.deprecated;
+      }
+      node.deprecated = true;
+    }
+  });
+  return schema;
+}
+
 export default async ({ args, info }: CliCommandContext) => {
   const {
     flags: { merge, format, package: pkg, strict },
@@ -39,8 +64,7 @@ export default async ({ args, info }: CliCommandContext) => {
         },
         strict: {
           type: Boolean,
-          description:
-            'Output a strict, conformant JSON Schema (implies --merge)',
+          description: 'Output a strict, conformant JSON Schema',
         },
       },
     },
@@ -55,7 +79,7 @@ export default async ({ args, info }: CliCommandContext) => {
   });
 
   let configSchema: JsonObject | JSONSchema;
-  if (merge || strict) {
+  if (merge) {
     configSchema = mergeConfigSchemas(
       (schema.serialize().schemas as JsonObject[]).map(
         _ => _.value as JSONSchema,
@@ -66,24 +90,18 @@ export default async ({ args, info }: CliCommandContext) => {
       'This is the schema describing the structure of the app-config.yaml configuration file.';
 
     if (strict) {
-      configSchema.$schema = 'http://json-schema.org/draft-07/schema#';
-      traverse(configSchema, node => {
-        if ('visibility' in node) {
-          node['x-visibility'] = node.visibility;
-          delete node.visibility;
-        }
-        if ('deepVisibility' in node) {
-          node['x-deepVisibility'] = node.deepVisibility;
-          delete node.deepVisibility;
-        }
-        if ('deprecated' in node) {
-          if (typeof node.deprecated === 'string') {
-            node['x-deprecated'] = node.deprecated;
-          }
-          node.deprecated = true;
-        }
-      });
+      toStrictJsonSchema(configSchema);
     }
+  } else if (strict) {
+    const serialized = schema.serialize() as JsonObject;
+    const schemas = serialized.schemas as JsonObject[];
+    configSchema = {
+      ...serialized,
+      schemas: schemas.map(entry => ({
+        ...entry,
+        value: toStrictJsonSchema(entry.value as JSONSchema) as JsonObject,
+      })),
+    };
   } else {
     configSchema = schema.serialize();
   }
