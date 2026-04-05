@@ -17,36 +17,10 @@
 import { cli } from 'cleye';
 import { JSONSchema7 as JSONSchema } from 'json-schema';
 import { stringify as stringifyYaml } from 'yaml';
-import traverse from 'json-schema-traverse';
 import { loadCliConfig } from '../lib/config';
 import { JsonObject } from '@backstage/types';
 import { mergeConfigSchemas } from '@backstage/config-loader';
 import type { CliCommandContext } from '@backstage/cli-node';
-
-/**
- * Transforms a JSON Schema to be strictly conformant with JSON Schema Draft 7
- * by renaming Backstage-specific keywords to x-prefixed extensions.
- */
-function toStrictJsonSchema(schema: JSONSchema): JSONSchema {
-  schema.$schema = 'http://json-schema.org/draft-07/schema#';
-  traverse(schema, node => {
-    if ('visibility' in node) {
-      node['x-visibility'] = node.visibility;
-      delete node.visibility;
-    }
-    if ('deepVisibility' in node) {
-      node['x-deepVisibility'] = node.deepVisibility;
-      delete node.deepVisibility;
-    }
-    if ('deprecated' in node) {
-      if (typeof node.deprecated === 'string') {
-        node['x-deprecated'] = node.deprecated;
-      }
-      node.deprecated = true;
-    }
-  });
-  return schema;
-}
 
 export default async ({ args, info }: CliCommandContext) => {
   const {
@@ -78,10 +52,14 @@ export default async ({ args, info }: CliCommandContext) => {
     mockEnv: true,
   });
 
+  const serializeOptions = strict
+    ? { schema: 'http://json-schema.org/draft-07/schema#' as const }
+    : undefined;
+
   let configSchema: JsonObject | JSONSchema;
   if (merge) {
     configSchema = mergeConfigSchemas(
-      (schema.serialize().schemas as JsonObject[]).map(
+      (schema.serialize(serializeOptions).schemas as JsonObject[]).map(
         _ => _.value as JSONSchema,
       ),
     );
@@ -90,20 +68,10 @@ export default async ({ args, info }: CliCommandContext) => {
       'This is the schema describing the structure of the app-config.yaml configuration file.';
 
     if (strict) {
-      toStrictJsonSchema(configSchema);
+      configSchema.$schema = 'http://json-schema.org/draft-07/schema#';
     }
-  } else if (strict) {
-    const serialized = schema.serialize() as JsonObject;
-    const schemas = serialized.schemas as JsonObject[];
-    configSchema = {
-      ...serialized,
-      schemas: schemas.map(entry => ({
-        ...entry,
-        value: toStrictJsonSchema(entry.value as JSONSchema) as JsonObject,
-      })),
-    };
   } else {
-    configSchema = schema.serialize();
+    configSchema = schema.serialize(serializeOptions);
   }
 
   if (format === 'json') {

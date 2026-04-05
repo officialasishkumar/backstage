@@ -126,6 +126,73 @@ describe('loadConfigSchema', () => {
     );
   });
 
+  it('should serialize with strict JSON Schema when using draft-07 dialect', async () => {
+    mockDir.setContent({
+      node_modules: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            configSchema: {
+              type: 'object',
+              properties: {
+                host: { type: 'string', visibility: 'frontend' },
+                token: { type: 'string', deepVisibility: 'secret' },
+                old: { type: 'string', deprecated: 'use new instead' },
+              },
+            },
+          }),
+        },
+      },
+    });
+    process.chdir(mockDir.path);
+
+    const schema = await loadConfigSchema({ dependencies: ['a'] });
+    const serialized = schema.serialize({
+      schema: 'http://json-schema.org/draft-07/schema#',
+    });
+
+    const entry = (serialized.schemas as any[])[0];
+    const value = entry.value;
+
+    expect(value.$schema).toBe('http://json-schema.org/draft-07/schema#');
+
+    expect(value.properties.host.visibility).toBeUndefined();
+    expect(value.properties.host['x-visibility']).toBe('frontend');
+
+    expect(value.properties.token.deepVisibility).toBeUndefined();
+    expect(value.properties.token['x-deepVisibility']).toBe('secret');
+
+    expect(value.properties.old.deprecated).toBe(true);
+    expect(value.properties.old['x-deprecated']).toBe('use new instead');
+  });
+
+  it('should serialize with default backstage dialect when no option is given', async () => {
+    mockDir.setContent({
+      node_modules: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            configSchema: {
+              type: 'object',
+              properties: {
+                host: { type: 'string', visibility: 'frontend' },
+              },
+            },
+          }),
+        },
+      },
+    });
+    process.chdir(mockDir.path);
+
+    const schema = await loadConfigSchema({ dependencies: ['a'] });
+    const serialized = schema.serialize();
+
+    const entry = (serialized.schemas as any[])[0];
+    expect(entry.value.properties.host.visibility).toBe('frontend');
+    expect(entry.value.properties.host['x-visibility']).toBeUndefined();
+    expect(entry.value.$schema).toBeUndefined();
+  });
+
   describe('should consider schema', () => {
     it('when filtering simple config', async () => {
       mockDir.setContent({

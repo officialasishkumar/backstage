@@ -23,17 +23,18 @@ jest.mock('../lib/config', () => ({
 function makeSchema(options: {
   schemas: { value: object; packageName: string }[];
 }) {
+  const serializeFn = jest.fn().mockImplementation(() => ({
+    backstageConfigSchemaVersion: 1,
+    schemas: options.schemas.map(s => ({
+      value: s.value,
+      path: `node_modules/${s.packageName}`,
+      packageName: s.packageName,
+    })),
+  }));
+
   return {
-    schema: {
-      serialize: () => ({
-        backstageConfigSchemaVersion: 1,
-        schemas: options.schemas.map(s => ({
-          value: s.value,
-          path: `node_modules/${s.packageName}`,
-          packageName: s.packageName,
-        })),
-      }),
-    },
+    schema: { serialize: serializeFn },
+    serializeFn,
   };
 }
 
@@ -63,51 +64,70 @@ describe('config:schema', () => {
   });
 
   it('should output merged schema with custom keywords when using --merge', async () => {
-    mockLoadCliConfig.mockResolvedValue(
-      makeSchema({
-        schemas: [
-          {
-            packageName: 'a',
-            value: {
-              type: 'object',
-              properties: {
-                host: { type: 'string', visibility: 'frontend' },
-                secret: { type: 'string', deepVisibility: 'secret' },
-                old: { type: 'string', deprecated: 'use new instead' },
-              },
+    const { serializeFn } = makeSchema({
+      schemas: [
+        {
+          packageName: 'a',
+          value: {
+            type: 'object',
+            properties: {
+              host: { type: 'string', visibility: 'frontend' },
+              secret: { type: 'string', deepVisibility: 'secret' },
+              old: { type: 'string', deprecated: 'use new instead' },
             },
           },
-        ],
-      }),
-    );
+        },
+      ],
+    });
+    mockLoadCliConfig.mockResolvedValue({ schema: { serialize: serializeFn } });
 
     const output = await runSchemaCommand(['--merge', '--format', 'json']);
     const schema = JSON.parse(output);
 
+    expect(serializeFn).toHaveBeenCalledWith(undefined);
     expect(schema.properties.host.visibility).toBe('frontend');
     expect(schema.properties.secret.deepVisibility).toBe('secret');
     expect(schema.properties.old.deprecated).toBe('use new instead');
-    expect(schema.$schema).not.toBe('http://json-schema.org/draft-07/schema#');
   });
 
-  it('should transform custom keywords to x- prefixed versions when using --strict --merge', async () => {
-    mockLoadCliConfig.mockResolvedValue(
-      makeSchema({
-        schemas: [
-          {
-            packageName: 'a',
-            value: {
-              type: 'object',
-              properties: {
-                host: { type: 'string', visibility: 'frontend' },
-                secret: { type: 'string', deepVisibility: 'secret' },
-                old: { type: 'string', deprecated: 'use new instead' },
-              },
+  it('should pass draft-07 schema option to serialize when using --strict', async () => {
+    const { serializeFn } = makeSchema({
+      schemas: [
+        {
+          packageName: 'a',
+          value: {
+            type: 'object',
+            properties: {
+              host: { type: 'string', visibility: 'frontend' },
             },
           },
-        ],
-      }),
-    );
+        },
+      ],
+    });
+    mockLoadCliConfig.mockResolvedValue({ schema: { serialize: serializeFn } });
+
+    await runSchemaCommand(['--strict', '--format', 'json']);
+
+    expect(serializeFn).toHaveBeenCalledWith({
+      schema: 'http://json-schema.org/draft-07/schema#',
+    });
+  });
+
+  it('should pass draft-07 schema option to serialize when using --strict --merge', async () => {
+    const { serializeFn } = makeSchema({
+      schemas: [
+        {
+          packageName: 'a',
+          value: {
+            type: 'object',
+            properties: {
+              host: { type: 'string', visibility: 'frontend' },
+            },
+          },
+        },
+      ],
+    });
+    mockLoadCliConfig.mockResolvedValue({ schema: { serialize: serializeFn } });
 
     const output = await runSchemaCommand([
       '--strict',
@@ -117,166 +137,74 @@ describe('config:schema', () => {
     ]);
     const schema = JSON.parse(output);
 
+    expect(serializeFn).toHaveBeenCalledWith({
+      schema: 'http://json-schema.org/draft-07/schema#',
+    });
     expect(schema.$schema).toBe('http://json-schema.org/draft-07/schema#');
     expect(schema.title).toBe('Application Configuration Schema');
-
-    expect(schema.properties.host.visibility).toBeUndefined();
-    expect(schema.properties.host['x-visibility']).toBe('frontend');
-
-    expect(schema.properties.secret.deepVisibility).toBeUndefined();
-    expect(schema.properties.secret['x-deepVisibility']).toBe('secret');
-
-    expect(schema.properties.old.deprecated).toBe(true);
-    expect(schema.properties.old['x-deprecated']).toBe('use new instead');
   });
 
-  it('should transform custom keywords in individual schemas when using --strict without --merge', async () => {
-    mockLoadCliConfig.mockResolvedValue(
-      makeSchema({
-        schemas: [
-          {
-            packageName: 'a',
-            value: {
-              type: 'object',
-              properties: {
-                host: { type: 'string', visibility: 'frontend' },
-                old: { type: 'string', deprecated: 'use new instead' },
+  it('should merge multiple package schemas with --merge', async () => {
+    const { serializeFn } = makeSchema({
+      schemas: [
+        {
+          packageName: 'a',
+          value: {
+            type: 'object',
+            properties: {
+              app: {
+                type: 'object',
+                properties: {
+                  baseUrl: { type: 'string' },
+                },
               },
             },
           },
-          {
-            packageName: 'b',
-            value: {
-              type: 'object',
-              properties: {
-                secret: { type: 'string', deepVisibility: 'secret' },
+        },
+        {
+          packageName: 'b',
+          value: {
+            type: 'object',
+            properties: {
+              backend: {
+                type: 'object',
+                properties: {
+                  port: { type: 'number' },
+                },
               },
             },
           },
-        ],
-      }),
-    );
+        },
+      ],
+    });
+    mockLoadCliConfig.mockResolvedValue({ schema: { serialize: serializeFn } });
 
-    const output = await runSchemaCommand(['--strict', '--format', 'json']);
+    const output = await runSchemaCommand(['--merge', '--format', 'json']);
+    const schema = JSON.parse(output);
+
+    expect(schema.properties.app.properties.baseUrl.type).toBe('string');
+    expect(schema.properties.backend.properties.port.type).toBe('number');
+  });
+
+  it('should output unmerged envelope when no flags are given', async () => {
+    const { serializeFn } = makeSchema({
+      schemas: [
+        {
+          packageName: 'a',
+          value: {
+            type: 'object',
+            properties: { host: { type: 'string' } },
+          },
+        },
+      ],
+    });
+    mockLoadCliConfig.mockResolvedValue({ schema: { serialize: serializeFn } });
+
+    const output = await runSchemaCommand(['--format', 'json']);
     const result = JSON.parse(output);
 
+    expect(serializeFn).toHaveBeenCalledWith(undefined);
     expect(result.backstageConfigSchemaVersion).toBe(1);
-    expect(result.schemas).toHaveLength(2);
-
-    const schemaA = result.schemas[0].value;
-    expect(schemaA.$schema).toBe('http://json-schema.org/draft-07/schema#');
-    expect(schemaA.properties.host.visibility).toBeUndefined();
-    expect(schemaA.properties.host['x-visibility']).toBe('frontend');
-    expect(schemaA.properties.old.deprecated).toBe(true);
-    expect(schemaA.properties.old['x-deprecated']).toBe('use new instead');
-
-    const schemaB = result.schemas[1].value;
-    expect(schemaB.$schema).toBe('http://json-schema.org/draft-07/schema#');
-    expect(schemaB.properties.secret.deepVisibility).toBeUndefined();
-    expect(schemaB.properties.secret['x-deepVisibility']).toBe('secret');
-  });
-
-  it('should handle nested schemas with --strict --merge', async () => {
-    mockLoadCliConfig.mockResolvedValue(
-      makeSchema({
-        schemas: [
-          {
-            packageName: 'a',
-            value: {
-              type: 'object',
-              properties: {
-                app: {
-                  type: 'object',
-                  properties: {
-                    baseUrl: { type: 'string', visibility: 'frontend' },
-                    nested: {
-                      type: 'object',
-                      deepVisibility: 'secret',
-                      properties: {
-                        key: { type: 'string', visibility: 'secret' },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        ],
-      }),
-    );
-
-    const output = await runSchemaCommand([
-      '--strict',
-      '--merge',
-      '--format',
-      'json',
-    ]);
-    const schema = JSON.parse(output);
-
-    expect(schema.properties.app.properties.baseUrl['x-visibility']).toBe(
-      'frontend',
-    );
-    expect(schema.properties.app.properties.baseUrl.visibility).toBeUndefined();
-
-    expect(schema.properties.app.properties.nested['x-deepVisibility']).toBe(
-      'secret',
-    );
-    expect(
-      schema.properties.app.properties.nested.deepVisibility,
-    ).toBeUndefined();
-
-    expect(
-      schema.properties.app.properties.nested.properties.key['x-visibility'],
-    ).toBe('secret');
-  });
-
-  it('should merge multiple package schemas with --strict --merge', async () => {
-    mockLoadCliConfig.mockResolvedValue(
-      makeSchema({
-        schemas: [
-          {
-            packageName: 'a',
-            value: {
-              type: 'object',
-              properties: {
-                app: {
-                  type: 'object',
-                  properties: {
-                    baseUrl: { type: 'string', visibility: 'frontend' },
-                  },
-                },
-              },
-            },
-          },
-          {
-            packageName: 'b',
-            value: {
-              type: 'object',
-              properties: {
-                backend: {
-                  type: 'object',
-                  properties: {
-                    port: { type: 'number' },
-                  },
-                },
-              },
-            },
-          },
-        ],
-      }),
-    );
-
-    const output = await runSchemaCommand([
-      '--strict',
-      '--merge',
-      '--format',
-      'json',
-    ]);
-    const schema = JSON.parse(output);
-
-    expect(schema.properties.app.properties.baseUrl['x-visibility']).toBe(
-      'frontend',
-    );
-    expect(schema.properties.backend.properties.port.type).toBe('number');
+    expect(result.schemas).toHaveLength(1);
   });
 });

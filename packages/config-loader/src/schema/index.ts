@@ -19,6 +19,7 @@ export { loadConfigSchema } from './load';
 export type { LoadConfigSchemaOptions } from './load';
 export type {
   ConfigSchema,
+  ConfigSchemaSerializeOptions,
   ConfigVisibility,
   ConfigSchemaProcessingOptions,
   TransformFunc,

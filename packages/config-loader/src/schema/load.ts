@@ -23,8 +23,11 @@ import {
   ValidationError,
   ConfigSchema,
   ConfigSchemaPackageEntry,
+  ConfigSchemaSerializeOptions,
   CONFIG_VISIBILITIES,
 } from './types';
+import { JSONSchema7 as JSONSchema } from 'json-schema';
+import traverse from 'json-schema-traverse';
 import { normalizeAjvPath } from './utils';
 
 /**
@@ -44,6 +47,31 @@ export type LoadConfigSchemaOptions =
     ) & {
       noUndeclaredProperties?: boolean;
     };
+
+/**
+ * Transforms a JSON Schema to be strictly conformant with JSON Schema Draft 7
+ * by renaming Backstage-specific keywords to x-prefixed extensions.
+ */
+function toStrictJsonSchema(schema: JSONSchema): JSONSchema {
+  schema.$schema = 'http://json-schema.org/draft-07/schema#';
+  traverse(schema, node => {
+    if ('visibility' in node) {
+      node['x-visibility'] = node.visibility;
+      delete node.visibility;
+    }
+    if ('deepVisibility' in node) {
+      node['x-deepVisibility'] = node.deepVisibility;
+      delete node.deepVisibility;
+    }
+    if ('deprecated' in node) {
+      if (typeof node.deprecated === 'string') {
+        node['x-deprecated'] = node.deprecated;
+      }
+      node.deprecated = true;
+    }
+  });
+  return schema;
+}
 
 function errorsToError(errors: ValidationError[]): Error {
   const messages = errors.map(({ instancePath, message, params }) => {
@@ -147,7 +175,20 @@ export async function loadConfigSchema(
 
       return processedConfigs;
     },
-    serialize(): JsonObject {
+    serialize(serializeOptions?: ConfigSchemaSerializeOptions): JsonObject {
+      const dialect =
+        serializeOptions?.schema ?? 'https://backstage.io/schema/config-v1';
+
+      if (dialect === 'http://json-schema.org/draft-07/schema#') {
+        return {
+          backstageConfigSchemaVersion: 1,
+          schemas: schemas.map(entry => ({
+            ...entry,
+            value: toStrictJsonSchema(entry.value as JSONSchema) as JsonObject,
+          })),
+        };
+      }
+
       return {
         schemas,
         backstageConfigSchemaVersion: 1,

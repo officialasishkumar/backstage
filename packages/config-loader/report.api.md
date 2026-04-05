@@ -42,7 +42,7 @@ export type ConfigSchema = {
     appConfigs: AppConfig[],
     options?: ConfigSchemaProcessingOptions,
   ): AppConfig[];
-  serialize(): JsonObject;
+  serialize(options?: ConfigSchemaSerializeOptions): JsonObject;
 };
 
 // @public
@@ -52,6 +52,13 @@ export type ConfigSchemaProcessingOptions = {
   valueTransform?: TransformFunc<any>;
   withFilteredKeys?: boolean;
   withDeprecatedKeys?: boolean;
+};
+
+// @public
+export type ConfigSchemaSerializeOptions = {
+  schema?:
+    | 'http://json-schema.org/draft-07/schema#'
+    | 'https://backstage.io/schema/config-v1';
 };
 
 // @public

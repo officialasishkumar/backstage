@@ -168,6 +168,26 @@ export type ConfigSchemaProcessingOptions = {
 };
 
 /**
+ * Options for {@link ConfigSchema.serialize}.
+ *
+ * @public
+ */
+export type ConfigSchemaSerializeOptions = {
+  /**
+   * The schema dialect to use for the serialized output.
+   *
+   * When set to `'http://json-schema.org/draft-07/schema#'`, the output will be
+   * a conformant JSON Schema Draft 7 document where Backstage-specific keywords
+   * are renamed to `x-` prefixed extensions.
+   *
+   * Defaults to `'https://backstage.io/schema/config-v1'`.
+   */
+  schema?:
+    | 'http://json-schema.org/draft-07/schema#'
+    | 'https://backstage.io/schema/config-v1';
+};
+
+/**
  * A loaded configuration schema that is ready to process configuration data.
  *
  * @public
@@ -178,5 +198,5 @@ export type ConfigSchema = {
     options?: ConfigSchemaProcessingOptions,
   ): AppConfig[];
 
-  serialize(): JsonObject;
+  serialize(options?: ConfigSchemaSerializeOptions): JsonObject;
 };
