@@ -17,6 +17,7 @@
 import { cli } from 'cleye';
 import { JSONSchema7 as JSONSchema } from 'json-schema';
 import { stringify as stringifyYaml } from 'yaml';
+import traverse from 'json-schema-traverse';
 import { loadCliConfig } from '../lib/config';
 import { JsonObject } from '@backstage/types';
 import { mergeConfigSchemas } from '@backstage/config-loader';
@@ -24,7 +25,7 @@ import type { CliCommandContext } from '@backstage/cli-node';
 
 export default async ({ args, info }: CliCommandContext) => {
   const {
-    flags: { merge, format, package: pkg },
+    flags: { merge, format, package: pkg, strict },
   } = cli(
     {
       help: info,
@@ -35,6 +36,11 @@ export default async ({ args, info }: CliCommandContext) => {
         merge: {
           type: Boolean,
           description: 'Merge all schemas into a single schema',
+        },
+        strict: {
+          type: Boolean,
+          description:
+            'Output a strict, conformant JSON Schema (implies --merge)',
         },
       },
     },
@@ -49,7 +55,7 @@ export default async ({ args, info }: CliCommandContext) => {
   });
 
   let configSchema: JsonObject | JSONSchema;
-  if (merge) {
+  if (merge || strict) {
     configSchema = mergeConfigSchemas(
       (schema.serialize().schemas as JsonObject[]).map(
         _ => _.value as JSONSchema,
@@ -58,6 +64,26 @@ export default async ({ args, info }: CliCommandContext) => {
     configSchema.title = 'Application Configuration Schema';
     configSchema.description =
       'This is the schema describing the structure of the app-config.yaml configuration file.';
+
+    if (strict) {
+      configSchema.$schema = 'http://json-schema.org/draft-07/schema#';
+      traverse(configSchema, node => {
+        if ('visibility' in node) {
+          node['x-visibility'] = node.visibility;
+          delete node.visibility;
+        }
+        if ('deepVisibility' in node) {
+          node['x-deepVisibility'] = node.deepVisibility;
+          delete node.deepVisibility;
+        }
+        if ('deprecated' in node) {
+          if (typeof node.deprecated === 'string') {
+            node['x-deprecated'] = node.deprecated;
+          }
+          node.deprecated = true;
+        }
+      });
+    }
   } else {
     configSchema = schema.serialize();
   }
