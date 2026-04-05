@@ -73,9 +73,10 @@ The current integrations system in Backstage has served the project well, but se
 - Provide a query API where connections can be looked up by URL (with specificity beyond host matching), by type, or with additional type-specific context.
 - Ensure querying is always safe — a missing connection returns a result indicating absence, never an error.
 - Allow connection type definitions to evolve over time.
+- Define all built-in connection types in a single central `@backstage/*` package.
 - Allow adopters to override the connection service at the app level.
+- Allow adopters to register custom connection types internally, via the connection service override.
 - Provide a backend API endpoint for frontend discovery of configured connection metadata.
-- Allow adopters to register custom connection types at the app level.
 - Document the relationship between existing catalog entity annotations (e.g. `github.com/project-slug`) and connection types, leveraging their shared host-based namespace.
 
 ### Non-Goals
@@ -84,6 +85,7 @@ The current integrations system in Backstage has served the project well, but se
 - This BEP does not cover content-level operations like URL resolution or edit URL generation — those are higher-level concerns that build on top of connections.
 - This BEP does not propose changes to the URL reader service, though it will be updated to consume connections.
 - This BEP does not cover dynamic credential rotation or external secrets management.
+- Connection types are not extensible by ecosystem plugins. New connection types can only be added to the central Backstage package or by adopters in their own app. This ensures a single canonical set of definitions with a predictable evolution path.
 
 ## Proposal
 
@@ -390,9 +392,11 @@ The `matchUrl` function uses `allowedOwners` to provide more specific matching �
 
 Every connection output has a `matchUrl` method provided by the framework. The default implementation matches by host only. When a connection type provides its own `matchUrl`, it replaces the default with type-specific logic.
 
-### Connection Type Versioning
+### Connection Type Evolution
 
-Because the config schema is a Zod schema, versioning is handled naturally through schema unions. When a connection type needs to support a new config format, the schema is extended with `z.union`:
+Since all connection types are defined centrally, they can be evolved by modifying the single package. There are two strategies for evolving a connection type, and both can be used together.
+
+**Additive changes within a type.** New optional fields can be added to an existing schema without affecting existing configs. For changes to the auth method or config shape that need to coexist, the Zod schema is extended with `z.union`:
 
 ```typescript
 export const githubConnectionType = createConnectionType({
@@ -416,15 +420,32 @@ export const githubConnectionType = createConnectionType({
       }),
     ])
     .transform(input => {
-      if ('auth' in input) {
-        // New format — transform to output shape
-      }
-      // Old format — transform to output shape
+      // Normalize both shapes into a single output
     }),
 });
 ```
 
-Both config shapes are valid. The JSON Schema derived from the union documents both formats. The `.transform()` handles both, normalizing them into a single output shape and allowing incremental migration.
+Both config shapes are valid. The JSON Schema derived from the union documents both formats. The `.transform()` normalizes them into a single output shape. This works well when the auth method is an implementation detail that shouldn't affect consumers — a plugin asking for a GitHub connection gets the same output regardless of whether the admin configured a PAT or a fine-grained PAT.
+
+**New type for fundamentally different variants.** When a new auth method produces a meaningfully different output shape, or when a service evolves in a way that old and new formats can't be reasonably normalized, it is better to introduce a new type. For example, if GitHub were to introduce an entirely new API that requires different fields from consumers:
+
+```yaml
+connections:
+  # Existing type — still works, unchanged
+  - type: github
+    host: github.com
+    token: ${GITHUB_TOKEN}
+
+  # New type for the hypothetical new API
+  - type: github-v2
+    host: github.com
+    apiVersion: '2024-01-01'
+    installationToken: ${GITHUB_V2_TOKEN}
+```
+
+Plugins that need the new API register `github-v2`. Plugins that work with both register both. The old `github` type is never broken.
+
+**Choosing between the two.** The rule of thumb: if the output shape to consumers stays the same, use a schema union within the existing type. If consumers need to handle the variant differently, it's a new type. Since all types are centrally defined, the Backstage maintainers can make this judgment call and migrate as needed — there's no ecosystem fragmentation risk.
 
 ### Catalog Entity Annotations
 
@@ -546,7 +567,9 @@ backend.add(
 
 ### Custom Connection Types
 
-Adopters can define and register custom connection types using the same `createConnectionType` API:
+All built-in connection types are defined in a single central `@backstage/*` package and shipped with the framework. Ecosystem plugins cannot define new connection types — they can only consume existing ones.
+
+Adopters can define internal custom connection types for their own organization's needs using the same `createConnectionType` API:
 
 ```typescript
 const artifactoryConnectionType = createConnectionType({
@@ -565,7 +588,7 @@ const artifactoryConnectionType = createConnectionType({
 });
 ```
 
-Custom types are registered through the connection service factory override:
+Custom types are registered by passing them to the connection service factory as a single list of extra definitions. This naturally limits extension to a single point of control — there is no plugin-level extension mechanism:
 
 ```typescript
 const backend = createBackend();
