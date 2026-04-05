@@ -53,6 +53,7 @@ Options:
   --format <string>
   --merge
   --package <string>
+  --strict
   -h, --help
 ```
 
@@ -105,5 +106,6 @@ Options:
   --format <string>
   --merge
   --package <string>
+  --strict
   -h, --help
 ```
