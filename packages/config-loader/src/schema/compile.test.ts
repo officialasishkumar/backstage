@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { compileConfigSchemas } from './compile';
+import { compileConfigSchemas, mergeConfigSchemas } from './compile';
 
 describe('compileConfigSchemas', () => {
   it('should merge schemas', () => {
@@ -458,5 +458,37 @@ describe('deepVisibility', () => {
     ).toThrow(
       `Config schema visibility is both 'frontend' and 'secret' for /properties/a`,
     );
+  });
+});
+
+describe('mergeConfigSchemas', () => {
+  it('should preserve $schema across merged inputs', () => {
+    const merged = mergeConfigSchemas([
+      {
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: { a: { type: 'string' } },
+      },
+      {
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: { b: { type: 'number' } },
+      },
+    ]);
+
+    expect(merged.$schema).toBe('http://json-schema.org/draft-07/schema#');
+    expect(merged.properties).toEqual({
+      a: { type: 'string' },
+      b: { type: 'number' },
+    });
+  });
+
+  it('should not set $schema when inputs have no $schema', () => {
+    const merged = mergeConfigSchemas([
+      { type: 'object', properties: { a: { type: 'string' } } },
+      { type: 'object', properties: { b: { type: 'number' } } },
+    ]);
+
+    expect(merged.$schema).toBeUndefined();
   });
 });

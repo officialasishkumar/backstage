@@ -23,14 +23,20 @@ jest.mock('../lib/config', () => ({
 function makeSchema(options: {
   schemas: { value: object; packageName: string }[];
 }) {
-  const serializeFn = jest.fn().mockImplementation(() => ({
-    backstageConfigSchemaVersion: 1,
-    schemas: options.schemas.map(s => ({
-      value: s.value,
-      path: `node_modules/${s.packageName}`,
-      packageName: s.packageName,
-    })),
-  }));
+  const serializeFn = jest.fn().mockImplementation((serializeOptions?: any) => {
+    const isStrict =
+      serializeOptions?.schema === 'http://json-schema.org/draft-07/schema#';
+    return {
+      backstageConfigSchemaVersion: 1,
+      schemas: options.schemas.map(s => ({
+        value: isStrict
+          ? { ...s.value, $schema: 'http://json-schema.org/draft-07/schema#' }
+          : s.value,
+        path: `node_modules/${s.packageName}`,
+        packageName: s.packageName,
+      })),
+    };
+  });
 
   return {
     schema: { serialize: serializeFn },

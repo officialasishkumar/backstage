@@ -66,10 +66,6 @@ export default async ({ args, info }: CliCommandContext) => {
     configSchema.title = 'Application Configuration Schema';
     configSchema.description =
       'This is the schema describing the structure of the app-config.yaml configuration file.';
-
-    if (strict) {
-      configSchema.$schema = 'http://json-schema.org/draft-07/schema#';
-    }
   } else {
     configSchema = schema.serialize(serializeOptions);
   }
