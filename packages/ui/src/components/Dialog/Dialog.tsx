@@ -19,6 +19,7 @@ import {
   Dialog as RADialog,
   DialogTrigger as RADialogTrigger,
   Modal,
+  ModalOverlay,
   Heading,
 } from 'react-aria-components';
 import type {
@@ -63,14 +64,14 @@ export const Dialog = forwardRef<React.ElementRef<typeof Modal>, DialogProps>(
     const { classes, children, width, height, style } = ownProps;
 
     return (
-      <Modal
-        ref={ref}
+      <ModalOverlay
         className={classes.root}
         isDismissable
         isKeyboardDismissDisabled={false}
         {...restProps}
       >
-        <RADialog
+        <Modal
+          ref={ref}
           className={classes.dialog}
           style={{
             ['--bui-dialog-min-width' as keyof React.CSSProperties]:
@@ -84,13 +85,15 @@ export const Dialog = forwardRef<React.ElementRef<typeof Modal>, DialogProps>(
             ...style,
           }}
         >
-          <BgReset>
-            <Box bg="neutral" className={classes.content}>
-              {children}
-            </Box>
-          </BgReset>
-        </RADialog>
-      </Modal>
+          <RADialog>
+            <BgReset>
+              <Box bg="neutral" className={classes.content}>
+                {children}
+              </Box>
+            </BgReset>
+          </RADialog>
+        </Modal>
+      </ModalOverlay>
     );
   },
 );
