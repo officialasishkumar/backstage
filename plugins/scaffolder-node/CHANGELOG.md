@@ -1,5 +1,11 @@
 # @backstage/plugin-scaffolder-node
 
+## 0.13.1
+
+### Patch Changes
+
+- 1fea538: Added `PermissionResourceRef` definitions for scaffolder resource types: `scaffolderTemplatePermissionResourceRef`, `scaffolderActionPermissionResourceRef`, and `scaffolderTaskPermissionResourceRef`. These are exported from `@backstage/plugin-scaffolder-node/alpha`.
+
 ## 0.13.0
 
 ### Minor Changes
