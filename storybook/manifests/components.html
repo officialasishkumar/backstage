@@ -576,13 +576,13 @@
 <header>
   <div class="wrap">
     <h1>Manifest Debugger</h1>
-    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">49 components ok</span><span class="filter-pill ok" aria-disabled="true">445 stories ok</span></div>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">49 components ok</span><span class="filter-pill ok" aria-disabled="true">446 stories ok</span></div>
   </div>
 </header>
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>3.1s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>3.0s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -6549,7 +6549,7 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
       <div class="badges">
         <label for="c-20-backstage-ui-header-props" class="badge ok as-toggle">6 prop types</label>
         
-        <label for="c-20-backstage-ui-header-stories" class="badge ok as-toggle">7 stories</label>
+        <label for="c-20-backstage-ui-header-stories" class="badge ok as-toggle">8 stories</label>
         
       </div>
     </div>
@@ -6578,7 +6578,7 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
             </div>
             <pre><code>Component: packages/ui/src/components/Header/Header.tsx::Header</code></pre>
             <pre><code>Props:</code></pre>
-            <pre><code>activeTabId?: string
+            <pre><code>activeTabId?: string | null
 
 breadcrumbs?: HeaderBreadcrumb[]
 
@@ -6622,10 +6622,7 @@ import { RiMore2Line } from "@remixicon/react";</code></pre>
               </div>
               
               
-              <pre><code>const WithTabs = () =&gt; {
-  const activeTabId = useActiveTabId(tabs);
-  return &lt;Header title=&quot;Page Title&quot; tabs={tabs} activeTabId={activeTabId} /&gt;;
-};</code></pre>
+              <pre><code>const WithTabs = () =&gt; &lt;Header tabs={tabs} /&gt;;</code></pre>
             </div>
             <div class="note ok">
               <div class="row">
@@ -6692,18 +6689,10 @@ import { RiMore2Line } from "@remixicon/react";</code></pre>
               </div>
               
               
-              <pre><code>const WithEverything = () =&gt; {
-  const activeTabId = useActiveTabId(tabs);
-  return (
-    &lt;Header
-      title=&quot;Page Title&quot;
-      tabs={tabs}
-      activeTabId={activeTabId}
-      customActions={&lt;Button&gt;Custom action&lt;/Button&gt;}
-      breadcrumbs={[{ label: &#39;Home&#39;, href: &#39;/&#39; }]}
-    /&gt;
-  );
-};</code></pre>
+              <pre><code>const WithEverything = () =&gt; &lt;Header
+    tabs={tabs}
+    customActions={&lt;Button&gt;Custom action&lt;/Button&gt;}
+    breadcrumbs={[{ label: &#39;Home&#39;, href: &#39;/&#39; }]} /&gt;;</code></pre>
             </div>
             <div class="note ok">
               <div class="row">
@@ -6712,12 +6701,16 @@ import { RiMore2Line } from "@remixicon/react";</code></pre>
               </div>
               
               
-              <pre><code>const WithGroupedTabs = () =&gt; {
-  const activeTabId = useActiveTabId(groupedTabs);
-  return (
-    &lt;Header title=&quot;Page Title&quot; tabs={groupedTabs} activeTabId={activeTabId} /&gt;
-  );
-};</code></pre>
+              <pre><code>const WithGroupedTabs = () =&gt; &lt;Header tabs={groupedTabs} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Explicit Active Tab</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithExplicitActiveTab = () =&gt; &lt;Header tabs={tabs} activeTabId=&quot;campaigns&quot; /&gt;;</code></pre>
             </div>
         </div>
     
@@ -9157,7 +9150,7 @@ import { RiCloudy2Line, RiEmotionHappyLine, RiHeartLine, RiMore2Line } from "@re
             </div>
             <pre><code>Component: packages/ui/src/components/Header/Header.tsx::Header</code></pre>
             <pre><code>Props:</code></pre>
-            <pre><code>activeTabId?: string
+            <pre><code>activeTabId?: string | null
 
 breadcrumbs?: HeaderBreadcrumb[]
 
@@ -9354,7 +9347,6 @@ import {
               
               
               <pre><code>const WithSubTabs = () =&gt; {
-  const activeTabId = useActiveTabId(subTabs);
   return (
     &lt;&gt;
       &lt;PluginHeader
@@ -9379,7 +9371,6 @@ import {
       /&gt;
       &lt;Header
         title=&quot;main · #842&quot;
-        activeTabId={activeTabId}
         tabs={subTabs}
         breadcrumbs={[
           { label: &#39;Catalog&#39;, href: &#39;/catalog&#39; },
