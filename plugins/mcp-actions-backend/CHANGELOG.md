@@ -1,5 +1,11 @@
 # @backstage/plugin-mcp-actions-backend
 
+## 0.1.11
+
+### Patch Changes
+
+- 0e8eece: Fix OAuth 2.0 Protected Resource Metadata endpoint returning internal plugin URL, preventing some MCP clients like Claude Code from authenticating
+
 ## 0.1.10
 
 ### Patch Changes
