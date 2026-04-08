@@ -1,0 +1,68 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: dynamic-defaults-demo
+  title: Dynamic Defaults Demo
+  description: Demonstrates nunjucks templating in parameter schemas with dynamic default values across steps and within the same step
+spec:
+  owner: backstage/scaffolder
+  type: service
+  parameters:
+    - title: Repository Details
+      required:
+        - repoUrl
+        - componentName
+      properties:
+        repoUrl:
+          title: Repository URL
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        componentName:
+          title: Component Name
+          type: string
+          description: The name of your component
+        componentDescription:
+          title: Component Description
+          type: string
+          description: The description of your component
+          default: A service for ${{ parameters.componentName or 'unknown'}}
+    - title: Configuration
+      required:
+        - appName
+      properties:
+        appName:
+          title: Application Name
+          type: string
+          description: Defaults to the component name from the previous step
+          default: ${{ parameters.componentName }}
+        description:
+          title: Description
+          type: string
+          description: Defaults to a description using the component name
+          default: A service for ${{ parameters.componentName }}
+        repoSummary:
+          title: Repository Summary
+          type: string
+          description: Defaults to the selected repo URL
+          default: "Repo: ${{ parameters.repoUrl }}"
+    - title: Review Defaults
+      properties:
+        finalName:
+          title: Final Name
+          type: string
+          description: This defaults to the app name from the previous step
+          default: ${{ parameters.appName }}
+        fullSummary:
+          title: Full Summary
+          type: string
+          description: Combines values from all previous steps
+          default: "${{ parameters.appName }} - ${{ parameters.description }}"
+  steps:
+    - id: log
+      name: Log values
+      action: debug:log
+      input:
+        message: "Creating ${{ parameters.appName }} at ${{ parameters.repoUrl }}"

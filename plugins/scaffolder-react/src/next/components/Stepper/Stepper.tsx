@@ -22,7 +22,7 @@ import {
   ReviewStepProps,
   TemplateParameterSchema,
 } from '@backstage/plugin-scaffolder-react';
-import { JsonValue } from '@backstage/types';
+import { JsonObject, JsonValue } from '@backstage/types';
 import Button from '@material-ui/core/Button';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import MuiStep from '@material-ui/core/Step';
@@ -39,13 +39,22 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 
+import { scaffolderApiRef } from '../../../api';
 import { scaffolderReactTranslationRef } from '../../../translation';
 import { useFormDataFromQuery, useTemplateSchema } from '../../hooks';
+import {
+  useRenderedStep,
+  extractDefaultsFromSchema,
+  schemaHasTemplateExpressions,
+  stripTemplateDefaults,
+} from '../../hooks/useRenderedStep';
 import { useTransformSchemaToProps } from '../../hooks/useTransformSchemaToProps';
+import { extractSchemaFromStep } from '../../lib';
 import { Form } from '../Form';
 import { PasswordWidget } from '../PasswordWidget/PasswordWidget';
 import { ReviewState, type ReviewStateProps } from '../ReviewState';
@@ -97,6 +106,12 @@ export type StepperProps = {
    * effect.
    */
   templateName?: string;
+  /**
+   * When provided, enables nunjucks template expression rendering in the
+   * parameter schema. Expressions like `$\{{ parameters.fieldName }}` will
+   * be resolved against the current form data via backend calls.
+   */
+  templateRef?: string;
   formProps?: FormProps;
   initialState?: Record<string, JsonValue>;
   onCreate: (values: Record<string, JsonValue>) => Promise<void>;
@@ -136,6 +151,83 @@ export const Stepper = (stepperProps: StepperProps) => {
   const [errors, setErrors] = useState<undefined | FormValidation>();
   const styles = useStyles();
 
+  // Template rendering support
+  const { templateRef } = props;
+  const scaffolderApi = templateRef
+    ? apiHolder.get(scaffolderApiRef)
+    : undefined;
+
+  const appliedDefaults = useRef<Record<string, JsonValue>>({});
+
+  const currentRawSchema = steps[activeStep]?.mergedSchema;
+
+  const { renderedSchema, renderedDefaults } = useRenderedStep({
+    scaffolderApi,
+    templateRef,
+    stepIndex: activeStep,
+    formData: stepsState,
+    rawSchema: currentRawSchema,
+  });
+
+  // When rendered defaults arrive, apply them to fields that haven't been
+  // manually edited by the user. A field is considered user-modified if its
+  // current value is non-empty and differs from the previously applied default.
+  useEffect(() => {
+    if (Object.keys(renderedDefaults).length === 0) return;
+
+    const prevDefaults = appliedDefaults.current;
+    appliedDefaults.current = renderedDefaults;
+
+    setStepsState(current => {
+      const updated = { ...current };
+      let changed = false;
+      for (const [key, value] of Object.entries(renderedDefaults)) {
+        const currentVal = current[key];
+        const wasSetByUs =
+          currentVal === undefined ||
+          currentVal === '' ||
+          currentVal === prevDefaults[key];
+
+        if (wasSetByUs && currentVal !== value) {
+          updated[key] = value;
+          changed = true;
+        }
+      }
+      return changed ? updated : current;
+    });
+  }, [renderedDefaults]);
+
+  // Build the effective step using the rendered schema when available.
+  // When a step has template expressions but hasn't been rendered yet,
+  // strip the literal ${{ }} defaults so RJSF doesn't populate them
+  // as field values.
+  const rawStep = steps[activeStep];
+  const effectiveRawStep = useMemo(() => {
+    if (!rawStep) return rawStep;
+
+    if (renderedSchema) {
+      const { uiSchema, schema } = extractSchemaFromStep(renderedSchema);
+      const { title: _title, ...stepSchema } = schema;
+      return {
+        title: rawStep.title,
+        description: rawStep.description,
+        schema: stepSchema,
+        uiSchema,
+        mergedSchema: renderedSchema,
+      };
+    }
+
+    if (
+      currentRawSchema &&
+      schemaHasTemplateExpressions(currentRawSchema as JsonObject)
+    ) {
+      const stripped = stripTemplateDefaults(rawStep.schema as JsonObject);
+      return { ...rawStep, schema: stripped };
+    }
+
+    return rawStep;
+  }, [renderedSchema, rawStep, currentRawSchema]);
+
   const backLabel =
     presentation?.buttonLabels?.backButtonText ?? backButtonText;
   const createLabel =
@@ -170,7 +262,9 @@ export const Stepper = (stepperProps: StepperProps) => {
     setActiveStep(prevActiveStep => prevActiveStep - 1);
   }, [setActiveStep]);
 
-  const currentStep = useTransformSchemaToProps(steps[activeStep], { layouts });
+  const currentStep = useTransformSchemaToProps(effectiveRawStep ?? rawStep, {
+    layouts,
+  });
 
   const {
     formContext: propFormContext,
@@ -181,12 +275,9 @@ export const Stepper = (stepperProps: StepperProps) => {
   } = props.formProps ?? {};
 
   const handleChange = useCallback(
-    (e: IChangeEvent) => {
-      setStepsState(current => {
-        return { ...current, ...e.formData };
-      });
-    },
-    [setStepsState],
+    (e: IChangeEvent) =>
+      setStepsState(current => ({ ...current, ...e.formData })),
+    [],
   );
 
   const handleNext = useCallback(
@@ -198,6 +289,7 @@ export const Stepper = (stepperProps: StepperProps) => {
 
       const returnedValidation = await validation(formData);
 
+      const mergedFormData = { ...stepsState, ...formData };
       setStepsState(current => ({
         ...current,
         ...formData,
@@ -209,6 +301,42 @@ export const Stepper = (stepperProps: StepperProps) => {
         setErrors(returnedValidation);
       } else {
         setErrors(undefined);
+
+        // Pre-render the next step's schema so it's ready when the form mounts
+        const nextStepIndex = activeStep + 1;
+        if (
+          scaffolderApi?.renderStep &&
+          templateRef &&
+          nextStepIndex < steps.length &&
+          schemaHasTemplateExpressions(
+            steps[nextStepIndex].mergedSchema as JsonObject,
+          )
+        ) {
+          try {
+            const result = await scaffolderApi.renderStep({
+              templateRef,
+              stepIndex: nextStepIndex,
+              formData: mergedFormData,
+            });
+
+            const schema = result.schema as JsonObject;
+            const newDefaults = extractDefaultsFromSchema(schema);
+            appliedDefaults.current = newDefaults;
+
+            setStepsState(current => {
+              const updated = { ...current };
+              for (const [key, value] of Object.entries(newDefaults)) {
+                if (updated[key] === undefined) {
+                  updated[key] = value;
+                }
+              }
+              return updated;
+            });
+          } catch {
+            // Fall back to raw schema
+          }
+        }
+
         setActiveStep(prevActiveStep => {
           const stepNum = prevActiveStep + 1;
           analytics.captureEvent('click', `Next Step (${stepNum})`);
@@ -216,7 +344,15 @@ export const Stepper = (stepperProps: StepperProps) => {
         });
       }
     },
-    [validation, analytics],
+    [
+      validation,
+      analytics,
+      stepsState,
+      scaffolderApi,
+      templateRef,
+      activeStep,
+      steps,
+    ],
   );
 
   useEffect(() => {

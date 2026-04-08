@@ -621,6 +621,120 @@ describe('scaffolder router', () => {
     });
   });
 
+  describe('POST /v2/templates/:namespace/:kind/:name/render-step', () => {
+    it('renders template expressions in the step schema', async () => {
+      const templateWithExpressions = generateMockTemplate({
+        parameters: [
+          {
+            type: 'object',
+            properties: {
+              repoUrl: { type: 'string' },
+            },
+          },
+          {
+            type: 'object',
+            title: 'Second step',
+            properties: {
+              name: {
+                type: 'string',
+                default: '${{ parameters.repoUrl }}',
+              },
+            },
+          },
+        ],
+      });
+
+      const { unwrappedRouter, permissions } = await createTestRouter({
+        entities: [templateWithExpressions, mockUser],
+      });
+
+      jest
+        .spyOn(permissions, 'authorizeConditional')
+        .mockImplementation(async () => [
+          { result: AuthorizeResult.ALLOW },
+          { result: AuthorizeResult.ALLOW },
+        ]);
+
+      const response = await request(unwrappedRouter)
+        .post(
+          '/v2/templates/default/Template/create-react-app-template/render-step',
+        )
+        .send({
+          stepIndex: 1,
+          formData: { repoUrl: 'github.com?owner=acme&repo=widget' },
+        });
+
+      expect(response.status).toEqual(200);
+      expect(response.body.schema.properties.name.default).toBe(
+        'github.com?owner=acme&repo=widget',
+      );
+    });
+
+    it('returns 400 for out of range step index', async () => {
+      const { unwrappedRouter, permissions } = await createTestRouter();
+
+      jest
+        .spyOn(permissions, 'authorizeConditional')
+        .mockImplementation(async () => [
+          { result: AuthorizeResult.ALLOW },
+          { result: AuthorizeResult.ALLOW },
+        ]);
+
+      const response = await request(unwrappedRouter)
+        .post(
+          '/v2/templates/default/Template/create-react-app-template/render-step',
+        )
+        .send({
+          stepIndex: 99,
+          formData: {},
+        });
+
+      expect(response.status).toEqual(400);
+    });
+
+    it('returns 400 for missing required fields', async () => {
+      const { unwrappedRouter, permissions } = await createTestRouter();
+
+      jest
+        .spyOn(permissions, 'authorizeConditional')
+        .mockImplementation(async () => [
+          { result: AuthorizeResult.ALLOW },
+          { result: AuthorizeResult.ALLOW },
+        ]);
+
+      const response = await request(unwrappedRouter)
+        .post(
+          '/v2/templates/default/Template/create-react-app-template/render-step',
+        )
+        .send({});
+
+      expect(response.status).toEqual(400);
+    });
+
+    it('returns the original schema when expressions reference missing values', async () => {
+      const { unwrappedRouter, permissions } = await createTestRouter();
+
+      jest
+        .spyOn(permissions, 'authorizeConditional')
+        .mockImplementation(async () => [
+          { result: AuthorizeResult.ALLOW },
+          { result: AuthorizeResult.ALLOW },
+        ]);
+
+      const response = await request(unwrappedRouter)
+        .post(
+          '/v2/templates/default/Template/create-react-app-template/render-step',
+        )
+        .send({
+          stepIndex: 0,
+          formData: {},
+        });
+
+      expect(response.status).toEqual(200);
+      expect(response.body.schema).toBeDefined();
+    });
+  });
+
   describe('POST /v2/tasks', () => {
     it('rejects template values which do not match the template schema definition', async () => {
       const { router } = await createTestRouter();

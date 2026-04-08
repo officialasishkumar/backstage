@@ -40,5 +40,6 @@ export namespace scaffolderApiMock {
     streamLogs: jest.fn(),
     dryRun: jest.fn(),
     autocomplete: jest.fn(),
+    renderStep: jest.fn(),
   }));
 }

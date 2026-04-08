@@ -411,6 +411,46 @@ export class ScaffolderClient implements ScaffolderApi {
     );
   }
 
+  /**
+   * {@inheritdoc ScaffolderApi.renderStep}
+   */
+  async renderStep(
+    request: {
+      templateRef: string;
+      stepIndex: number;
+      formData: Record<string, unknown>;
+    },
+    _options?: ScaffolderRequestOptions,
+  ): Promise<{
+    title: string;
+    description?: string;
+    schema: Record<string, unknown>;
+  }> {
+    const { kind, namespace, name } = parseEntityRef(request.templateRef, {
+      defaultKind: 'template',
+    });
+
+    const baseUrl = await this.discoveryApi.getBaseUrl('scaffolder');
+    const url = `${baseUrl}/v2/templates/${encodeURIComponent(
+      namespace ?? 'default',
+    )}/${encodeURIComponent(kind)}/${encodeURIComponent(name)}/render-step`;
+
+    const response = await this.fetchApi.fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        stepIndex: request.stepIndex,
+        formData: request.formData,
+      }),
+    });
+
+    if (!response.ok) {
+      throw await ResponseError.fromResponse(response);
+    }
+
+    return response.json();
+  }
+
   //
   // Private methods
   //

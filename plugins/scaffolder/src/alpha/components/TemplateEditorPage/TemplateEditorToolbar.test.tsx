@@ -41,6 +41,7 @@ describe('TemplateEditorToolbar', () => {
     retry: jest.fn(),
     listTemplatingExtensions: jest.fn(),
     dryRun: jest.fn(),
+    renderStep: jest.fn(),
   };
 
   scaffolderApiMock.listActions.mockResolvedValue([

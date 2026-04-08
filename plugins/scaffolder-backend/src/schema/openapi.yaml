@@ -542,6 +542,54 @@ paths:
         - $ref: '#/components/parameters/kind'
         - $ref: '#/components/parameters/name'
 
+  /v2/templates/{namespace}/{kind}/{name}/render-step:
+    post:
+      operationId: RenderStep
+      description: Render a template step schema with nunjucks expressions resolved using form data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stepIndex:
+                  type: integer
+                  minimum: 0
+                formData:
+                  $ref: '#/components/schemas/JsonObject'
+              required:
+                - stepIndex
+                - formData
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  schema:
+                    $ref: '#/components/schemas/JsonObject'
+                required:
+                  - title
+                  - schema
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+      security:
+        - {}
+        - JWT: []
+      parameters:
+        - $ref: '#/components/parameters/namespace'
+        - $ref: '#/components/parameters/kind'
+        - $ref: '#/components/parameters/name'
+
   /v2/actions:
     get:
       operationId: ListActions

@@ -116,6 +116,10 @@ import {
 } from '../util/templating';
 import { createDefaultFilters } from '../lib/templating/filters/createDefaultFilters';
 import {
+  SecureTemplater,
+  type SecureTemplateRenderer,
+} from '../lib/templating/SecureTemplater';
+import {
   ActionPermissionRuleInput,
   isActionPermissionRuleInput,
   isTaskPermissionRuleInput,
@@ -1163,6 +1167,83 @@ export async function createRouter(
         },
       });
     });
+
+  let parameterRenderer: SecureTemplateRenderer | undefined;
+
+  async function getParameterRenderer(): Promise<SecureTemplateRenderer> {
+    if (!parameterRenderer) {
+      parameterRenderer = await SecureTemplater.loadRenderer({
+        templateFilters: {
+          ...convertFiltersToRecord(createDefaultFilters({ integrations })),
+          ...templateExtensions.additionalTemplateFilters,
+        },
+        templateGlobals: templateExtensions.additionalTemplateGlobals,
+      });
+    }
+    return parameterRenderer;
+  }
+
+  (router as express.Router).post(
+    '/v2/templates/:namespace/:kind/:name/render-step',
+    async (req, res) => {
+      const requestedTemplateRef = `${req.params.kind}:${req.params.namespace}/${req.params.name}`;
+
+      const auditorEvent = await auditor?.createEvent({
+        eventId: 'template-render-step',
+        request: req,
+        meta: { templateRef: requestedTemplateRef },
+      });
+
+      try {
+        const credentials = await httpAuth.credentials(req);
+        const template = await authorizeTemplate(req.params, credentials);
+
+        const { stepIndex, formData } = req.body;
+        if (typeof stepIndex !== 'number' || !formData) {
+          throw new InputError(
+            'Missing required fields: stepIndex and formData',
+          );
+        }
+
+        const parameters = [template.spec.parameters ?? []].flat();
+        if (stepIndex < 0 || stepIndex >= parameters.length) {
+          throw new InputError(
+            `Step index ${stepIndex} is out of range (0-${
+              parameters.length - 1
+            })`,
+          );
+        }
+
+        const stepSchema = parameters[stepIndex];
+        const renderer = await getParameterRenderer();
+
+        const schemaString = JSON.stringify(stepSchema);
+        const renderedString = renderer(schemaString, {
+          parameters: formData,
+        });
+
+        let renderedSchema;
+        try {
+          renderedSchema = JSON.parse(renderedString);
+        } catch {
+          renderedSchema = stepSchema;
+        }
+
+        await auditorEvent?.success();
+
+        res.json({
+          title:
+            (renderedSchema.title as string) ??
+            'Please enter the following information',
+          description: renderedSchema.description as string,
+          schema: renderedSchema,
+        });
+      } catch (err) {
+        await auditorEvent?.fail({ error: err });
+        throw err;
+      }
+    },
+  );
 
   const app = express();
   app.set('logger', logger);

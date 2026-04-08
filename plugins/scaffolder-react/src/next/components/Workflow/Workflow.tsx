@@ -139,6 +139,7 @@ export const Workflow = (workflowProps: WorkflowProps): JSX.Element | null => {
         >
           <Stepper
             manifest={sortedManifest}
+            templateRef={templateRef}
             onCreate={workflowOnCreate}
             {...props}
           />

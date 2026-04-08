@@ -334,4 +334,21 @@ export interface ScaffolderApi {
     },
     options?: ScaffolderRequestOptions,
   ): Promise<{ results: { title?: string; id: string }[] }>;
+
+  /**
+   * Renders a template step schema by resolving nunjucks expressions
+   * using the provided form data.
+   */
+  renderStep?(
+    request: {
+      templateRef: string;
+      stepIndex: number;
+      formData: Record<string, unknown>;
+    },
+    options?: ScaffolderRequestOptions,
+  ): Promise<{
+    title: string;
+    description?: string;
+    schema: Record<string, unknown>;
+  }>;
 }
