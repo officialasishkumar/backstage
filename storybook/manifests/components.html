@@ -576,13 +576,13 @@
 <header>
   <div class="wrap">
     <h1>Manifest Debugger</h1>
-    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">49 components ok</span><span class="filter-pill ok" aria-disabled="true">446 stories ok</span></div>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">49 components ok</span><span class="filter-pill ok" aria-disabled="true">447 stories ok</span></div>
   </div>
 </header>
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>3.2s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>3.1s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -5955,7 +5955,7 @@ import { Form, Input, TextField } from "react-aria-components";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> FieldLabel</h2>
       <div class="badges">
-        <label for="c-17-backstage-ui-fieldlabel-props" class="badge ok as-toggle">7 prop types</label>
+        <label for="c-17-backstage-ui-fieldlabel-props" class="badge ok as-toggle">8 prop types</label>
         
         <label for="c-17-backstage-ui-fieldlabel-stories" class="badge ok as-toggle">4 stories</label>
         
@@ -5982,7 +5982,7 @@ import { Form, Input, TextField } from "react-aria-components";</code></pre>
           <div class="note ok">
             <div class="row">
               <span class="ex-name">Prop types <small>(react-docgen)</small></span>
-              <span class="badge ok">7 prop types</span>
+              <span class="badge ok">8 prop types</span>
             </div>
             <pre><code>Component: packages/ui/src/components/FieldLabel/FieldLabel.tsx::FieldLabel</code></pre>
             <pre><code>Props:</code></pre>
@@ -5997,6 +5997,11 @@ description?: string | null
  * The id to apply to the description element for aria-describedby
  */
 descriptionId?: string
+
+/**
+ * The slot name to set on the description&#39;s React Aria `&lt;Text&gt;` element.
+ */
+descriptionSlot?: string
 
 /**
  * The HTML for attribute of the text field
@@ -9812,7 +9817,7 @@ hideArrow?: boolean</code></pre>
       <div class="badges">
         <label for="c-31-backstage-ui-radiogroup-props" class="badge ok as-toggle">6 prop types</label>
         
-        <label for="c-31-backstage-ui-radiogroup-stories" class="badge ok as-toggle">8 stories</label>
+        <label for="c-31-backstage-ui-radiogroup-stories" class="badge ok as-toggle">9 stories</label>
         
       </div>
     </div>
@@ -9875,6 +9880,19 @@ secondaryLabel?: FieldLabelProps[&#39;secondaryLabel&#39;]</code></pre>
               
               
               <pre><code>const Default = () =&gt; &lt;RadioGroup label=&quot;What is your favorite pokemon?&quot;&gt;
+    &lt;Radio value=&quot;bulbasaur&quot;&gt;Bulbasaur&lt;/Radio&gt;
+    &lt;Radio value=&quot;charmander&quot;&gt;Charmander&lt;/Radio&gt;
+    &lt;Radio value=&quot;squirtle&quot;&gt;Squirtle&lt;/Radio&gt;
+&lt;/RadioGroup&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Description</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithDescription = () =&gt; &lt;RadioGroup description=&quot;Choose only one option&quot;&gt;
     &lt;Radio value=&quot;bulbasaur&quot;&gt;Bulbasaur&lt;/Radio&gt;
     &lt;Radio value=&quot;charmander&quot;&gt;Charmander&lt;/Radio&gt;
     &lt;Radio value=&quot;squirtle&quot;&gt;Squirtle&lt;/Radio&gt;
