@@ -1,5 +1,11 @@
 # @backstage/backend-defaults
 
+## 0.16.1-next.3
+
+### Patch Changes
+
+- 547258f: Refactored the database creation retry loop to avoid an unnecessary delay after the final failed attempt.
+
 ## 0.16.1-next.2
 
 ### Patch Changes

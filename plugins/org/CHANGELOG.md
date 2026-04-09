@@ -1,5 +1,13 @@
 # @backstage/plugin-org
 
+## 0.7.1-next.3
+
+### Patch Changes
+
+- f1f59b1: Replaced deprecated `humanizeEntityRef` usage with the Catalog Presentation API.
+- Updated dependencies
+  - @backstage/ui@0.14.0-next.3
+
 ## 0.7.1-next.2
 
 ### Patch Changes

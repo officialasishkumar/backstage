@@ -1,5 +1,15 @@
 # @backstage/ui
 
+## 0.14.0-next.3
+
+### Patch Changes
+
+- 2840476: Resolved route-relative `href` props to absolute paths by default in all components, removing the need for the `resolveHref` option in component definitions.
+- f73876a: Exported the `TableBodySkeleton` component as a public API for use outside of the built-in `Table` component. The component now accepts any column array whose items have an `id` property, making it compatible with custom column types.
+- 17eb8e0: Fixed form field descriptions not being connected to inputs via `aria-describedby`, making them accessible to screen readers. Added a `descriptionSlot` prop to `FieldLabel` that uses React Aria's slot mechanism to automatically wire up the connection.
+
+  **Affected components:** FieldLabel, TextField, PasswordField, SearchField, Select, RadioGroup, CheckboxGroup
+
 ## 0.14.0-next.2
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @backstage/plugin-catalog-graph
 
+## 0.6.1-next.3
+
+### Patch Changes
+
+- 416ad45: Replaced `humanizeEntityRef` with the Catalog Presentation API in `CatalogGraphCard` and `CatalogGraphPage` components for consistent entity display.
+- Updated dependencies
+  - @backstage/ui@0.14.0-next.3
+
 ## 0.6.1-next.2
 
 ### Patch Changes

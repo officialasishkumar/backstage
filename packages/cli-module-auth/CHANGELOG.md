@@ -1,5 +1,11 @@
 # @backstage/cli-module-auth
 
+## 0.1.1-next.3
+
+### Patch Changes
+
+- c705d44: Fixed `auth login` clearing previously configured action sources and other instance metadata when re-authenticating.
+
 ## 0.1.1-next.2
 
 ### Patch Changes

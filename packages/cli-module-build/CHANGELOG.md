@@ -1,5 +1,12 @@
 # @backstage/cli-module-build
 
+## 0.1.1-next.3
+
+### Patch Changes
+
+- f1b493f: Fixed the embedded-postgres PID file being written before database initialization, which prevented the database from initializing successfully.
+- f52a296: Suppressed false-positive Module Federation warning for shared dependencies that use secondary entry points (e.g. `@mui/material/styles`). These sub-path `package.json` files lack a `version` field, causing the bundler to emit "No version specified" warnings that fail CI builds.
+
 ## 0.1.1-next.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @backstage/cli-module-actions
 
+## 0.1.0-next.2
+
+### Minor Changes
+
+- c705d44: Added improved CLI output formatting and UX for the actions module. The `list` command now groups actions by plugin source with colored headers and action titles. The `execute --help` command renders full action details including markdown descriptions. Complex schema types like objects, arrays, and union types are now accepted as JSON flags. Error messages from the server are now surfaced directly. The `sources add` and `sources remove` commands accept multiple plugin IDs at once.
+
 ## 0.0.2-next.1
 
 ### Patch Changes

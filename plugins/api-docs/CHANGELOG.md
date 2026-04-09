@@ -1,5 +1,13 @@
 # @backstage/plugin-api-docs
 
+## 0.13.6-next.3
+
+### Patch Changes
+
+- da17844: Update readme to add instructions for custom api base URL
+- Updated dependencies
+  - @backstage/ui@0.14.0-next.3
+
 ## 0.13.6-next.2
 
 ### Patch Changes

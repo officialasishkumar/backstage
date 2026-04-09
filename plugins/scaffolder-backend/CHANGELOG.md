@@ -1,5 +1,11 @@
 # @backstage/plugin-scaffolder-backend
 
+## 3.4.0-next.3
+
+### Patch Changes
+
+- 8a42f77: Fix handling of `after=0` in task events endpoint
+
 ## 3.4.0-next.2
 
 ### Minor Changes

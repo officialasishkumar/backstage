@@ -1,5 +1,11 @@
 # @backstage/create-app
 
+## 0.8.2-next.3
+
+### Patch Changes
+
+- 72a493a: Added the `mcp-actions-backend` and `plugin-auth` plugins
+
 ## 0.8.2-next.2
 
 ### Patch Changes
