@@ -75,6 +75,7 @@
     "mysql2": "^3.0.0",
     "pg": "^8.11.3",
     "pg-connection-string": "^2.3.0",
+    "portfinder": "^1.0.32",
     "testcontainers": "^11.9.0",
     "text-extensions": "^2.4.0",
     "uuid": "^11.0.0",
@@ -87,13 +88,18 @@
     "@types/jest": "*",
     "@types/lodash": "^4.14.151",
     "@types/supertest": "^2.0.8",
+    "embedded-postgres": "18.3.0-beta.16",
     "supertest": "^7.0.0"
   },
   "peerDependencies": {
-    "@types/jest": "*"
+    "@types/jest": "*",
+    "embedded-postgres": "*"
   },
   "peerDependenciesMeta": {
     "@types/jest": {
+      "optional": true
+    },
+    "embedded-postgres": {
       "optional": true
     }
   }

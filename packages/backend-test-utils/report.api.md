@@ -538,7 +538,8 @@ export type TestDatabaseId =
   | 'POSTGRES_11'
   | 'POSTGRES_9'
   | 'MYSQL_8'
-  | 'SQLITE_3';
+  | 'SQLITE_3'
+  | 'EMBEDDED_POSTGRES';
 
 // @public
 export class TestDatabases {

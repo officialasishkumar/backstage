@@ -16,6 +16,7 @@
 
 import { Knex } from 'knex';
 import { isDockerDisabledForTests } from '../util/isDockerDisabledForTests';
+import { EmbeddedPostgresEngine } from './embeddedPostgres';
 import { MysqlEngine } from './mysql';
 import { PostgresEngine } from './postgres';
 import { SqliteEngine } from './sqlite';
@@ -42,6 +43,7 @@ export class TestDatabases {
     mysql2: MysqlEngine.create,
     'better-sqlite3': SqliteEngine.create,
     sqlite3: SqliteEngine.create,
+    'embedded-postgres': EmbeddedPostgresEngine.create,
   };
   private readonly engineByTestDatabaseId: Map<string, Engine>;
   private readonly supportedIds: TestDatabaseId[];
@@ -78,6 +80,13 @@ export class TestDatabases {
       const properties = allDatabases[id];
       if (!properties) {
         return false;
+      }
+      if (properties.optionalDependency) {
+        try {
+          require.resolve(properties.optionalDependency);
+        } catch {
+          return false;
+        }
       }
       // If the caller has set up the env with an explicit connection string,
       // we'll assume that this database will work

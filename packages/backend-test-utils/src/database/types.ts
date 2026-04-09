@@ -38,13 +38,16 @@ export type TestDatabaseId =
   | 'POSTGRES_11'
   | 'POSTGRES_9'
   | 'MYSQL_8'
-  | 'SQLITE_3';
+  | 'SQLITE_3'
+  | 'EMBEDDED_POSTGRES';
 
 export type TestDatabaseProperties = {
   name: string;
   driver: string;
   dockerImageName?: string;
   connectionStringEnvironmentVariableName?: string;
+  /** Module that must be resolvable for this database to be available */
+  optionalDependency?: string;
 };
 
 export const allDatabases: Record<TestDatabaseId, TestDatabaseProperties> =
@@ -122,6 +125,11 @@ export const allDatabases: Record<TestDatabaseId, TestDatabaseProperties> =
     SQLITE_3: {
       name: 'SQLite 3.x',
       driver: 'better-sqlite3',
+    },
+    EMBEDDED_POSTGRES: {
+      name: 'Embedded Postgres',
+      driver: 'embedded-postgres',
+      optionalDependency: 'embedded-postgres',
     },
   });
 
