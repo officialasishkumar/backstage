@@ -59,7 +59,7 @@ import {
 export class TodoListService {
 +  readonly #database: Knex;
 
-  readonly #storedTodos = new Array<TodoItem>();
+-  readonly #storedTodos = new Array<TodoItem>();
 
 -  static create(options: {
 +  static async create(options: {
@@ -89,16 +89,22 @@ And with that, we have an isolated `knex` client to communicate with our databas
 
 Unfortunately, without tables in our database, our `knex` client is not doing much. We need to create a _migration_. Knex stores migrations as Javascript/Typescript files that get executed as part of a call to `knex.migrate.latest()`. By default, these are stored in a `migrations/` directory.
 
-Let's get started - running this command will scaffold a file in that `migrations/` directory for us.
+Let's get started. First, we need to install `knex` as a dev dependency to use its CLI,
 
 ```bash
-yarn workspace @internal/plugin-todo-list-backend knex migrate:make init
+yarn workspace @internal/plugin-todo-backend add --dev knex
+```
+
+Now, running this command will scaffold a file in that `migrations/` directory for us.
+
+```bash
+yarn workspace @internal/plugin-todo-backend knex migrate:make init
 ```
 
 This should spit out a message like
 
 ```bash
-Created Migration: ~/Projects/backstage/backstage/plugins/example-todo-list-backend/migrations/20260323130057_init.js
+Created Migration: ~/Projects/backstage/backstage/plugins/todo-backend/migrations/20260323130057_init.js
 ```
 
 Let's open that file,
@@ -151,31 +157,45 @@ exports.down = async function down(knex) {
 };
 ```
 
-Now, we need to actually tell our `knex` client to automatically apply these migrations.
+Now, we need to actually tell our `knex` client to automatically apply these migrations. We'll add the `database` service to our plugin's `init` function,
 
-```diff file="services/TodoListService.ts"
-      async init({ httpAuth, logger, httpRouter, database }) {
+```diff file="plugin.ts"
+import {
+  coreServices,
+  createBackendPlugin,
++  resolvePackagePath,
+} from '@backstage/backend-plugin-api';
 
-        const knex = await database.getClient();
+// ...
 
-+       if(!database.migrations?.skip) {
+      deps: {
+        httpAuth: coreServices.httpAuth,
+        httpRouter: coreServices.httpRouter,
++        logger: coreServices.logger,
++        database: coreServices.database,
+        todoList: todoListServiceRef,
+      },
+-      async init({ httpAuth, httpRouter, todoList }) {
++      async init({ httpAuth, logger, httpRouter, database, todoList }) {
++        const knex = await database.getClient();
++
++        if(!database.migrations?.skip) {
 +           logger.info('Running database migrations...');
 +
 +           const migrationsDir = resolvePackagePath(
-+               '@internal/plugin-todo-list-backend',
++               '@internal/plugin-todo-backend',
 +               'migrations',
 +           );
 +
 +           await knex.migrate.latest({
 +               directory: migrationsDir,
 +           });
-+       }
++        }
 
         httpRouter.use(
           await createRouter({
             httpAuth,
-            logger,
-            database,
+            todoList,
           }),
         );
 ```
@@ -226,9 +246,11 @@ Notice the change to snake case as it has to match the database schema we have a
   private constructor(
     logger: LoggerService,
     catalog: typeof catalogServiceRef.T,
++    database: Knex,
   ) {
     this.#logger = logger;
     this.#catalog = catalog;
++    this.#database = database;
   }
 
 +  private toDatabaseRow(todo: TodoItem): TodoDatabaseRow {
@@ -269,7 +291,8 @@ Creating your table was a solid chunk of work - thankfully, writing to it is goi
       createdAt: new Date().toISOString(),
     };
 
-+   await this.#database
+-    this.#storedTodos.push(newTodo);
++    await this.#database
 +      .insert(this.toDatabaseRow(newTodo))
 +      .into('todo');
 
@@ -284,6 +307,12 @@ We've basically just updated our service call to use `this.#database` instead of
 Now that we have things in our database, how do we actually get them back out again?
 
 ```diff title="services/TodoListService.ts"
+
+  async listTodos(): Promise<{ items: TodoItem[] }> {
+-    return { items: Array.from(this.#storedTodos) };
++    const rows = await this.#database('todo').select();
++    return { items: rows.map(row => this.fromDatabaseRow(row)) };
+  }
 
   async getTodo(request: { id: string }): Promise<TodoItem> {
 -    const todo = this.#storedTodos.find(item => item.id === request.id);
