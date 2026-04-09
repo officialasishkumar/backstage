@@ -2754,7 +2754,7 @@ __metadata:
     zod-to-json-schema: "npm:^3.25.1"
   peerDependencies:
     "@types/jest": "*"
-    embedded-postgres: ^18.3.0-beta.16
+    embedded-postgres: "*"
   peerDependenciesMeta:
     "@types/jest":
       optional: true
