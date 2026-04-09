@@ -31,7 +31,7 @@
 <script src="/js/medium-zoom.js"></script>
 <script src="/js/dismissable-banner.js"></script>
 <script src="/js/scroll-nav-to-view-in-docs.js"></script><link rel="stylesheet" href="/assets/css/styles.a3f04945.css">
-<script src="/assets/js/runtime~main.c0898bcd.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.324e0957.js" defer="defer"></script>
 <script src="/assets/js/main.99c7fbda.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -807,6 +807,12 @@ API belongs to, e.g. <code>artist-engagement-portal</code>. This field is option
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="specdefinition-required"><code>spec.definition</code> [required]<a href="#specdefinition-required" class="hash-link" aria-label="Direct link to specdefinition-required" title="Direct link to specdefinition-required" translate="no">​</a></h3>
 <p>The definition of the API, based on the format defined by <code>spec.type</code>. This
 field is required.</p>
+<p><strong>Note:</strong> Be sure to specify the API base URL of your API within the <code>spec.definition</code>. If this is not provided, some widgets (such as OpenAPI) will fallback to the base URL of the Backstage instance. Below are some examples of specifying API base URL for different formats:</p>
+<ul>
+<li class=""><a href="https://swagger.io/docs/specification/v3_0/api-host-and-base-path/#:~:text=All%20API%20endpoints%20are%20relative,.com%2Fv1%2Fusers%20.&amp;text=In%20OpenAPI%203.0%2C%20you%20use,base%20URLs%20for%20your%20API." target="_blank" rel="noopener noreferrer" class="">OpenAPI 3.x - use the <code>server</code> field</a></li>
+<li class=""><a href="https://swagger.io/docs/specification/v2_0/api-host-and-base-path/" target="_blank" rel="noopener noreferrer" class="">OpenAPI 2.0 (Swagger) — use <code>host</code>, <code>basePath</code>, and <code>schemes</code></a></li>
+<li class=""><a href="https://www.asyncapi.com/docs/concepts/asyncapi-document/structure#servers-field" target="_blank" rel="noopener noreferrer" class="">AsyncAPI - use the <code>server</code> field</a></li>
+</ul>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="kind-group">Kind: Group<a href="#kind-group" class="hash-link" aria-label="Direct link to Kind: Group" title="Direct link to Kind: Group" translate="no">​</a></h2>
 <p>Describes the following entity kind:</p>
 
