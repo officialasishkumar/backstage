@@ -87,7 +87,7 @@ And with that, we have an isolated `knex` client to communicate with our databas
 
 ### Creating your table
 
-Unfortunately, without tables in our database, our `knex` client is not doing much. We need to create a _migration_. Knex stores migrations as Javascript/Typescript files that get executed as part of a call to `knex.migrate.latest()`. By default, these are stored in a `migrations/` directory.
+Unfortunately, without tables in our database, our `knex` client is not doing much. We need to create a _migration_. Knex stores migrations as JavaScript/TypeScript files that get executed as part of a call to `knex.migrate.latest()`. By default, these are stored in a `migrations/` directory.
 
 Let's get started. First, we need to install `knex` as a dev dependency to use its CLI,
 
@@ -179,17 +179,17 @@ import {
 +      async init({ httpAuth, logger, httpRouter, database, todoList }) {
 +        const knex = await database.getClient();
 +
-+        if(!database.migrations?.skip) {
-+           logger.info('Running database migrations...');
++        if (!database.migrations?.skip) {
++          logger.info('Running database migrations...');
 +
-+           const migrationsDir = resolvePackagePath(
-+               '@internal/plugin-todo-backend',
-+               'migrations',
-+           );
++          const migrationsDir = resolvePackagePath(
++            '@internal/plugin-todo-backend',
++            'migrations',
++          );
 +
-+           await knex.migrate.latest({
-+               directory: migrationsDir,
-+           });
++          await knex.migrate.latest({
++            directory: migrationsDir,
++          });
 +        }
 
         httpRouter.use(
@@ -316,13 +316,13 @@ Now that we have things in our database, how do we actually get them back out ag
 
   async getTodo(request: { id: string }): Promise<TodoItem> {
 -    const todo = this.#storedTodos.find(item => item.id === request.id);
-+    const items = await this.#database('todo').where({ id: request.id }).select()
++    const item = await this.#database('todo').where({ id: request.id }).first();
 -    if (!todo) {
-+    if (!items.length) {
++    if (!item) {
       throw new NotFoundError(`No todo found with id '${request.id}'`);
     }
 -    return todo;
-+    return this.fromDatabaseRow(items[0]);
++    return this.fromDatabaseRow(item);
   }
 ```
 
