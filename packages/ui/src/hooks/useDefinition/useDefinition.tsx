@@ -22,6 +22,7 @@ import { resolveDefinitionProps, processUtilityProps } from './helpers';
 import { useAnalytics } from '../../analytics/useAnalytics';
 import { noopTracker } from '../../analytics/useAnalytics';
 import { useInRouterContext, useHref } from 'react-router-dom';
+import { isExternalLink } from '../../utils/linkUtils';
 import type {
   ComponentConfig,
   UseDefinitionOptions,
@@ -39,7 +40,7 @@ export function useDefinition<
 ): UseDefinitionResult<D, P> {
   const { breakpoint } = useBreakpoint();
 
-  // Turn relative href into an absolute path using the current route
+  // Turn internal relative hrefs into absolute paths using the current route
   // context, so that client-side navigation works correctly.
   let hrefResolvedProps = props;
   const hasRouter = useInRouterContext();
@@ -47,8 +48,11 @@ export function useDefinition<
   // The guard is safe because a component's router context does not
   // change during its lifetime, keeping the hook call count stable.
   if (hasRouter) {
-    const absoluteHref = useHref((props as any).href ?? '');
-    if ((props as any).href !== undefined) {
+    const rawHref = (props as any).href;
+    const shouldResolveHref = !!rawHref && !isExternalLink(rawHref);
+    const absoluteHref = useHref(shouldResolveHref ? rawHref : '');
+
+    if (shouldResolveHref) {
       hrefResolvedProps = { ...props, href: absoluteHref } as P;
     }
   }
