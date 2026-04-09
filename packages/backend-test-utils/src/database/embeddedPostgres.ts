@@ -52,6 +52,8 @@ export class EmbeddedPostgresEngine implements Engine {
       password,
       port,
       persistent: false,
+      // Running as root requires a separate postgres user to be created
+      ...(process.getuid?.() === 0 ? { createPostgresUser: true } : undefined),
       onError(messageOrError: unknown) {
         console.error(`[embedded-postgres]`, messageOrError);
       },
