@@ -40,8 +40,9 @@ export function useDefinition<
 ): UseDefinitionResult<D, P> {
   const { breakpoint } = useBreakpoint();
 
-  // Turn internal relative hrefs into absolute paths using the current route
-  // context, so that client-side navigation works correctly.
+  // Resolve internal hrefs through the current route context. Relative hrefs
+  // become absolute route paths, while absolute internal paths stay within the
+  // app router.
   let hrefResolvedProps = props;
   const hasRouter = useInRouterContext();
   // useHref throws outside a Router, so we guard with useInRouterContext.

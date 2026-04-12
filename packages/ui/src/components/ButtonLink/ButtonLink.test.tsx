@@ -14,53 +14,45 @@
  * limitations under the License.
  */
 
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { renderInTestApp } from '@backstage/test-utils';
+import { Outlet, Route, Routes } from 'react-router-dom';
 import { ButtonLink } from './ButtonLink';
 
 describe('ButtonLink', () => {
-  it('keeps external href values unchanged', () => {
-    render(
-      <MemoryRouter
-        initialEntries={['/catalog/default/component/example']}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <Routes>
-          <Route
-            path="/catalog/:namespace/component/:name"
-            element={
-              <ButtonLink href="https://ui.backstage.io">
-                External docs
-              </ButtonLink>
-            }
-          />
-        </Routes>
-      </MemoryRouter>,
+  it('keeps external href values unchanged', async () => {
+    const rendered = await renderInTestApp(
+      <Routes>
+        <Route
+          path="/catalog/:namespace/component/:name"
+          element={
+            <ButtonLink href="https://ui.backstage.io">
+              External docs
+            </ButtonLink>
+          }
+        />
+      </Routes>,
+      { routeEntries: ['/catalog/default/component/example'] },
     );
 
-    const link = screen.getByRole('link', { name: 'External docs' });
+    const link = rendered.getByRole('link', { name: 'External docs' });
     expect(link.getAttribute('href')).toBe('https://ui.backstage.io');
   });
 
-  it('still resolves relative internal href values against the current route', () => {
-    render(
-      <MemoryRouter
-        initialEntries={['/catalog/default/component/example/details']}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <Routes>
-          <Route path="/catalog/:namespace/component/:name" element={<Outlet />}>
-            <Route
-              path="details"
-              element={<ButtonLink href="../docs">Docs</ButtonLink>}
-            />
-            <Route path="docs" element={<div>Docs page</div>} />
-          </Route>
-        </Routes>
-      </MemoryRouter>,
+  it('still resolves relative internal href values against the current route', async () => {
+    const rendered = await renderInTestApp(
+      <Routes>
+        <Route path="/catalog/:namespace/component/:name" element={<Outlet />}>
+          <Route
+            path="details"
+            element={<ButtonLink href="../docs">Docs</ButtonLink>}
+          />
+          <Route path="docs" element={<div>Docs page</div>} />
+        </Route>
+      </Routes>,
+      { routeEntries: ['/catalog/default/component/example/details'] },
     );
 
-    const link = screen.getByRole('link', { name: 'Docs' });
+    const link = rendered.getByRole('link', { name: 'Docs' });
     expect(link.getAttribute('href')).toBe(
       '/catalog/default/component/example/docs',
     );
