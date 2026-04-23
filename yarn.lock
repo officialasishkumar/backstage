@@ -2483,13 +2483,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-explore-common@npm:^0.12.0":
-  version: 0.12.0
-  resolution: "@backstage-community/plugin-explore-common@npm:0.12.0"
-  checksum: 10/744ffa86c794ed612a257b7eba018d8bd433e160db9c29e9d72cca791f58fbed1fbbcacf2b670b992b7f13eb0cd0a08014ba60108ac17196dbee4699b8b6f0f1
-  languageName: node
-  linkType: hard
-
 "@backstage/app-defaults@workspace:^, @backstage/app-defaults@workspace:packages/app-defaults":
   version: 0.0.0-use.local
   resolution: "@backstage/app-defaults@workspace:packages/app-defaults"
